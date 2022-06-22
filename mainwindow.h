@@ -5,6 +5,9 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QLabel>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 namespace Ui {
 class MainWindow;
@@ -20,9 +23,16 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    void load();
+    void register_record();
+    void save_title_config();
+    void read_quote_file(QFile&);
+    QString screenshots_location;
+    QString quotes_location;
     QDir dir;
     QStringList pics;
     QStringList quotes;
+    QJsonArray record_array;
     int pic_index;
     int quote_index;
     int pic_end_index = 0;
