@@ -22,22 +22,6 @@
         <item row="0" column="3">
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QPushButton" name="add">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Добавить</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QPushButton" name="skip">
             <property name="enabled">
              <bool>false</bool>
@@ -50,6 +34,22 @@
             </property>
             <property name="text">
              <string>Пропустить</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="add">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Добавить</string>
             </property>
            </widget>
           </item>
@@ -95,7 +95,7 @@
          <enum>QLayout::SetFixedSize</enum>
         </property>
         <item>
-         <widget class="QPushButton" name="text_back">
+         <widget class="QPushButton" name="make_private">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -112,7 +112,10 @@
            </size>
           </property>
           <property name="text">
-           <string>Назад</string>
+           <string>Скрыть</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -201,6 +204,7 @@ p, li { white-space: pre-wrap; }
    </attribute>
    <addaction name="open_folder"/>
    <addaction name="open_doc"/>
+   <addaction name="open_json"/>
   </widget>
   <action name="open_folder">
    <property name="text">
@@ -210,6 +214,11 @@ p, li { white-space: pre-wrap; }
   <action name="open_doc">
    <property name="text">
     <string>Открыть документ</string>
+   </property>
+  </action>
+  <action name="open_json">
+   <property name="text">
+    <string>Открыть JSON</string>
    </property>
   </action>
  </widget>

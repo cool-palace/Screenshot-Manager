@@ -27,6 +27,7 @@ private:
     void register_record();
     void save_title_config();
     void read_quote_file(QFile&);
+    QJsonObject json_object(const QString& filepath);
     QString screenshots_location;
     QString quotes_location;
     QDir dir;

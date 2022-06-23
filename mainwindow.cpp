@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
         }
         pics.clear();
         dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами", screenshots_location));
-        pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot, QDir::Time | QDir::Reversed);
+        pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
 
         QFile file(quotes_location + dir.dirName() + ".txt");
         if (!quotes_location.isEmpty()) {
@@ -41,9 +41,57 @@ MainWindow::MainWindow(QWidget *parent) :
         show_status();
     });
 
+    connect(ui->open_json, &QAction::triggered, [this]() {
+        if (ui->ok->isEnabled()) {
+            pics.clear();
+            quotes.clear();
+        }
+        auto filepath = QFileDialog::getOpenFileName(nullptr, "Открыть json-файл",
+                                                     QCoreApplication::applicationDirPath(),
+                                                     "Файлы (*.json)");
+        auto json_file = json_object(filepath);
+        if (!json_file.contains("title") || !json_file.contains("screens")) {
+            ui->statusBar->showMessage("Неверный формат конфигурационного файла.");
+            return;
+        }
+        auto title = json_file.value("title").toString();
+        dir = QDir(screenshots_location + title);
+        auto records = json_file.value("screens").toArray();
+
+        for (QJsonValueRef r : records) {
+            auto record = r.toObject();
+            if (record["filename"].isString()) {
+                pics.push_back(record["filename"].toString());
+                quotes.push_back(record["caption"].toString());
+            } else if (record["filename"].isArray()) {
+                auto array = record["filename"].toArray();
+                for (QJsonValueRef name : array) {
+                    pics.push_back(name.toString());
+                    quotes.push_back(record["caption"].toString().toUtf8());
+                }
+            }
+        }
+
+        if (!quotes.empty() && !pics.empty()) {
+            draw(0);
+            show_text(0);
+            set_enabled(true);
+        }
+        show_status();
+    });
+
     connect(ui->skip, &QPushButton::clicked, [this]() {
         pic_index = qMax(pic_index, pic_end_index) + 1;
         draw(pic_index);
+    });
+
+    connect(ui->back, &QPushButton::clicked, [this]() {
+        if (pic_index == pic_end_index) {
+            pic_end_index = 0;
+        }
+        int& current_index = pic_index > pic_end_index ? pic_index : pic_end_index;
+        if (current_index == 0) return;
+        draw(--current_index);
     });
 
     connect(ui->add, &QPushButton::clicked, [this]() {
@@ -54,6 +102,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->ok, &QPushButton::clicked, [this]() {
         register_record();
         pic_index = qMax(pic_index, pic_end_index) + 1;
+        pic_end_index = 0;
+        ui->make_private->setChecked(false);
 
         if (pic_index < pics.size()) {
             draw(pic_index);
@@ -69,17 +119,9 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::load() {
-    QFile config("config.json");
-    if (!config.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        ui->statusBar->showMessage("Не удалось найти конфигурационный файл.");
-        return;
-    }
-    QString s = config.readAll();
-    config.close();
-    QJsonDocument doc = QJsonDocument::fromJson(s.toUtf8());
-    QJsonObject json_file = doc.object();
+    auto json_file = json_object("config.json");
     if (!json_file.contains("screenshots") || !json_file.contains("docs")) {
-        ui->statusBar->showMessage("Неверный формат конфигурационного файла.");
+        ui->statusBar->showMessage("Не удалось прочитать конфигурационный файл.");
         return;
     }
     screenshots_location = json_file.value("screenshots").toString();
@@ -91,6 +133,19 @@ void MainWindow::load() {
         return;
     }
     ui->statusBar->showMessage("Конфигурация успешно загружена.");
+}
+
+QJsonObject MainWindow::json_object(const QString& filepath) {
+    QFile config(filepath);
+    if (!config.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return QJsonObject();
+    }
+
+    QString s = QString::fromUtf8(config.readAll());
+    config.close();
+    QJsonDocument doc = QJsonDocument::fromJson(s.toUtf8());
+    QJsonObject json_file = doc.object();
+    return json_file;
 }
 
 void MainWindow::register_record() {
@@ -105,7 +160,7 @@ void MainWindow::register_record() {
         record["filename"] = pics[pic_index];
     }
     record["caption"] = ui->text->toPlainText();
-    record["public"] = true;
+    record["public"] = !ui->make_private->isChecked();
     record_array.push_back(record);
 }
 
@@ -132,8 +187,10 @@ void MainWindow::save_title_config() {
         return;
     }
     QJsonObject object;
+    object["title"] = dir.dirName();
     object["screens"] = record_array;
     QTextStream out(&file);
+    out.setCodec("UTF-8");
     out << QJsonDocument(object).toJson();
     file.close();
     ui->statusBar->showMessage("Конфигурационный файл сохранён.");
@@ -145,7 +202,7 @@ void MainWindow::set_enabled(bool enable) {
     ui->skip->setEnabled(enable);
     ui->add->setEnabled(enable);
     ui->text->setEnabled(enable);
-    ui->text_back->setEnabled(enable);
+    ui->make_private->setEnabled(enable);
 
     if (!enable) return;
     quote_index = pic_index = pic_end_index = 0;
@@ -156,9 +213,13 @@ QPixmap MainWindow::scaled(const QImage& source) {
 }
 
 void MainWindow::draw(int index) {
-    if (pics.size() <= index) return;
+    qDebug() << dir.path() + QDir::separator() + pics[index];
     auto image = QImage(dir.path() + QDir::separator() + pics[index]);
     ui->image->setPixmap(scaled(image));
+    bool reached_end = index + 1 >= pics.size();
+    ui->skip->setEnabled(!reached_end);
+    ui->add->setEnabled(!reached_end);
+    ui->back->setEnabled(index > 0);
 }
 
 void MainWindow::show_text(int index) {
