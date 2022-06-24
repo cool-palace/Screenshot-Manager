@@ -14,15 +14,16 @@ MainWindow::MainWindow(QWidget *parent) :
             quotes.clear();
         }
         pics.clear();
-        dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами", screenshots_location));
+        dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
+                                                     screenshots_location));
         pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
 
         QFile file(quotes_location + dir.dirName() + ".txt");
-        if (!quotes_location.isEmpty()) {
-            read_quote_file(file);
+        if (!quotes_location.isEmpty() && read_quote_file(file)) {
+            set_mode(CONFIG_CREATION);
+            set_enabled(current_mode);
         }
         show_status();
-        set_enabled(!quotes.empty());
         if (!pics.empty()) {
             draw(0);
         }
@@ -54,28 +55,12 @@ MainWindow::MainWindow(QWidget *parent) :
             ui->statusBar->showMessage("Неверный формат конфигурационного файла.");
             return;
         }
-        auto title = json_file.value("title").toString();
-        dir = QDir(screenshots_location + title);
-        auto records = json_file.value("screens").toArray();
+        read_title_config(json_file);
 
-        for (QJsonValueRef r : records) {
-            auto record = r.toObject();
-            if (record["filename"].isString()) {
-                pics.push_back(record["filename"].toString());
-                quotes.push_back(record["caption"].toString());
-            } else if (record["filename"].isArray()) {
-                auto array = record["filename"].toArray();
-                for (QJsonValueRef name : array) {
-                    pics.push_back(name.toString());
-                    quotes.push_back(record["caption"].toString().toUtf8());
-                }
-            }
-        }
-
-        if (!quotes.empty() && !pics.empty()) {
-            draw(0);
-            show_text(0);
-            set_enabled(true);
+        if (!records.empty()) {
+            set_mode(CONFIG_READING);
+            set_enabled(current_mode);
+            display(0);
         }
         show_status();
     });
@@ -86,36 +71,85 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     connect(ui->back, &QPushButton::clicked, [this]() {
-        if (pic_index == pic_end_index) {
-            pic_end_index = 0;
+        switch (current_mode) {
+        case CONFIG_CREATION:
+            if (pic_index == pic_end_index) {
+                pic_end_index = 0;
+            }
+        {
+            int& current_index = pic_index > pic_end_index ? pic_index : pic_end_index;
+            if (current_index == 0) break;
+            draw(--current_index);
         }
-        int& current_index = pic_index > pic_end_index ? pic_index : pic_end_index;
-        if (current_index == 0) return;
-        draw(--current_index);
+            break;
+        case CONFIG_READING:
+            pic_end_index = 0;
+            display(--pic_index);
+            break;
+        default:
+            break;
+        }
     });
 
     connect(ui->add, &QPushButton::clicked, [this]() {
-        pic_end_index = qMax(pic_index, pic_end_index) + 1;
-        draw(pic_end_index);
+        switch (current_mode) {
+        case CONFIG_CREATION:
+            pic_end_index = qMax(pic_index, pic_end_index) + 1;
+            draw(pic_end_index);
+            break;
+        case CONFIG_READING:
+            ++pic_end_index;
+            display(pic_index);
+            break;
+        default:
+            break;
+        }
     });
 
     connect(ui->ok, &QPushButton::clicked, [this]() {
-        register_record();
-        pic_index = qMax(pic_index, pic_end_index) + 1;
-        pic_end_index = 0;
-        ui->make_private->setChecked(false);
-
-        if (pic_index < pics.size()) {
-            draw(pic_index);
-            show_text(++quote_index);
-        } else {
-            save_title_config();
+        switch (current_mode) {
+        case CONFIG_CREATION:
+            register_record();
+            pic_index = qMax(pic_index, pic_end_index) + 1;
+            pic_end_index = 0;
+            ui->make_private->setChecked(false);
+            if (pic_index < pics.size()) {
+                draw(pic_index);
+                show_text(++quote_index);
+            } else {
+                save_title_config();
+                set_mode(IDLE);
+            }
+            break;
+        case CONFIG_READING:
+            pic_end_index = 0;
+            display(++pic_index);
+            break;
+        default:
+            break;
         }
     });
 }
 
 MainWindow::~MainWindow() {
     delete ui;
+}
+
+void MainWindow::set_mode(Mode mode) {
+    current_mode = mode;
+    quote_index = pic_index = pic_end_index = 0;
+    switch (mode) {
+    case CONFIG_CREATION:
+        ui->ok->setText("Готово");
+        ui->add->setText("Добавить");
+        break;
+    case CONFIG_READING:
+        ui->ok->setText("Далее");
+        ui->add->setText("Листать");
+        break;
+    default:
+        break;
+    }
 }
 
 void MainWindow::load() {
@@ -150,24 +184,20 @@ QJsonObject MainWindow::json_object(const QString& filepath) {
 
 void MainWindow::register_record() {
     QJsonObject record;
-    if (pic_index < pic_end_index) {
-        QJsonArray pic_array;
-        for (int i = pic_index; i <= pic_end_index; ++i) {
-            pic_array.push_back(pics[i]);
-        }
-        record["filename"] = pic_array;
-    } else {
-        record["filename"] = pics[pic_index];
+    QJsonArray pic_array;
+    for (int i = pic_index; i <= qMax(pic_index, pic_end_index); ++i) {
+        pic_array.push_back(pics[i]);
     }
+    record["filename"] = pic_array;
     record["caption"] = ui->text->toPlainText();
     record["public"] = !ui->make_private->isChecked();
     record_array.push_back(record);
 }
 
-void MainWindow::read_quote_file(QFile& file) {
+bool MainWindow::read_quote_file(QFile& file) {
     if (!file.open(QIODevice::ReadOnly)) {
         ui->statusBar->showMessage("Не удалось открыть файл с цитатами.");
-        return;
+        return false;
     }
     QTextStream in(&file);
     in.setCodec("UTF-8");
@@ -177,8 +207,27 @@ void MainWindow::read_quote_file(QFile& file) {
     file.close();
     if (!quotes.empty()) {
         show_text(0);
+        set_enabled(!pics.empty());
+        return true;
+    } else return false;
+}
+
+void MainWindow::read_title_config(const QJsonObject& json_file) {
+    auto title = json_file.value("title").toString();
+    dir = QDir(screenshots_location + title);
+    auto records_array = json_file.value("screens").toArray();
+
+    for (QJsonValueRef r : records_array) {
+        Record record;
+        auto object = r.toObject();
+        record.quote = object["caption"].toString();
+        record.is_public = object["public"].toBool();
+        auto filename_array = object["filename"].toArray();
+        for (QJsonValueRef name : filename_array) {
+            record.pics.push_back(name.toString());
+        }
+        records.push_back(record);
     }
-    set_enabled(!pics.empty());
 }
 
 void MainWindow::save_title_config() {
@@ -199,21 +248,28 @@ void MainWindow::save_title_config() {
 void MainWindow::set_enabled(bool enable) {
     ui->back->setEnabled(enable);
     ui->ok->setEnabled(enable);
-    ui->skip->setEnabled(enable);
+    ui->skip->setEnabled(enable && current_mode == CONFIG_CREATION);
     ui->add->setEnabled(enable);
     ui->text->setEnabled(enable);
     ui->make_private->setEnabled(enable);
-
-    if (!enable) return;
-    quote_index = pic_index = pic_end_index = 0;
 }
 
 QPixmap MainWindow::scaled(const QImage& source) {
     return QPixmap::fromImage(source.scaled(ui->image->geometry().size(), Qt::KeepAspectRatio));
 }
 
+void MainWindow::display(int index) {
+    auto image = QImage(dir.path() + QDir::separator() + records[index].pics[pic_end_index]);
+    ui->image->setPixmap(scaled(image));
+    ui->text->setText(records[index].quote);
+    bool reached_end = index + 1 >= records.size();
+    bool listing_on = pic_end_index + 1 < records[index].pics.size();
+    ui->add->setEnabled(listing_on && !reached_end);
+    ui->ok->setEnabled(!reached_end);
+    ui->back->setEnabled(index > 0);
+}
+
 void MainWindow::draw(int index) {
-    qDebug() << dir.path() + QDir::separator() + pics[index];
     auto image = QImage(dir.path() + QDir::separator() + pics[index]);
     ui->image->setPixmap(scaled(image));
     bool reached_end = index + 1 >= pics.size();
@@ -232,7 +288,9 @@ void MainWindow::show_status() {
         ui->statusBar->showMessage("Загружено " + QString().setNum(pics.size()) + " кадров. Откройте документ с цитатами.");
     } else if (pics.empty() && !quotes.empty()) {
         ui->statusBar->showMessage("Загружено " + QString().setNum(quotes.size()) + " цитат. Откройте папку с кадрами.");
-    } else {
+    } else if (records.empty()) {
         ui->statusBar->showMessage("Загружено кадров: " + QString().setNum(pics.size()) + ", цитат: " + QString().setNum(quotes.size()) + ".");
+    } else {
+         ui->statusBar->showMessage("Загружено " + QString().setNum(records.size()) + " записей.");
     }
 }
