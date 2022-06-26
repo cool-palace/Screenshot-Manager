@@ -4,10 +4,20 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    manager(new QNetworkAccessManager())
 {
     ui->setupUi(this);
     load();
+
+    connect(ui->test,  &QAction::triggered, [this]() {
+        QString url = "https://api.vk.com/method/photos.get?v=5.131&access_token=" + access_token
+                    + "&owner_id=-" + group_id
+                    + "&album_id=" + "264658780";
+//        QString url = "https://sun9-18.userapi.com/impf/c854220/v854220118/97a62/KJpe1Zi2Fao.jpg?size=1024x768&quality=96&sign=975b9ccc6782172fd983cc152b6bda19&c_uniq_tag=1olr0LVZHiJgGvENGxUdijc29AQwm3rtrm515peXszY";
+                manager->get(QNetworkRequest(QUrl(url)));
+    });
+    connect(manager, &QNetworkAccessManager::finished, this, &MainWindow::get_reply);
 
     connect(ui->open_folder, &QAction::triggered, [this]() {
         if (ui->ok->isEnabled()) {
@@ -135,6 +145,46 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
+void MainWindow::get_reply(QNetworkReply *response) {
+    response->deleteLater();
+    if (response->error() != QNetworkReply::NoError) return;
+    auto reply = QJsonDocument::fromJson(response->readAll()).object();
+    get_urls(reply);
+
+//    save_albums(reply);
+//    QFile file("berserk.json");
+//    save_json(reply, file);
+//    {
+//    QImageReader reader(response);
+//    QImage loaded_image = reader.read();
+//    ui->image->setPixmap(scaled(loaded_image));
+//    }
+}
+
+void MainWindow::get_urls(const QJsonObject & reply) {
+    auto array = reply["response"].toObject()["items"].toArray();
+    for (const QJsonValueRef item : array) {
+        auto url = item.toObject()["sizes"].toArray().last().toObject()["url"].toString();
+        urls.push_back(url);
+    }
+}
+
+void MainWindow::save_albums(const QJsonObject& reply) {
+//    QString url = "https://api.vk.com/method/photos.getAlbums?v=5.131&access_token=" + access_token
+//                + "&group_id=" + group_id;
+    QFile file("albums.json");
+    QJsonObject albums_config;
+    auto items = reply["response"].toObject()["items"].toArray();
+    for (const QJsonValueRef album : items) {
+        auto album_object = album.toObject();
+        auto title = album_object["title"].toString();
+        int album_id = album_object["id"].toInt();
+        albums_config[title] = album_id;
+    }
+    auto message = save_json(albums_config, file) ? "Список альбомов сохранён." : "Не удалось сохранить список альбомов.";
+    ui->statusBar->showMessage(message);
+}
+
 void MainWindow::set_mode(Mode mode) {
     current_mode = mode;
     quote_index = pic_index = pic_end_index = 0;
@@ -154,12 +204,14 @@ void MainWindow::set_mode(Mode mode) {
 
 void MainWindow::load() {
     auto json_file = json_object("config.json");
-    if (!json_file.contains("screenshots") || !json_file.contains("docs")) {
+    if (!json_file.contains("screenshots") || !json_file.contains("docs") || !json_file.contains("presets")) {
         ui->statusBar->showMessage("Не удалось прочитать конфигурационный файл.");
         return;
     }
     screenshots_location = json_file.value("screenshots").toString();
     quotes_location = json_file.value("docs").toString();
+    presets_location = json_file.value("presets").toString();
+    access_token = json_file.value("access_token").toString();
     if (!QDir(screenshots_location).exists() || !QDir(quotes_location).exists()) {
         screenshots_location = QString();
         quotes_location = QString();
@@ -174,7 +226,6 @@ QJsonObject MainWindow::json_object(const QString& filepath) {
     if (!config.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return QJsonObject();
     }
-
     QString s = QString::fromUtf8(config.readAll());
     config.close();
     QJsonDocument doc = QJsonDocument::fromJson(s.toUtf8());
@@ -231,18 +282,23 @@ void MainWindow::read_title_config(const QJsonObject& json_file) {
 }
 
 void MainWindow::save_title_config() {
-    QFile file(dir.dirName() + ".json");
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        return;
-    }
+    QFile file(presets_location + dir.dirName() + ".json");
     QJsonObject object;
     object["title"] = dir.dirName();
     object["screens"] = record_array;
+    auto message = save_json(object, file) ? "Конфигурационный файл сохранён." : "Не удалось сохранить файл.";
+    ui->statusBar->showMessage(message);
+}
+
+bool MainWindow::save_json(const QJsonObject& object, QFile& file) {
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        return false;
+    }
     QTextStream out(&file);
     out.setCodec("UTF-8");
     out << QJsonDocument(object).toJson();
     file.close();
-    ui->statusBar->showMessage("Конфигурационный файл сохранён.");
+    return true;
 }
 
 void MainWindow::set_enabled(bool enable) {
