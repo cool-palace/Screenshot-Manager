@@ -11,6 +11,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QImageReader>
+#include "vk_manager.h"
 
 namespace Ui {
 class MainWindow;
@@ -28,7 +29,8 @@ class MainWindow : public QMainWindow
     enum Mode {
         IDLE,
         CONFIG_CREATION,
-        CONFIG_READING
+        CONFIG_READING,
+        ADDING_LINKS
     };
 
 public:
@@ -37,15 +39,18 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QNetworkAccessManager* manager;
+//    QNetworkAccessManager* manager;
+    VK_Manager* manager;
     const QString group_id = "42265360";
     Mode current_mode = IDLE;
-    void get_reply(QNetworkReply*);
+    QJsonObject reply(QNetworkReply*);
+    QImage image(QNetworkReply*);
     void load();
     void register_record();
     void save_title_config();
     void read_title_config(const QJsonObject&);
     bool read_quote_file(QFile&);
+    bool open_json();
     bool save_json(const QJsonObject&, QFile&);
     void save_albums(const QJsonObject& );
     void set_mode(Mode);
@@ -67,6 +72,7 @@ private:
     QPixmap scaled(const QImage& source);
     void set_enabled(bool);
     void display(int);
+//    void display(const QString&);
     void draw(int);
     void show_text(int);
     void show_status();

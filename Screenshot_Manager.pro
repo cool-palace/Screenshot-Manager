@@ -26,10 +26,12 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+        vk_manager.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+        vk_manager.h
 
 FORMS += \
         mainwindow.ui

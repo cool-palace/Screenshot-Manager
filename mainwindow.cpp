@@ -4,20 +4,23 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    manager(new QNetworkAccessManager())
+    ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     load();
+    manager = new VK_Manager(access_token);
 
-    connect(ui->test,  &QAction::triggered, [this]() {
-        QString url = "https://api.vk.com/method/photos.get?v=5.131&access_token=" + access_token
-                    + "&owner_id=-" + group_id
-                    + "&album_id=" + "264658780";
-//        QString url = "https://sun9-18.userapi.com/impf/c854220/v854220118/97a62/KJpe1Zi2Fao.jpg?size=1024x768&quality=96&sign=975b9ccc6782172fd983cc152b6bda19&c_uniq_tag=1olr0LVZHiJgGvENGxUdijc29AQwm3rtrm515peXszY";
-                manager->get(QNetworkRequest(QUrl(url)));
+    connect(manager, &VK_Manager::albums_ready, [this](QNetworkReply *response) {
+        save_albums(this->reply(response));
     });
-    connect(manager, &QNetworkAccessManager::finished, this, &MainWindow::get_reply);
+
+    connect(manager, &VK_Manager::photos_ready, [this](QNetworkReply *response) {
+        get_urls(this->reply(response));
+    });
+
+    connect(manager, &VK_Manager::image_ready, [this](QNetworkReply *response) {
+        ui->image->setPixmap(scaled(this->image(response)));
+    });
 
     connect(ui->open_folder, &QAction::triggered, [this]() {
         if (ui->ok->isEnabled()) {
@@ -53,25 +56,23 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     connect(ui->open_json, &QAction::triggered, [this]() {
-        if (ui->ok->isEnabled()) {
-            pics.clear();
-            quotes.clear();
-        }
-        auto filepath = QFileDialog::getOpenFileName(nullptr, "Открыть json-файл",
-                                                     QCoreApplication::applicationDirPath(),
-                                                     "Файлы (*.json)");
-        auto json_file = json_object(filepath);
-        if (!json_file.contains("title") || !json_file.contains("screens")) {
-            ui->statusBar->showMessage("Неверный формат конфигурационного файла.");
+        if (!open_json()) {
             return;
         }
-        read_title_config(json_file);
+        set_mode(CONFIG_READING);
+        set_enabled(current_mode);
+        display(0);
+        show_status();
+    });
 
-        if (!records.empty()) {
-            set_mode(CONFIG_READING);
-            set_enabled(current_mode);
-            display(0);
+    connect(ui->open_preset, &QAction::triggered, [this]() {
+        if (!open_json()) {
+            return;
         }
+        set_mode(ADDING_LINKS);
+        set_enabled(current_mode);
+        draw(0);
+        display(0);
         show_status();
     });
 
@@ -145,11 +146,12 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::get_reply(QNetworkReply *response) {
+QJsonObject MainWindow::reply(QNetworkReply *response) {
     response->deleteLater();
-    if (response->error() != QNetworkReply::NoError) return;
+    if (response->error() != QNetworkReply::NoError) return QJsonObject();
     auto reply = QJsonDocument::fromJson(response->readAll()).object();
-    get_urls(reply);
+    return reply;
+//    get_urls(reply);
 
 //    save_albums(reply);
 //    QFile file("berserk.json");
@@ -161,6 +163,12 @@ void MainWindow::get_reply(QNetworkReply *response) {
 //    }
 }
 
+QImage MainWindow::image(QNetworkReply *response) {
+    QImageReader reader(response);
+    QImage loaded_image = reader.read();
+    return loaded_image;
+}
+
 void MainWindow::get_urls(const QJsonObject & reply) {
     auto array = reply["response"].toObject()["items"].toArray();
     for (const QJsonValueRef item : array) {
@@ -169,9 +177,24 @@ void MainWindow::get_urls(const QJsonObject & reply) {
     }
 }
 
+bool MainWindow::open_json() {
+    if (ui->ok->isEnabled()) {
+        pics.clear();
+        quotes.clear();
+    }
+    auto filepath = QFileDialog::getOpenFileName(nullptr, "Открыть json-файл",
+                                                 QCoreApplication::applicationDirPath(),
+                                                 "Файлы (*.json)");
+    auto json_file = json_object(filepath);
+    if (!json_file.contains("title") || !json_file.contains("screens")) {
+        ui->statusBar->showMessage("Неверный формат файла.");
+        return false;
+    }
+    read_title_config(json_file);
+    return !records.empty();
+}
+
 void MainWindow::save_albums(const QJsonObject& reply) {
-//    QString url = "https://api.vk.com/method/photos.getAlbums?v=5.131&access_token=" + access_token
-//                + "&group_id=" + group_id;
     QFile file("albums.json");
     QJsonObject albums_config;
     auto items = reply["response"].toObject()["items"].toArray();
@@ -189,7 +212,7 @@ void MainWindow::set_mode(Mode mode) {
     current_mode = mode;
     quote_index = pic_index = pic_end_index = 0;
     switch (mode) {
-    case CONFIG_CREATION:
+    case CONFIG_CREATION: case ADDING_LINKS:
         ui->ok->setText("Готово");
         ui->add->setText("Добавить");
         break;
@@ -307,7 +330,7 @@ void MainWindow::set_enabled(bool enable) {
     ui->skip->setEnabled(enable && current_mode == CONFIG_CREATION);
     ui->add->setEnabled(enable);
     ui->text->setEnabled(enable);
-    ui->make_private->setEnabled(enable);
+    ui->make_private->setEnabled(enable && current_mode == CONFIG_CREATION);
 }
 
 QPixmap MainWindow::scaled(const QImage& source) {
@@ -315,8 +338,10 @@ QPixmap MainWindow::scaled(const QImage& source) {
 }
 
 void MainWindow::display(int index) {
-    auto image = QImage(dir.path() + QDir::separator() + records[index].pics[pic_end_index]);
-    ui->image->setPixmap(scaled(image));
+    if (current_mode == CONFIG_READING) {
+        auto image = QImage(dir.path() + QDir::separator() + records[index].pics[pic_end_index]);
+        ui->image->setPixmap(scaled(image));
+    }
     ui->text->setText(records[index].quote);
     bool reached_end = index + 1 >= records.size();
     bool listing_on = pic_end_index + 1 < records[index].pics.size();
@@ -326,9 +351,22 @@ void MainWindow::display(int index) {
 }
 
 void MainWindow::draw(int index) {
-    auto image = QImage(dir.path() + QDir::separator() + pics[index]);
-    ui->image->setPixmap(scaled(image));
-    bool reached_end = index + 1 >= pics.size();
+    bool reached_end;
+    switch (current_mode) {
+    case CONFIG_CREATION:
+    {
+        auto image = QImage(dir.path() + QDir::separator() + pics[index]);
+        ui->image->setPixmap(scaled(image));
+        reached_end = index + 1 >= pics.size();
+    }
+        break;
+    case ADDING_LINKS:
+        manager->get_url(urls[index]);
+        reached_end = index + 1 >= urls.size();
+        break;
+    default:
+        break;
+    }
     ui->skip->setEnabled(!reached_end);
     ui->add->setEnabled(!reached_end);
     ui->back->setEnabled(index > 0);
