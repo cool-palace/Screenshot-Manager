@@ -23,7 +23,8 @@ class MainWindow : public QMainWindow
     struct Record {
         QString quote;
         QStringList pics;
-        QStringList links;
+        QList<int> ids;
+//        QStringList links;
         bool is_public;
     };
     enum Mode {
@@ -39,7 +40,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
-//    QNetworkAccessManager* manager;
     VK_Manager* manager;
     const QString group_id = "42265360";
     Mode current_mode = IDLE;
@@ -53,17 +53,22 @@ private:
     bool open_json();
     bool save_json(const QJsonObject&, QFile&);
     void save_albums(const QJsonObject& );
+    void load_albums();
     void set_mode(Mode);
     void get_urls(const QJsonObject&);
+    void get_ids(const QJsonObject&);
+    QString album_id(const QString&);
     QJsonObject json_object(const QString& filepath);
     QString screenshots_location;
     QString quotes_location;
-    QString presets_location;
+    QString configs_location;
     QString access_token;
+    QMap<QString, int> album_ids;
     QDir dir;
     QStringList pics;
     QStringList quotes;
-    QStringList urls;
+    QStringList urls; //
+    QList<int> photo_ids;
     QVector<Record> records;
     QJsonArray record_array;
     int pic_index;

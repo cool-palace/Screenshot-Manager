@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     load();
+    load_albums();
     manager = new VK_Manager(access_token);
 
     connect(manager, &VK_Manager::albums_ready, [this](QNetworkReply *response) {
@@ -15,7 +16,9 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     connect(manager, &VK_Manager::photos_ready, [this](QNetworkReply *response) {
-        get_urls(this->reply(response));
+//        get_urls(this->reply(response));
+        get_ids(this->reply(response));
+        ui->statusBar->showMessage(!photo_ids.empty() ? "Идентификаторы получены" : "Ошибка при получении идентификаторов");
     });
 
     connect(manager, &VK_Manager::image_ready, [this](QNetworkReply *response) {
@@ -36,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
             set_mode(CONFIG_CREATION);
             set_enabled(current_mode);
         }
+        manager->get_photos(QString().setNum(album_ids[dir.dirName()]));
         show_status();
         if (!pics.empty()) {
             draw(0);
@@ -151,16 +155,6 @@ QJsonObject MainWindow::reply(QNetworkReply *response) {
     if (response->error() != QNetworkReply::NoError) return QJsonObject();
     auto reply = QJsonDocument::fromJson(response->readAll()).object();
     return reply;
-//    get_urls(reply);
-
-//    save_albums(reply);
-//    QFile file("berserk.json");
-//    save_json(reply, file);
-//    {
-//    QImageReader reader(response);
-//    QImage loaded_image = reader.read();
-//    ui->image->setPixmap(scaled(loaded_image));
-//    }
 }
 
 QImage MainWindow::image(QNetworkReply *response) {
@@ -174,6 +168,14 @@ void MainWindow::get_urls(const QJsonObject & reply) {
     for (const QJsonValueRef item : array) {
         auto url = item.toObject()["sizes"].toArray().last().toObject()["url"].toString();
         urls.push_back(url);
+    }
+}
+
+void MainWindow::get_ids(const QJsonObject & reply) {
+    auto array = reply["response"].toObject()["items"].toArray();
+    for (const QJsonValueRef item : array) {
+        auto id = item.toObject()["id"].toInt();
+        photo_ids.push_back(id);
     }
 }
 
@@ -227,13 +229,13 @@ void MainWindow::set_mode(Mode mode) {
 
 void MainWindow::load() {
     auto json_file = json_object("config.json");
-    if (!json_file.contains("screenshots") || !json_file.contains("docs") || !json_file.contains("presets")) {
+    if (!json_file.contains("screenshots") || !json_file.contains("docs") || !json_file.contains("configs")) {
         ui->statusBar->showMessage("Не удалось прочитать конфигурационный файл.");
         return;
     }
     screenshots_location = json_file.value("screenshots").toString();
     quotes_location = json_file.value("docs").toString();
-    presets_location = json_file.value("presets").toString();
+    configs_location = json_file.value("configs").toString();
     access_token = json_file.value("access_token").toString();
     if (!QDir(screenshots_location).exists() || !QDir(quotes_location).exists()) {
         screenshots_location = QString();
@@ -242,6 +244,13 @@ void MainWindow::load() {
         return;
     }
     ui->statusBar->showMessage("Конфигурация успешно загружена.");
+}
+
+void MainWindow::load_albums() {
+    auto json_file = json_object("albums.json");
+    for (const auto& key : json_file.keys()) {
+        album_ids.insert(key, json_file[key].toInt());
+    }
 }
 
 QJsonObject MainWindow::json_object(const QString& filepath) {
@@ -258,11 +267,13 @@ QJsonObject MainWindow::json_object(const QString& filepath) {
 
 void MainWindow::register_record() {
     QJsonObject record;
-    QJsonArray pic_array;
+    QJsonArray pic_array, id_array;
     for (int i = pic_index; i <= qMax(pic_index, pic_end_index); ++i) {
         pic_array.push_back(pics[i]);
+        id_array.push_back(photo_ids[i]);
     }
-    record["filename"] = pic_array;
+    record["filenames"] = pic_array;
+    record["photo_ids"] = id_array;
     record["caption"] = ui->text->toPlainText();
     record["public"] = !ui->make_private->isChecked();
     record_array.push_back(record);
@@ -296,18 +307,23 @@ void MainWindow::read_title_config(const QJsonObject& json_file) {
         auto object = r.toObject();
         record.quote = object["caption"].toString();
         record.is_public = object["public"].toBool();
-        auto filename_array = object["filename"].toArray();
+        auto filename_array = object["filenames"].toArray();
         for (QJsonValueRef name : filename_array) {
             record.pics.push_back(name.toString());
+        }
+        auto id_array = object["photo_ids"].toArray();
+        for (QJsonValueRef id : id_array) {
+            record.ids.push_back(id.toInt());
         }
         records.push_back(record);
     }
 }
 
 void MainWindow::save_title_config() {
-    QFile file(presets_location + dir.dirName() + ".json");
+    QFile file(configs_location + dir.dirName() + ".json");
     QJsonObject object;
     object["title"] = dir.dirName();
+    object["album_id"] = album_ids[dir.dirName()];
     object["screens"] = record_array;
     auto message = save_json(object, file) ? "Конфигурационный файл сохранён." : "Не удалось сохранить файл.";
     ui->statusBar->showMessage(message);
@@ -352,21 +368,21 @@ void MainWindow::display(int index) {
 
 void MainWindow::draw(int index) {
     bool reached_end;
-    switch (current_mode) {
-    case CONFIG_CREATION:
-    {
+//    switch (current_mode) {
+//    case CONFIG_CREATION:
+//    {
         auto image = QImage(dir.path() + QDir::separator() + pics[index]);
         ui->image->setPixmap(scaled(image));
         reached_end = index + 1 >= pics.size();
-    }
-        break;
-    case ADDING_LINKS:
-        manager->get_url(urls[index]);
-        reached_end = index + 1 >= urls.size();
-        break;
-    default:
-        break;
-    }
+//    }
+//        break;
+//    case ADDING_LINKS:
+//        manager->get_url(urls[index]);
+//        reached_end = index + 1 >= urls.size();
+//        break;
+//    default:
+//        break;
+//    }
     ui->skip->setEnabled(!reached_end);
     ui->add->setEnabled(!reached_end);
     ui->back->setEnabled(index > 0);
