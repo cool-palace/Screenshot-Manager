@@ -30,8 +30,7 @@ class MainWindow : public QMainWindow
     enum Mode {
         IDLE,
         CONFIG_CREATION,
-        CONFIG_READING,
-        ADDING_LINKS
+        CONFIG_READING
     };
 
 public:
@@ -54,9 +53,9 @@ private:
     bool save_json(const QJsonObject&, QFile&);
     void save_albums(const QJsonObject& );
     void load_albums();
-    void set_mode(Mode);
     void get_urls(const QJsonObject&);
     void get_ids(const QJsonObject&);
+    void set_mode(Mode);
     QString album_id(const QString&);
     QJsonObject json_object(const QString& filepath);
     QString screenshots_location;
@@ -77,9 +76,10 @@ private:
     QPixmap scaled(const QImage& source);
     void set_enabled(bool);
     void display(int);
-//    void display(const QString&);
     void draw(int);
     void show_text(int);
+    bool initialization_status();
+    bool read_config_status();
     void show_status();
 };
 

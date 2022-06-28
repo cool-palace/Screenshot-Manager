@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(manager, &VK_Manager::photos_ready, [this](QNetworkReply *response) {
 //        get_urls(this->reply(response));
         get_ids(this->reply(response));
-        ui->statusBar->showMessage(!photo_ids.empty() ? "Идентификаторы получены" : "Ошибка при получении идентификаторов");
+        this->initialization_status();
     });
 
     connect(manager, &VK_Manager::image_ready, [this](QNetworkReply *response) {
@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->open_folder, &QAction::triggered, [this]() {
         if (ui->ok->isEnabled()) {
             quotes.clear();
+            photo_ids.clear();
         }
         pics.clear();
         dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
@@ -35,15 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
         pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
 
         QFile file(quotes_location + dir.dirName() + ".txt");
-        if (!quotes_location.isEmpty() && read_quote_file(file)) {
-            set_mode(CONFIG_CREATION);
-            set_enabled(current_mode);
-        }
+        read_quote_file(file);
         manager->get_photos(QString().setNum(album_ids[dir.dirName()]));
-        show_status();
-        if (!pics.empty()) {
-            draw(0);
-        }
     });
 
     connect(ui->open_doc, &QAction::triggered, [this]() {
@@ -59,23 +53,11 @@ MainWindow::MainWindow(QWidget *parent) :
         show_status();
     });
 
-    connect(ui->open_json, &QAction::triggered, [this]() {
+    connect(ui->open_config, &QAction::triggered, [this]() {
         if (!open_json()) {
             return;
         }
         set_mode(CONFIG_READING);
-        set_enabled(current_mode);
-        display(0);
-        show_status();
-    });
-
-    connect(ui->open_preset, &QAction::triggered, [this]() {
-        if (!open_json()) {
-            return;
-        }
-        set_mode(ADDING_LINKS);
-        set_enabled(current_mode);
-        draw(0);
         display(0);
         show_status();
     });
@@ -83,6 +65,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->skip, &QPushButton::clicked, [this]() {
         pic_index = qMax(pic_index, pic_end_index) + 1;
         draw(pic_index);
+        show_status();
     });
 
     connect(ui->back, &QPushButton::clicked, [this]() {
@@ -104,6 +87,7 @@ MainWindow::MainWindow(QWidget *parent) :
         default:
             break;
         }
+        show_status();
     });
 
     connect(ui->add, &QPushButton::clicked, [this]() {
@@ -119,6 +103,7 @@ MainWindow::MainWindow(QWidget *parent) :
         default:
             break;
         }
+        show_status();
     });
 
     connect(ui->ok, &QPushButton::clicked, [this]() {
@@ -143,6 +128,7 @@ MainWindow::MainWindow(QWidget *parent) :
         default:
             break;
         }
+        show_status();
     });
 }
 
@@ -214,9 +200,10 @@ void MainWindow::set_mode(Mode mode) {
     current_mode = mode;
     quote_index = pic_index = pic_end_index = 0;
     switch (mode) {
-    case CONFIG_CREATION: case ADDING_LINKS:
+    case CONFIG_CREATION:
         ui->ok->setText("Готово");
         ui->add->setText("Добавить");
+        draw(0);
         break;
     case CONFIG_READING:
         ui->ok->setText("Далее");
@@ -225,12 +212,13 @@ void MainWindow::set_mode(Mode mode) {
     default:
         break;
     }
+    set_enabled(mode);
 }
 
 void MainWindow::load() {
     auto json_file = json_object("config.json");
     if (!json_file.contains("screenshots") || !json_file.contains("docs") || !json_file.contains("configs")) {
-        ui->statusBar->showMessage("Не удалось прочитать конфигурационный файл.");
+        ui->statusBar->showMessage("Неверный формат конфигурационного файла.");
         return;
     }
     screenshots_location = json_file.value("screenshots").toString();
@@ -366,23 +354,10 @@ void MainWindow::display(int index) {
     ui->back->setEnabled(index > 0);
 }
 
-void MainWindow::draw(int index) {
-    bool reached_end;
-//    switch (current_mode) {
-//    case CONFIG_CREATION:
-//    {
-        auto image = QImage(dir.path() + QDir::separator() + pics[index]);
-        ui->image->setPixmap(scaled(image));
-        reached_end = index + 1 >= pics.size();
-//    }
-//        break;
-//    case ADDING_LINKS:
-//        manager->get_url(urls[index]);
-//        reached_end = index + 1 >= urls.size();
-//        break;
-//    default:
-//        break;
-//    }
+void MainWindow::draw(int index = 0) {
+    auto image = QImage(dir.path() + QDir::separator() + pics[index]);
+    ui->image->setPixmap(scaled(image));
+    bool reached_end = index + 1 >= pics.size();
     ui->skip->setEnabled(!reached_end);
     ui->add->setEnabled(!reached_end);
     ui->back->setEnabled(index > 0);
@@ -393,14 +368,43 @@ void MainWindow::show_text(int index) {
     ui->text->setText(quotes[index]);
 }
 
+bool MainWindow::initialization_status() {
+    if (pics.empty()) {
+        ui->statusBar->showMessage("Выбранная папка не содержит кадров.");
+        return false;
+    }
+    if (quotes.empty()) {
+        ui->statusBar->showMessage("Не удалось загрузить документ с цитатами.");
+        return false;
+    }
+    if (photo_ids.empty()) {
+        ui->statusBar->showMessage("Не удалось получить идентификаторы кадров.");
+        return false;
+    }
+    if (pics.size() != photo_ids.size()) {
+        ui->statusBar->showMessage("Необходимо провести синхронизацию локального и облачного хранилища.");
+        return false;
+    }
+    if (pics.size() < quotes.size()) {
+        ui->statusBar->showMessage("Необходимо проверить состав кадров и цитат.");
+        return false;
+    }
+    ui->statusBar->showMessage("Загружено кадров: " + QString().setNum(pics.size()) + ", цитат: " + QString().setNum(quotes.size()) + ".");
+    set_mode(CONFIG_CREATION);
+    return true;
+}
+
 void MainWindow::show_status() {
-    if (!pics.empty() && quotes.empty()) {
-        ui->statusBar->showMessage("Загружено " + QString().setNum(pics.size()) + " кадров. Откройте документ с цитатами.");
-    } else if (pics.empty() && !quotes.empty()) {
-        ui->statusBar->showMessage("Загружено " + QString().setNum(quotes.size()) + " цитат. Откройте папку с кадрами.");
-    } else if (records.empty()) {
-        ui->statusBar->showMessage("Загружено кадров: " + QString().setNum(pics.size()) + ", цитат: " + QString().setNum(quotes.size()) + ".");
-    } else {
-         ui->statusBar->showMessage("Загружено " + QString().setNum(records.size()) + " записей.");
+    if (current_mode == CONFIG_CREATION) {
+        bool multiple_pics = pic_end_index > 0;
+        QString s_quote = QString().setNum(quote_index + 1) + " из " + QString().setNum(quotes.size());
+        QString s_pic = multiple_pics ? "кадры " : "кадр ";
+        QString s_pic_index = QString().setNum(pic_index + 1) + (multiple_pics ? "-" + QString().setNum(pic_end_index + 1) : "");
+        QString s_pic_from = " из " + QString().setNum(pics.size());
+        ui->statusBar->showMessage("Цитата " + s_quote + ", " + s_pic + s_pic_index + s_pic_from);
+    } else if (current_mode == CONFIG_READING) {
+        QString s_rec = QString().setNum(pic_index + 1) + " из " + QString().setNum(records.size());
+        QString s_pic = QString().setNum(pic_end_index + 1) + " из " + QString().setNum(records[pic_index].pics.size());
+        ui->statusBar->showMessage("Запись " + s_rec + ", " + s_pic);
     }
 }

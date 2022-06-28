@@ -203,10 +203,8 @@ p, li { white-space: pre-wrap; }
     <bool>false</bool>
    </attribute>
    <addaction name="open_folder"/>
-   <addaction name="open_doc"/>
-   <addaction name="open_preset"/>
-   <addaction name="open_json"/>
-   <addaction name="test"/>
+   <addaction name="open_config"/>
+   <addaction name="get_albums"/>
   </widget>
   <action name="open_folder">
    <property name="text">
@@ -218,19 +216,14 @@ p, li { white-space: pre-wrap; }
     <string>Открыть документ</string>
    </property>
   </action>
-  <action name="open_json">
+  <action name="open_config">
    <property name="text">
-    <string>Открыть JSON</string>
+    <string>Открыть конфиг</string>
    </property>
   </action>
-  <action name="test">
+  <action name="get_albums">
    <property name="text">
-    <string>test</string>
-   </property>
-  </action>
-  <action name="open_preset">
-   <property name="text">
-    <string>Открыть заготовку</string>
+    <string>Записать альбомы</string>
    </property>
   </action>
  </widget>
