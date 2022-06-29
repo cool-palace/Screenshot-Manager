@@ -20,7 +20,7 @@ signals:
 
 public slots:
     void get_url(const QString& url);
-    void get_photos(const QString& album_id, const QString& photo_ids = "");
+    void get_photos(int album_id, const QString& photo_ids = "");
     void get_albums();
 
 private slots:

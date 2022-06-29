@@ -8,17 +8,21 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     load();
-    load_albums();
+//    load_albums();
     manager = new VK_Manager(access_token);
 
     connect(manager, &VK_Manager::albums_ready, [this](QNetworkReply *response) {
-        save_albums(this->reply(response));
+        load_albums(this->reply(response));
+//        save_albums(this->reply(response));
+        disconnect(this->manager, &QNetworkAccessManager::finished, this->manager, &VK_Manager::albums_ready);
     });
+    manager->get_albums();
 
     connect(manager, &VK_Manager::photos_ready, [this](QNetworkReply *response) {
 //        get_urls(this->reply(response));
         get_ids(this->reply(response));
         this->initialization_status();
+        disconnect(this->manager, &QNetworkAccessManager::finished, this->manager, &VK_Manager::photos_ready);
     });
 
     connect(manager, &VK_Manager::image_ready, [this](QNetworkReply *response) {
@@ -26,18 +30,14 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     connect(ui->open_folder, &QAction::triggered, [this]() {
-        if (ui->ok->isEnabled()) {
-            quotes.clear();
-            photo_ids.clear();
-        }
-        pics.clear();
+        clear_all();
         dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
                                                      screenshots_location));
         pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
 
         QFile file(quotes_location + dir.dirName() + ".txt");
         read_quote_file(file);
-        manager->get_photos(QString().setNum(album_ids[dir.dirName()]));
+        manager->get_photos(album_ids[dir.dirName()]);
     });
 
     connect(ui->open_doc, &QAction::triggered, [this]() {
@@ -136,6 +136,12 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
+void MainWindow::clear_all() {
+    quotes.clear();
+    photo_ids.clear();
+    pics.clear();
+}
+
 QJsonObject MainWindow::reply(QNetworkReply *response) {
     response->deleteLater();
     if (response->error() != QNetworkReply::NoError) return QJsonObject();
@@ -166,12 +172,9 @@ void MainWindow::get_ids(const QJsonObject & reply) {
 }
 
 bool MainWindow::open_json() {
-    if (ui->ok->isEnabled()) {
-        pics.clear();
-        quotes.clear();
-    }
+    clear_all();
     auto filepath = QFileDialog::getOpenFileName(nullptr, "Открыть json-файл",
-                                                 QCoreApplication::applicationDirPath(),
+                                                 configs_location,
                                                  "Файлы (*.json)");
     auto json_file = json_object(filepath);
     if (!json_file.contains("title") || !json_file.contains("screens")) {
@@ -194,6 +197,24 @@ void MainWindow::save_albums(const QJsonObject& reply) {
     }
     auto message = save_json(albums_config, file) ? "Список альбомов сохранён." : "Не удалось сохранить список альбомов.";
     ui->statusBar->showMessage(message);
+}
+
+void MainWindow::load_albums() {
+    auto json_file = json_object("albums.json");
+    for (const auto& key : json_file.keys()) {
+        album_ids.insert(key, json_file[key].toInt());
+    }
+}
+
+void MainWindow::load_albums(const QJsonObject& reply) {
+    QJsonObject albums_config;
+    auto items = reply["response"].toObject()["items"].toArray();
+    for (const QJsonValueRef album : items) {
+        auto album_object = album.toObject();
+        auto title = album_object["title"].toString();
+        int album_id = album_object["id"].toInt();
+        album_ids.insert(title, album_id);
+    }
 }
 
 void MainWindow::set_mode(Mode mode) {
@@ -232,13 +253,6 @@ void MainWindow::load() {
         return;
     }
     ui->statusBar->showMessage("Конфигурация успешно загружена.");
-}
-
-void MainWindow::load_albums() {
-    auto json_file = json_object("albums.json");
-    for (const auto& key : json_file.keys()) {
-        album_ids.insert(key, json_file[key].toInt());
-    }
 }
 
 QJsonObject MainWindow::json_object(const QString& filepath) {

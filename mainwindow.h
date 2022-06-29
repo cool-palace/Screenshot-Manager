@@ -44,6 +44,7 @@ private:
     Mode current_mode = IDLE;
     QJsonObject reply(QNetworkReply*);
     QImage image(QNetworkReply*);
+    void clear_all();
     void load();
     void register_record();
     void save_title_config();
@@ -51,8 +52,9 @@ private:
     bool read_quote_file(QFile&);
     bool open_json();
     bool save_json(const QJsonObject&, QFile&);
-    void save_albums(const QJsonObject& );
+    void save_albums(const QJsonObject&);
     void load_albums();
+    void load_albums(const QJsonObject&);
     void get_urls(const QJsonObject&);
     void get_ids(const QJsonObject&);
     void set_mode(Mode);

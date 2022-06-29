@@ -8,11 +8,11 @@ void VK_Manager::get_url(const QString& url) {
     get(QNetworkRequest(QUrl(url)));
 }
 
-void VK_Manager::get_photos(const QString& album_id, const QString& photo_ids) {
+void VK_Manager::get_photos(int album_id, const QString& photo_ids) {
     QString url = "https://api.vk.com/method/photos.get?v=5.131"
                   "&access_token=" + access_token
                 + "&owner_id=-" + group_id
-                + "&album_id=" + album_id
+                + "&album_id=" + QString().setNum(album_id)
                 + (!photo_ids.isEmpty() ? "&photo_ids=" : "") + photo_ids;
     get_url(url);
     connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::photos_ready);
