@@ -4,25 +4,24 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    manager(new VK_Manager())
 {
     ui->setupUi(this);
     load();
 //    load_albums();
-    manager = new VK_Manager(access_token);
 
     connect(manager, &VK_Manager::albums_ready, [this](QNetworkReply *response) {
-        load_albums(this->reply(response));
+        load_albums(reply(response));
 //        save_albums(this->reply(response));
-        disconnect(this->manager, &QNetworkAccessManager::finished, this->manager, &VK_Manager::albums_ready);
+        disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::albums_ready);
     });
-    manager->get_albums();
 
     connect(manager, &VK_Manager::photos_ready, [this](QNetworkReply *response) {
 //        get_urls(this->reply(response));
-        get_ids(this->reply(response));
-        this->initialization_status();
-        disconnect(this->manager, &QNetworkAccessManager::finished, this->manager, &VK_Manager::photos_ready);
+        get_ids(reply(response));
+        set_enabled(initialization_status());
+        disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::photos_ready);
     });
 
     connect(manager, &VK_Manager::image_ready, [this](QNetworkReply *response) {
@@ -34,7 +33,6 @@ MainWindow::MainWindow(QWidget *parent) :
         dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
                                                      screenshots_location));
         pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
-
         QFile file(quotes_location + dir.dirName() + ".txt");
         read_quote_file(file);
         manager->get_photos(album_ids[dir.dirName()]);
@@ -118,6 +116,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 show_text(++quote_index);
             } else {
                 save_title_config();
+                update_quote_file();
                 set_mode(IDLE);
             }
             break;
@@ -140,6 +139,7 @@ void MainWindow::clear_all() {
     quotes.clear();
     photo_ids.clear();
     pics.clear();
+    records.clear();
 }
 
 QJsonObject MainWindow::reply(QNetworkReply *response) {
@@ -245,7 +245,9 @@ void MainWindow::load() {
     screenshots_location = json_file.value("screenshots").toString();
     quotes_location = json_file.value("docs").toString();
     configs_location = json_file.value("configs").toString();
-    access_token = json_file.value("access_token").toString();
+    int client_id = json_file.value("client").toInt();
+    manager->get_access_token(client_id);
+//    access_token = json_file.value("access_token").toString();
     if (!QDir(screenshots_location).exists() || !QDir(quotes_location).exists()) {
         screenshots_location = QString();
         quotes_location = QString();
@@ -268,17 +270,14 @@ QJsonObject MainWindow::json_object(const QString& filepath) {
 }
 
 void MainWindow::register_record() {
-    QJsonObject record;
-    QJsonArray pic_array, id_array;
+    Record record;
     for (int i = pic_index; i <= qMax(pic_index, pic_end_index); ++i) {
-        pic_array.push_back(pics[i]);
-        id_array.push_back(photo_ids[i]);
+        record.pics.push_back(pics[i]);
+        record.ids.push_back(photo_ids[i]);
     }
-    record["filenames"] = pic_array;
-    record["photo_ids"] = id_array;
-    record["caption"] = ui->text->toPlainText();
-    record["public"] = !ui->make_private->isChecked();
-    record_array.push_back(record);
+    record.quote = ui->text->toPlainText();
+    record.is_public = !ui->make_private->isChecked();
+    records.push_back(record);
 }
 
 bool MainWindow::read_quote_file(QFile& file) {
@@ -297,6 +296,21 @@ bool MainWindow::read_quote_file(QFile& file) {
         set_enabled(!pics.empty());
         return true;
     } else return false;
+}
+
+bool MainWindow::update_quote_file() {
+    QFile file(quotes_location + dir.dirName() + ".txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        ui->statusBar->showMessage("Не удалось открыть файл с цитатами.");
+        return false;
+    }
+    QTextStream out(&file);
+    out.setCodec("UTF-8");
+    for (const auto& record : records) {
+        out << record.quote + "\r\n";
+    }
+    file.close();
+    return true;
 }
 
 void MainWindow::read_title_config(const QJsonObject& json_file) {
@@ -321,7 +335,25 @@ void MainWindow::read_title_config(const QJsonObject& json_file) {
     }
 }
 
+QJsonObject MainWindow::Record::to_json() const {
+    QJsonObject current_record;
+    QJsonArray pic_array, id_array;
+    for (int i = 0; i < pics.size(); ++i) {
+        pic_array.push_back(pics[i]);
+        id_array.push_back(ids[i]);
+    }
+    current_record["filenames"] = pic_array;
+    current_record["photo_ids"] = id_array;
+    current_record["caption"] = quote;
+    current_record["public"] = is_public;
+    return current_record;
+}
+
 void MainWindow::save_title_config() {
+    QJsonArray record_array;
+    for (const auto& record : records) {
+        record_array.push_back(record.to_json());
+    }
     QFile file(configs_location + dir.dirName() + ".json");
     QJsonObject object;
     object["title"] = dir.dirName();
@@ -391,17 +423,21 @@ bool MainWindow::initialization_status() {
         ui->statusBar->showMessage("Не удалось загрузить документ с цитатами.");
         return false;
     }
-    if (photo_ids.empty()) {
-        ui->statusBar->showMessage("Не удалось получить идентификаторы кадров.");
-        return false;
-    }
-    if (pics.size() != photo_ids.size()) {
+    if (pics.size() != photo_ids.size() && !photo_ids.empty()) {
         ui->statusBar->showMessage("Необходимо провести синхронизацию локального и облачного хранилища.");
         return false;
     }
     if (pics.size() < quotes.size()) {
         ui->statusBar->showMessage("Необходимо проверить состав кадров и цитат.");
         return false;
+    }
+    if (photo_ids.empty()) {
+        if (!ui->offline->isChecked()) {
+            ui->statusBar->showMessage("Не удалось получить идентификаторы кадров. ");
+            return false;
+        } else {
+            photo_ids.resize(pics.size());
+        }
     }
     ui->statusBar->showMessage("Загружено кадров: " + QString().setNum(pics.size()) + ", цитат: " + QString().setNum(quotes.size()) + ".");
     set_mode(CONFIG_CREATION);
@@ -419,6 +455,6 @@ void MainWindow::show_status() {
     } else if (current_mode == CONFIG_READING) {
         QString s_rec = QString().setNum(pic_index + 1) + " из " + QString().setNum(records.size());
         QString s_pic = QString().setNum(pic_end_index + 1) + " из " + QString().setNum(records[pic_index].pics.size());
-        ui->statusBar->showMessage("Запись " + s_rec + ", " + s_pic);
+        ui->statusBar->showMessage("Запись " + s_rec + ", кадр " + s_pic);
     }
 }
