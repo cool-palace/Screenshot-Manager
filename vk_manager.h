@@ -22,6 +22,8 @@ public slots:
     void get_photos(int album_id, const QString& photo_ids = "");
     void get_albums();
     void get_access_token(int client_id);
+    void set_access_token(const QString&);
+    QString current_token() const { return access_token; };
 
 private slots:
     void access_token_ready(QNetworkReply *);

@@ -12,9 +12,13 @@ MainWindow::MainWindow(QWidget *parent) :
 //    load_albums();
 
     connect(manager, &VK_Manager::albums_ready, [this](QNetworkReply *response) {
-        load_albums(reply(response));
-//        save_albums(this->reply(response));
         disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::albums_ready);
+        if (!load_albums(reply(response))) {
+            manager->get_access_token(client_id);
+            manager->get_albums();
+            update_config();
+        }
+//        save_albums(this->reply(response));
     });
 
     connect(manager, &VK_Manager::photos_ready, [this](QNetworkReply *response) {
@@ -199,15 +203,19 @@ void MainWindow::save_albums(const QJsonObject& reply) {
     ui->statusBar->showMessage(message);
 }
 
-void MainWindow::load_albums() {
+bool MainWindow::load_albums() {
     auto json_file = json_object("albums.json");
     for (const auto& key : json_file.keys()) {
         album_ids.insert(key, json_file[key].toInt());
     }
+    return true;
 }
 
-void MainWindow::load_albums(const QJsonObject& reply) {
+bool MainWindow::load_albums(const QJsonObject& reply) {
     QJsonObject albums_config;
+    if (reply.contains("error")) {
+        return false;
+    }
     auto items = reply["response"].toObject()["items"].toArray();
     for (const QJsonValueRef album : items) {
         auto album_object = album.toObject();
@@ -215,6 +223,7 @@ void MainWindow::load_albums(const QJsonObject& reply) {
         int album_id = album_object["id"].toInt();
         album_ids.insert(title, album_id);
     }
+    return true;
 }
 
 void MainWindow::set_mode(Mode mode) {
@@ -245,9 +254,10 @@ void MainWindow::load() {
     screenshots_location = json_file.value("screenshots").toString();
     quotes_location = json_file.value("docs").toString();
     configs_location = json_file.value("configs").toString();
-    int client_id = json_file.value("client").toInt();
-    manager->get_access_token(client_id);
-//    access_token = json_file.value("access_token").toString();
+    access_token = json_file.value("access_token").toString();
+    client_id = json_file.value("client").toInt();
+    manager->set_access_token(access_token);
+    manager->get_albums();
     if (!QDir(screenshots_location).exists() || !QDir(quotes_location).exists()) {
         screenshots_location = QString();
         quotes_location = QString();
@@ -255,6 +265,14 @@ void MainWindow::load() {
         return;
     }
     ui->statusBar->showMessage("Конфигурация успешно загружена.");
+}
+
+void MainWindow::update_config() {
+    auto config_path = "config.json";
+    auto json_file = json_object(config_path);
+    json_file["access_token"] = manager->current_token();
+    QFile config(config_path);
+    save_json(json_file, config);
 }
 
 QJsonObject MainWindow::json_object(const QString& filepath) {
@@ -423,7 +441,7 @@ bool MainWindow::initialization_status() {
         ui->statusBar->showMessage("Не удалось загрузить документ с цитатами.");
         return false;
     }
-    if (pics.size() != photo_ids.size() && !photo_ids.empty()) {
+    if (!ui->offline->isChecked() && pics.size() != photo_ids.size() && !photo_ids.empty()) {
         ui->statusBar->showMessage("Необходимо провести синхронизацию локального и облачного хранилища.");
         return false;
     }

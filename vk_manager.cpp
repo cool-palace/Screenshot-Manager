@@ -14,6 +14,7 @@ void VK_Manager::get_photos(int album_id, const QString& photo_ids) {
                   "&access_token=" + access_token
                 + "&owner_id=-" + group_id
                 + "&album_id=" + QString().setNum(album_id)
+                + "&count=255"
                 + (!photo_ids.isEmpty() ? "&photo_ids=" : "") + photo_ids;
     get_url(url);
     connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::photos_ready);
@@ -41,6 +42,7 @@ void VK_Manager::access_token_ready(QNetworkReply* response) {
     response->deleteLater();
     if (response->error() != QNetworkReply::NoError) return;
     auto url = response->url().url();
+    qDebug() << url;
     QRegularExpression regex("access_token=(.+?)&");
     auto match = regex.match(url);
     if (match.hasMatch()) {
@@ -48,4 +50,8 @@ void VK_Manager::access_token_ready(QNetworkReply* response) {
     }
     disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::access_token_ready);
     get_albums();
+}
+
+void VK_Manager::set_access_token(const QString& token) {
+    access_token = token;
 }

@@ -42,6 +42,7 @@ private:
     Ui::MainWindow *ui;
     VK_Manager* manager;
     const QString group_id = "42265360";
+    int client_id;
     Mode current_mode = IDLE;
     QString screenshots_location;
     QString quotes_location;
@@ -62,6 +63,7 @@ private:
     QImage image(QNetworkReply*);
     void clear_all();
     void load();
+    void update_config();
     void register_record();
     void save_title_config();
     void read_title_config(const QJsonObject&);
@@ -70,8 +72,8 @@ private:
     bool open_json();
     bool save_json(const QJsonObject&, QFile&);
     void save_albums(const QJsonObject&);
-    void load_albums();
-    void load_albums(const QJsonObject&);
+    bool load_albums();
+    bool load_albums(const QJsonObject&);
     void get_urls(const QJsonObject&);
     void get_ids(const QJsonObject&);
     void set_mode(Mode);
