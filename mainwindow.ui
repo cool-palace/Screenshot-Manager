@@ -204,7 +204,7 @@ p, li { white-space: pre-wrap; }
    </attribute>
    <addaction name="open_folder"/>
    <addaction name="open_config"/>
-   <addaction name="get_albums"/>
+   <addaction name="compile"/>
    <addaction name="offline"/>
   </widget>
   <action name="open_folder">
@@ -222,11 +222,6 @@ p, li { white-space: pre-wrap; }
     <string>Открыть конфиг</string>
    </property>
   </action>
-  <action name="get_albums">
-   <property name="text">
-    <string>Записать альбомы</string>
-   </property>
-  </action>
   <action name="offline">
    <property name="checkable">
     <bool>true</bool>
@@ -236,6 +231,16 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Работа оффлайн</string>
+   </property>
+  </action>
+  <action name="get_albums">
+   <property name="text">
+    <string>Записать альбомы</string>
+   </property>
+  </action>
+  <action name="compile">
+   <property name="text">
+    <string>Компилировать</string>
    </property>
   </action>
  </widget>

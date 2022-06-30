@@ -20,6 +20,15 @@ void VK_Manager::get_photos(int album_id, const QString& photo_ids) {
     connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::photos_ready);
 }
 
+void VK_Manager::get_photo(int photo_id) {
+    QString url = "https://api.vk.com/method/photos.getById?v=5.131"
+                  "&access_token=" + access_token
+                + "&photos=-" + group_id + '_' + QString().setNum(photo_id)
+                + "&photo_sizes=1";
+    get_url(url);
+    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::photo_ready);
+}
+
 void VK_Manager::get_albums() {
     QString url = "https://api.vk.com/method/photos.getAlbums?v=5.131"
                   "&access_token=" + access_token
@@ -42,7 +51,6 @@ void VK_Manager::access_token_ready(QNetworkReply* response) {
     response->deleteLater();
     if (response->error() != QNetworkReply::NoError) return;
     auto url = response->url().url();
-    qDebug() << url;
     QRegularExpression regex("access_token=(.+?)&");
     auto match = regex.match(url);
     if (match.hasMatch()) {

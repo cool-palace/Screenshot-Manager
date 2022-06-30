@@ -26,7 +26,8 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp \
+        screenshots.cpp \
+        setup.cpp \
         vk_manager.cpp
 
 HEADERS += \

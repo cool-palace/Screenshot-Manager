@@ -52,41 +52,39 @@ private:
     QDir dir;
     QStringList pics;
     QStringList quotes;
-    QStringList urls; //
     QVector<int> photo_ids;
     QVector<Record> records;
     int pic_index;
     int quote_index;
     int pic_end_index = 0;
 
-    QJsonObject reply(QNetworkReply*);
-    QImage image(QNetworkReply*);
+    // Setup functions
+    void initialize();
     void clear_all();
-    void load();
-    void update_config();
-    void register_record();
-    void save_title_config();
-    void read_title_config(const QJsonObject&);
+    void set_mode(Mode);
+    void set_enabled(bool);
+    QPixmap scaled(const QImage& source);
+    QJsonObject json_object(const QString&);
+    bool save_json(const QJsonObject&, QFile&);
+    QJsonObject reply(QNetworkReply*);
+    void get_link(const QJsonObject&);
+    QImage image(QNetworkReply*);
+    bool data_ready();
+    void show_status();
+
+    // Screenshot management
+    bool load_albums(const QJsonObject&);
+    void get_ids(const QJsonObject&);
     bool read_quote_file(QFile&);
     bool update_quote_file();
-    bool open_json();
-    bool save_json(const QJsonObject&, QFile&);
-    void save_albums(const QJsonObject&);
-    bool load_albums();
-    bool load_albums(const QJsonObject&);
-    void get_urls(const QJsonObject&);
-    void get_ids(const QJsonObject&);
-    void set_mode(Mode);
-    QString album_id(const QString&);
-    QJsonObject json_object(const QString&);
-    QPixmap scaled(const QImage& source);
-    void set_enabled(bool);
+    void register_record();
+    bool open_title_config();
+    void read_title_config(const QJsonObject&);
+    void save_title_config();
+    void compile_configs();
     void display(int);
     void draw(int);
     void show_text(int);
-    bool initialization_status();
-    bool read_config_status();
-    void show_status();
 };
 
 #endif // MAINWINDOW_H
