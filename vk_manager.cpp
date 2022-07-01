@@ -17,7 +17,7 @@ void VK_Manager::get_photos(int album_id, const QString& photo_ids) {
                 + "&count=255"
                 + (!photo_ids.isEmpty() ? "&photo_ids=" : "") + photo_ids;
     get_url(url);
-    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::photos_ready);
+    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::image_ready);
 }
 
 void VK_Manager::get_photo(int photo_id) {

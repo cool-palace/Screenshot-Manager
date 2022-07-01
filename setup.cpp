@@ -22,8 +22,8 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     connect(manager, &VK_Manager::photo_ready, [this](QNetworkReply *response) {
-        get_link(reply(response));
         disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::photo_ready);
+        get_link(reply(response));
     });
 
     connect(manager, &VK_Manager::image_ready, [this](QNetworkReply *response) {
@@ -52,9 +52,18 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
 
     connect(ui->skip, &QPushButton::clicked, [this]() {
-        pic_index = qMax(pic_index, pic_end_index) + 1;
-        draw(pic_index);
-        show_status();
+        switch (current_mode) {
+        case CONFIG_CREATION:
+            pic_index = qMax(pic_index, pic_end_index) + 1;
+            draw(pic_index);
+            show_status();
+            break;
+        case CONFIG_READING:
+            save_title_config();
+            break;
+        default:
+            break;
+        }
     });
 
     connect(ui->back, &QPushButton::clicked, [this]() {
@@ -112,6 +121,13 @@ MainWindow::MainWindow(QWidget *parent) :
             }
             break;
         case CONFIG_READING:
+            if (record_edited) {
+                update_record();
+                if (pic_index + 1 == records.size()) {
+                    ui->ok->setEnabled(false);
+                    break;
+                }
+            }
             pic_end_index = 0;
             display(++pic_index);
             break;
@@ -163,13 +179,16 @@ void MainWindow::set_mode(Mode mode) {
     case CONFIG_CREATION:
         ui->ok->setText("Готово");
         ui->add->setText("Добавить");
+        ui->skip->setText("Пропустить");
         ui->make_private->setText("Скрыть");
         draw(0);
         break;
     case CONFIG_READING:
         ui->ok->setText("Далее");
         ui->add->setText("Листать");
+        ui->skip->setText("Сохранить");
         ui->make_private->setText("Скрыто");
+        connect(ui->make_private, &QPushButton::clicked, this, &MainWindow::set_edited);
         display(0);
         break;
     default:
@@ -188,6 +207,12 @@ void MainWindow::set_enabled(bool enable) {
     ui->add->setEnabled(enable && listing_enabled);
     ui->text->setEnabled(enable);
     ui->make_private->setEnabled(enable);
+}
+
+void MainWindow::set_edited() {
+    record_edited = true;
+    config_edited = true;
+    ui->ok->setEnabled(true);
 }
 
 QPixmap MainWindow::scaled(const QImage& source) {
@@ -225,8 +250,15 @@ QJsonObject MainWindow::reply(QNetworkReply *response) {
 }
 
 void MainWindow::get_link(const QJsonObject & reply) {
-    disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::photo_ready);
-    auto url = reply["response"].toArray().first().toObject()["sizes"].toArray().last().toObject()["src"].toString();
+    auto array = reply["response"].toArray().first().toObject()["sizes"].toArray();
+    QString url;
+    for (QJsonValueRef item : array) {
+        if (item.toObject()["type"].toString() == "z") {
+            url = item.toObject()["url"].toString();
+            break;
+        }
+    }
+    connect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::image_ready);
     manager->get_url(url);
 }
 

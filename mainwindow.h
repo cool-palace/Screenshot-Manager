@@ -57,12 +57,15 @@ private:
     int pic_index;
     int quote_index;
     int pic_end_index = 0;
+    bool record_edited;
+    bool config_edited;
 
     // Setup functions
     void initialize();
     void clear_all();
     void set_mode(Mode);
     void set_enabled(bool);
+    void set_edited();
     QPixmap scaled(const QImage& source);
     QJsonObject json_object(const QString&);
     bool save_json(const QJsonObject&, QFile&);
@@ -78,6 +81,7 @@ private:
     bool read_quote_file(QFile&);
     bool update_quote_file();
     void register_record();
+    void update_record();
     bool open_title_config();
     void read_title_config(const QJsonObject&);
     void save_title_config();

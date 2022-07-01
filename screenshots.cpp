@@ -68,6 +68,12 @@ void MainWindow::register_record() {
     records.push_back(record);
 }
 
+void MainWindow::update_record() {
+    records[pic_index].quote = ui->text->toPlainText();
+    records[pic_index].is_public = !ui->make_private->isChecked();
+    record_edited = false;
+}
+
 bool MainWindow::open_title_config() {
     clear_all();
     auto filepath = QFileDialog::getOpenFileName(nullptr, "Открыть конфигурационный файл",
@@ -116,6 +122,10 @@ void MainWindow::save_title_config() {
     auto message = save_json(object, file)
             ? "Конфигурационный файл сохранён."
             : "Не удалось сохранить файл.";
+    if (current_mode == CONFIG_READING) {
+        config_edited = false;
+        ui->skip->setEnabled(false);
+    }
     ui->statusBar->showMessage(message);
 }
 
@@ -151,9 +161,12 @@ void MainWindow::display(int index) {
         auto image = QImage(dir.path() + QDir::separator() + records[index].pics[pic_end_index]);
         ui->image->setPixmap(scaled(image));
     }
+    disconnect(ui->text, &QTextEdit::textChanged, this, &MainWindow::set_edited);
     ui->text->setText(records[index].quote);
+    connect(ui->text, &QTextEdit::textChanged, this, &MainWindow::set_edited);
     bool reached_end = index + 1 >= records.size();
     bool listing_on = pic_end_index + 1 < records[index].pics.size();
+    ui->skip->setEnabled(config_edited);
     ui->make_private->setChecked(!records[index].is_public);
     ui->add->setEnabled(listing_on && !reached_end);
     ui->ok->setEnabled(!reached_end);
