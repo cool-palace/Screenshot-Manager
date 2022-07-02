@@ -57,8 +57,8 @@ private:
     int pic_index;
     int quote_index;
     int pic_end_index = 0;
-    bool record_edited;
-    bool config_edited;
+    bool record_edited = false;
+    bool config_edited = false;
 
     // Setup functions
     void initialize();

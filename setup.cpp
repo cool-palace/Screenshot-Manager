@@ -15,10 +15,10 @@ MainWindow::MainWindow(QWidget *parent) :
         load_albums(reply(response));
     });
 
-    connect(manager, &VK_Manager::photos_ready, [this](QNetworkReply *response) {
+    connect(manager, &VK_Manager::photo_ids_ready, [this](QNetworkReply *response) {
+        disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::photo_ids_ready);
         get_ids(reply(response));
         set_mode(data_ready() ? CONFIG_CREATION : IDLE);
-        disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::photos_ready);
     });
 
     connect(manager, &VK_Manager::photo_ready, [this](QNetworkReply *response) {
@@ -27,8 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     connect(manager, &VK_Manager::image_ready, [this](QNetworkReply *response) {
-        ui->image->setPixmap(scaled(image(response)));
         disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::image_ready);
+        ui->image->setPixmap(scaled(image(response)));
     });
 
     connect(ui->open_folder, &QAction::triggered, [this]() {
@@ -37,8 +37,11 @@ MainWindow::MainWindow(QWidget *parent) :
                                                      screenshots_location));
         pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
         QFile file(quotes_location + dir.dirName() + ".txt");
-        read_quote_file(file);
-        manager->get_photos(album_ids[dir.dirName()]);
+        if (!read_quote_file(file)) {
+            clear_all();
+            return;
+        }
+        manager->get_photo_ids(album_ids[dir.dirName()]);
     });
 
     connect(ui->open_config, &QAction::triggered, [this]() {
@@ -125,6 +128,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 update_record();
                 if (pic_index + 1 == records.size()) {
                     ui->ok->setEnabled(false);
+                    ui->skip->setEnabled(true);
                     break;
                 }
             }
@@ -256,6 +260,14 @@ void MainWindow::get_link(const QJsonObject & reply) {
         if (item.toObject()["type"].toString() == "z") {
             url = item.toObject()["url"].toString();
             break;
+        }
+    }
+    if (url.isEmpty()) {
+        for (QJsonValueRef item : array) {
+            if (item.toObject()["type"].toString() == "y") {
+                url = item.toObject()["url"].toString();
+                break;
+            }
         }
     }
     connect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::image_ready);

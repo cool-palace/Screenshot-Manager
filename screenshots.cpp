@@ -140,9 +140,11 @@ void MainWindow::compile_configs() {
         auto array = object["screens"].toArray();
         for (QJsonValueRef item : array) {
             auto record = item.toObject();
-            record["title"] = title;
-            record["album_id"] = album_id;
-            resulting_array.push_back(record);
+            if (record["public"].toBool()) {
+                record["title"] = title;
+                record["album_id"] = album_id;
+                resulting_array.push_back(record);
+            }
         }
     }
     QJsonObject result;
@@ -167,15 +169,21 @@ void MainWindow::display(int index) {
     bool reached_end = index + 1 >= records.size();
     bool listing_on = pic_end_index + 1 < records[index].pics.size();
     ui->skip->setEnabled(config_edited);
+    disconnect(ui->make_private, &QPushButton::toggled, this, &MainWindow::set_edited);
     ui->make_private->setChecked(!records[index].is_public);
-    ui->add->setEnabled(listing_on && !reached_end);
+    connect(ui->make_private, &QPushButton::toggled, this, &MainWindow::set_edited);
+    ui->add->setEnabled(listing_on);
     ui->ok->setEnabled(!reached_end);
     ui->back->setEnabled(index > 0);
 }
 
 void MainWindow::draw(int index = 0) {
-    auto image = QImage(dir.path() + QDir::separator() + pics[index]);
-    ui->image->setPixmap(scaled(image));
+    if (!ui->offline->isChecked()) {
+        manager->get_photo(photo_ids[index]);
+    } else {
+        auto image = QImage(dir.path() + QDir::separator() + pics[index]);
+        ui->image->setPixmap(scaled(image));
+    }
     bool reached_end = index + 1 >= pics.size();
     ui->skip->setEnabled(!reached_end);
     ui->add->setEnabled(!reached_end);

@@ -14,13 +14,13 @@ public:
 
 signals:
     void albums_ready(QNetworkReply *);
-    void photos_ready(QNetworkReply *);
+    void photo_ids_ready(QNetworkReply *);
     void photo_ready(QNetworkReply *);
     void image_ready(QNetworkReply *);
 
 public slots:
     void get_url(const QString& url);
-    void get_photos(int album_id, const QString& photo_ids = "");
+    void get_photo_ids(int album_id, const QString& photo_ids = "");
     void get_photo(int photo_id);
     void get_albums();
     void get_access_token(int client_id);
