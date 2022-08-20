@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
+    connect(ui->reverse_index, &QAction::triggered, this, &MainWindow::save_reverse_index);
 
     connect(ui->skip, &QPushButton::clicked, [this]() {
         switch (current_mode) {

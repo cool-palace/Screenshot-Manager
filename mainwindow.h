@@ -86,6 +86,7 @@ private:
     void read_title_config(const QJsonObject&);
     void save_title_config();
     void compile_configs();
+    void save_reverse_index();
     void display(int);
     void draw(int);
     void show_text(int);

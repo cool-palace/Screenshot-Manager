@@ -133,25 +133,50 @@ void MainWindow::compile_configs() {
     QDir dir = QDir(configs_location);
     auto configs = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
     QJsonArray resulting_array;
+    QJsonArray hidden_array;
     for (const auto& config : configs) {
         auto object = json_object(configs_location + config);
-        auto title = object["title"].toString();
-        auto album_id = object["album_id"].toString();
+//        auto title = object["title"].toString();
+//        auto album_id = object["album_id"].toString();
         auto array = object["screens"].toArray();
         for (QJsonValueRef item : array) {
             auto record = item.toObject();
-            if (record["public"].toBool()) {
-                record["title"] = title;
-                record["album_id"] = album_id;
-                resulting_array.push_back(record);
-            }
+//                record["title"] = title;
+//                record["album_id"] = album_id;
+            (record["public"].toBool() ? resulting_array : hidden_array).push_back(record);
         }
     }
-    QJsonObject result;
+    QJsonObject result, hidden_result;
     result["records"] = resulting_array;
-    QFile file("total.json");
+    hidden_result["records"] = hidden_array;
+    QFile file(configs_location + "result\\public_records.json");
+    QFile hidden_file(configs_location + "result\\hidden_records.json");
+    save_json(hidden_result, hidden_file);
     auto message = save_json(result, file)
-            ? "Конфигурационный файл скомпилирован."
+            ? "Обработано конфигов: " + QString().setNum(configs.size()) + ", "
+              "скомпилировано публичных записей: " + QString().setNum(resulting_array.size()) + ", "
+              "скрытых записей: " + QString().setNum(hidden_array.size())
+            : "Не удалось сохранить файл.";
+    ui->statusBar->showMessage(message);
+}
+
+void MainWindow::save_reverse_index() {
+    auto json_file = json_object(configs_location + "result\\public_records.json");
+    if (!json_file.contains("records")) {
+        ui->statusBar->showMessage("Неверный формат файла.");
+        return;
+    }
+    QJsonObject result;
+    auto array = json_file["records"].toArray();
+    for (int index = 0; index < array.size(); ++index) {
+        auto id_array = array[index].toObject()["photo_ids"].toArray();
+        for (QJsonValueRef id : id_array) {
+            result[QString().setNum(id.toInt())] = index;
+        }
+    }
+    QFile file(configs_location + "result\\reverse_index.json");
+    auto message = save_json(result, file)
+            ? "Обратные индексы сохранены."
             : "Не удалось сохранить файл.";
     ui->statusBar->showMessage(message);
 }
