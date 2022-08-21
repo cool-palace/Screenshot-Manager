@@ -104,6 +104,7 @@ void MainWindow::read_title_config(const QJsonObject& json_file) {
         auto id_array = object["photo_ids"].toArray();
         for (QJsonValueRef id : id_array) {
             record.ids.push_back(id.toInt());
+            record.links.push_back(links_map[QString().setNum(id.toInt())].toString());
         }
         records.push_back(record);
     }
@@ -127,6 +128,18 @@ void MainWindow::save_title_config() {
         ui->skip->setEnabled(false);
     }
     ui->statusBar->showMessage(message);
+}
+
+void MainWindow::refactor_configs() {
+    links_map = json_object("links.json");
+    QDir dir = QDir(configs_location);
+    auto configs = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+    for (const auto& config : configs) {
+        records.clear();
+        auto json_file = json_object(configs_location + config);
+        read_title_config(json_file);
+        save_title_config();
+    }
 }
 
 void MainWindow::compile_configs() {
@@ -214,13 +227,15 @@ void MainWindow::show_text(int index) {
 
 QJsonObject MainWindow::Record::to_json() const {
     QJsonObject current_record;
-    QJsonArray pic_array, id_array;
+    QJsonArray pic_array, id_array, link_array;
     for (int i = 0; i < pics.size(); ++i) {
         pic_array.push_back(pics[i]);
         id_array.push_back(ids[i]);
+        link_array.push_back(links[i]);
     }
     current_record["filenames"] = pic_array;
     current_record["photo_ids"] = id_array;
+    current_record["links"] = link_array;
     current_record["caption"] = quote;
     current_record["public"] = is_public;
     return current_record;

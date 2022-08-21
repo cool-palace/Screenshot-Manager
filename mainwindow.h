@@ -24,7 +24,7 @@ class MainWindow : public QMainWindow
         QString quote;
         QStringList pics;
         QList<int> ids;
-//        QStringList links;
+        QStringList links;
         bool is_public;
         QJsonObject to_json() const;
     };
@@ -59,6 +59,7 @@ private:
     int pic_end_index = 0;
     bool record_edited = false;
     bool config_edited = false;
+    QJsonObject links_map;
 
     // Setup functions
     void initialize();
@@ -87,6 +88,7 @@ private:
     void save_title_config();
     void compile_configs();
     QJsonObject reverse_index(const QJsonArray&);
+    void refactor_configs();
     void display(int);
     void draw(int);
     void show_text(int);

@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
+    connect(ui->refactor, &QAction::triggered, this, &MainWindow::refactor_configs);
 
     connect(ui->skip, &QPushButton::clicked, [this]() {
         switch (current_mode) {

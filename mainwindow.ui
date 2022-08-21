@@ -205,6 +205,7 @@ p, li { white-space: pre-wrap; }
    <addaction name="open_folder"/>
    <addaction name="open_config"/>
    <addaction name="compile"/>
+   <addaction name="refactor"/>
    <addaction name="offline"/>
   </widget>
   <action name="open_folder">
@@ -241,6 +242,11 @@ p, li { white-space: pre-wrap; }
   <action name="compile">
    <property name="text">
     <string>Компилировать</string>
+   </property>
+  </action>
+  <action name="refactor">
+   <property name="text">
+    <string>Рефакторинг</string>
    </property>
   </action>
  </widget>
