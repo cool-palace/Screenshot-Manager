@@ -148,7 +148,9 @@ void MainWindow::compile_configs() {
     }
     QJsonObject result, hidden_result;
     result["records"] = resulting_array;
+    result["reverse_index"] = reverse_index(resulting_array);
     hidden_result["records"] = hidden_array;
+    hidden_result["reverse_index"] = reverse_index(hidden_array);
     QFile file(configs_location + "result\\public_records.json");
     QFile hidden_file(configs_location + "result\\hidden_records.json");
     save_json(hidden_result, hidden_file);
@@ -160,25 +162,15 @@ void MainWindow::compile_configs() {
     ui->statusBar->showMessage(message);
 }
 
-void MainWindow::save_reverse_index() {
-    auto json_file = json_object(configs_location + "result\\public_records.json");
-    if (!json_file.contains("records")) {
-        ui->statusBar->showMessage("Неверный формат файла.");
-        return;
-    }
+QJsonObject MainWindow::reverse_index(const QJsonArray& array) {
     QJsonObject result;
-    auto array = json_file["records"].toArray();
     for (int index = 0; index < array.size(); ++index) {
         auto id_array = array[index].toObject()["photo_ids"].toArray();
         for (QJsonValueRef id : id_array) {
             result[QString().setNum(id.toInt())] = index;
         }
     }
-    QFile file(configs_location + "result\\reverse_index.json");
-    auto message = save_json(result, file)
-            ? "Обратные индексы сохранены."
-            : "Не удалось сохранить файл.";
-    ui->statusBar->showMessage(message);
+    return result;
 }
 
 void MainWindow::display(int index) {
