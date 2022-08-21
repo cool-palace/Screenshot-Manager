@@ -20,8 +20,10 @@ bool MainWindow::load_albums(const QJsonObject& reply) {
 void MainWindow::get_ids(const QJsonObject & reply) {
     auto array = reply["response"].toObject()["items"].toArray();
     for (const QJsonValueRef item : array) {
-        auto id = item.toObject()["id"].toInt();
+        auto current_item = item.toObject();
+        auto id = current_item["id"].toInt();
         photo_ids.push_back(id);
+        links.push_back(link(current_item));
     }
 }
 
@@ -62,6 +64,7 @@ void MainWindow::register_record() {
     for (int i = pic_index; i <= qMax(pic_index, pic_end_index); ++i) {
         record.pics.push_back(pics[i]);
         record.ids.push_back(photo_ids[i]);
+        record.links.push_back(links[i]);
     }
     record.quote = ui->text->toPlainText();
     record.is_public = !ui->make_private->isChecked();
@@ -104,7 +107,10 @@ void MainWindow::read_title_config(const QJsonObject& json_file) {
         auto id_array = object["photo_ids"].toArray();
         for (QJsonValueRef id : id_array) {
             record.ids.push_back(id.toInt());
-            record.links.push_back(links_map[QString().setNum(id.toInt())].toString());
+        }
+        auto link_array = object["links"].toArray();
+        for (QJsonValueRef link : link_array) {
+            record.links.push_back(link.toString());
         }
         records.push_back(record);
     }
@@ -128,18 +134,6 @@ void MainWindow::save_title_config() {
         ui->skip->setEnabled(false);
     }
     ui->statusBar->showMessage(message);
-}
-
-void MainWindow::refactor_configs() {
-    links_map = json_object("links.json");
-    QDir dir = QDir(configs_location);
-    auto configs = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
-    for (const auto& config : configs) {
-        records.clear();
-        auto json_file = json_object(configs_location + config);
-        read_title_config(json_file);
-        save_title_config();
-    }
 }
 
 void MainWindow::compile_configs() {
@@ -188,7 +182,7 @@ QJsonObject MainWindow::reverse_index(const QJsonArray& array) {
 
 void MainWindow::display(int index) {
     if (!ui->offline->isChecked()) {
-        manager->get_photo(records[index].ids[pic_end_index]);
+        manager->get_photo(records[index].links[pic_end_index]);
     } else {
         auto image = QImage(dir.path() + QDir::separator() + records[index].pics[pic_end_index]);
         ui->image->setPixmap(scaled(image));
@@ -209,7 +203,7 @@ void MainWindow::display(int index) {
 
 void MainWindow::draw(int index = 0) {
     if (!ui->offline->isChecked()) {
-        manager->get_photo(photo_ids[index]);
+        manager->get_photo(links[index]);
     } else {
         auto image = QImage(dir.path() + QDir::separator() + pics[index]);
         ui->image->setPixmap(scaled(image));

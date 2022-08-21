@@ -21,10 +21,10 @@ MainWindow::MainWindow(QWidget *parent) :
         set_mode(data_ready() ? CONFIG_CREATION : IDLE);
     });
 
-    connect(manager, &VK_Manager::photo_ready, [this](QNetworkReply *response) {
-        disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::photo_ready);
-        get_link(reply(response));
-    });
+//    connect(manager, &VK_Manager::photo_ready, [this](QNetworkReply *response) {
+//        disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::photo_ready);
+//        get_link(reply(response));
+//    });
 
     connect(manager, &VK_Manager::image_ready, [this](QNetworkReply *response) {
         disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::image_ready);
@@ -254,8 +254,8 @@ QJsonObject MainWindow::reply(QNetworkReply *response) {
     return reply;
 }
 
-void MainWindow::get_link(const QJsonObject & reply) {
-    auto array = reply["response"].toArray().first().toObject()["sizes"].toArray();
+QString MainWindow::link(const QJsonObject & photo_item) {
+    auto array = photo_item["sizes"].toArray();
     QString url;
     for (QJsonValueRef item : array) {
         if (item.toObject()["type"].toString() == "z") {
@@ -271,8 +271,7 @@ void MainWindow::get_link(const QJsonObject & reply) {
             }
         }
     }
-    connect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::image_ready);
-    manager->get_url(url);
+    return url;
 }
 
 QImage MainWindow::image(QNetworkReply *response) {

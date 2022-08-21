@@ -29,6 +29,11 @@ void VK_Manager::get_photo(int photo_id) {
     connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::photo_ready);
 }
 
+void VK_Manager::get_photo(const QString& url) {
+    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::image_ready);
+    get_url(url);
+}
+
 void VK_Manager::get_albums() {
     QString url = "https://api.vk.com/method/photos.getAlbums?v=5.131"
                   "&access_token=" + access_token

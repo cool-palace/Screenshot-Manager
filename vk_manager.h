@@ -22,6 +22,7 @@ public slots:
     void get_url(const QString& url);
     void get_photo_ids(int album_id, const QString& photo_ids = "");
     void get_photo(int photo_id);
+    void get_photo(const QString& url);
     void get_albums();
     void get_access_token(int client_id);
     void set_access_token(const QString&);

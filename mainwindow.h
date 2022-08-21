@@ -53,13 +53,13 @@ private:
     QStringList pics;
     QStringList quotes;
     QVector<int> photo_ids;
+    QStringList links;
     QVector<Record> records;
     int pic_index;
     int quote_index;
     int pic_end_index = 0;
     bool record_edited = false;
     bool config_edited = false;
-    QJsonObject links_map;
 
     // Setup functions
     void initialize();
@@ -71,7 +71,7 @@ private:
     QJsonObject json_object(const QString&);
     bool save_json(const QJsonObject&, QFile&);
     QJsonObject reply(QNetworkReply*);
-    void get_link(const QJsonObject&);
+    QString link(const QJsonObject&);
     QImage image(QNetworkReply*);
     bool data_ready();
     void show_status();
