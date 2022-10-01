@@ -10,7 +10,7 @@ class VK_Manager : public QNetworkAccessManager
 {
     Q_OBJECT
 public:
-    VK_Manager(const QString& access_token = "");
+    VK_Manager();
 
 signals:
     void albums_ready(QNetworkReply *);

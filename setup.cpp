@@ -13,6 +13,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(manager, &VK_Manager::albums_ready, [this](QNetworkReply *response) {
         disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::albums_ready);
         load_albums(reply(response));
+        if (album_ids.empty()) {
+//            manager->get_access_token(client_id);
+            ui->statusBar->showMessage("Не удалось загрузить альбомы. Попробуйте авторизироваться вручную.");
+        }
     });
 
     connect(manager, &VK_Manager::photo_ids_ready, [this](QNetworkReply *response) {
@@ -53,13 +57,29 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
-    connect(ui->refactor, &QAction::triggered, this, &MainWindow::refactor_configs);
+    connect(ui->slider, &QAbstractSlider::valueChanged, [this](int value) {
+        pic_end_index = 0;
+        pic_index = value;
+        switch (current_mode) {
+        case CONFIG_CREATION:
+            draw(pic_index);
+            break;
+        case CONFIG_READING:
+            display(pic_index);
+            break;
+        default:
+            break;
+        }
+        show_status();
+    });
+//    connect(ui->refactor, &QAction::triggered, this, &MainWindow::refactor_configs);
 
     connect(ui->skip, &QPushButton::clicked, [this]() {
         switch (current_mode) {
         case CONFIG_CREATION:
             pic_index = qMax(pic_index, pic_end_index) + 1;
             draw(pic_index);
+            ui->slider->setValue(pic_index);
             show_status();
             break;
         case CONFIG_READING:
@@ -80,11 +100,13 @@ MainWindow::MainWindow(QWidget *parent) :
             int& current_index = pic_index > pic_end_index ? pic_index : pic_end_index;
             if (current_index == 0) break;
             draw(--current_index);
+            ui->slider->setValue(current_index);
         }
             break;
         case CONFIG_READING:
             pic_end_index = 0;
             display(--pic_index);
+            ui->slider->setValue(pic_index);
             break;
         default:
             break;
@@ -95,10 +117,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->add, &QPushButton::clicked, [this]() {
         switch (current_mode) {
         case CONFIG_CREATION:
+            // Adding one more image to current record
             pic_end_index = qMax(pic_index, pic_end_index) + 1;
             draw(pic_end_index);
+            ui->slider->setValue(pic_end_index);
             break;
         case CONFIG_READING:
+            // Showing next image in current record
             ++pic_end_index;
             display(pic_index);
             break;
@@ -117,6 +142,7 @@ MainWindow::MainWindow(QWidget *parent) :
             ui->make_private->setChecked(false);
             if (pic_index < pics.size()) {
                 draw(pic_index);
+                ui->slider->setValue(pic_index);
                 show_text(++quote_index);
             } else {
                 save_title_config();
@@ -135,6 +161,7 @@ MainWindow::MainWindow(QWidget *parent) :
             }
             pic_end_index = 0;
             display(++pic_index);
+            ui->slider->setValue(pic_index);
             break;
         default:
             break;
@@ -186,6 +213,7 @@ void MainWindow::set_mode(Mode mode) {
         ui->add->setText("Добавить");
         ui->skip->setText("Пропустить");
         ui->make_private->setText("Скрыть");
+        ui->slider->setMaximum(pics.size() - 1);
         draw(0);
         break;
     case CONFIG_READING:
@@ -193,6 +221,7 @@ void MainWindow::set_mode(Mode mode) {
         ui->add->setText("Листать");
         ui->skip->setText("Сохранить");
         ui->make_private->setText("Скрыто");
+        ui->slider->setMaximum(records.size() - 1);
         connect(ui->make_private, &QPushButton::clicked, this, &MainWindow::set_edited);
         display(0);
         break;
@@ -212,6 +241,8 @@ void MainWindow::set_enabled(bool enable) {
     ui->add->setEnabled(enable && listing_enabled);
     ui->text->setEnabled(enable);
     ui->make_private->setEnabled(enable);
+    ui->slider->setEnabled(enable);
+    ui->slider->setValue(0);
 }
 
 void MainWindow::set_edited() {

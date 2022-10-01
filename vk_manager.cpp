@@ -1,9 +1,8 @@
 #include "vk_manager.h"
 #include <QRegularExpression>
 
-VK_Manager::VK_Manager(const QString& access_token) :
-    QNetworkAccessManager(),
-    access_token(access_token) { }
+VK_Manager::VK_Manager() :
+    QNetworkAccessManager() { }
 
 void VK_Manager::get_url(const QString& url) {
     get(QNetworkRequest(QUrl(url)));
@@ -45,14 +44,14 @@ void VK_Manager::get_albums() {
 void VK_Manager::get_access_token(int client_id) {
     QString url = "https://oauth.vk.com/authorize"
                   "?client_id=" + QString().setNum(client_id) +
-                  "?display=page&scope=groups"
-                  "&response_type=token&v=5.131&state=1330"
-                  "method/photos.getAlbums?v=5.131";
+                  "?display=page&scope=groups,photos,offline"
+                  "&response_type=token&v=5.131&state=1330";
     get_url(url);
     connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::access_token_ready);
 }
 
 void VK_Manager::access_token_ready(QNetworkReply* response) {
+    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::access_token_ready);
     response->deleteLater();
     if (response->error() != QNetworkReply::NoError) return;
     auto url = response->url().url();
@@ -61,8 +60,6 @@ void VK_Manager::access_token_ready(QNetworkReply* response) {
     if (match.hasMatch()) {
         access_token = match.captured(1);
     }
-    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::access_token_ready);
-    get_albums();
 }
 
 void VK_Manager::set_access_token(const QString& token) {
