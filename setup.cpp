@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
     manager(new VK_Manager())
 {
     ui->setupUi(this);
+    get_hashtags();
     initialize();
 
     connect(manager, &VK_Manager::albums_ready, [this](QNetworkReply *response) {
@@ -175,6 +176,18 @@ MainWindow::~MainWindow() {
     delete manager;
 }
 
+void MainWindow::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Control) {
+        ui->stackedWidget->setCurrentIndex(1);
+    }
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Control) {
+        ui->stackedWidget->setCurrentIndex(0);
+    }
+}
+
 void MainWindow::initialize() {
     auto json_file = json_object("config.json");
     if (!json_file.contains("screenshots") || !json_file.contains("docs") || !json_file.contains("configs")) {
@@ -195,6 +208,31 @@ void MainWindow::initialize() {
         return;
     }
     ui->statusBar->showMessage("Конфигурация успешно загружена.");
+}
+
+void MainWindow::get_hashtags() {
+    QFile file("hashtags.txt");
+    if (!file.open(QIODevice::ReadOnly)) {
+        ui->statusBar->showMessage("Не удалось открыть файл с хэштегами.");
+    }
+    QTextStream in(&file);
+    in.setCodec("UTF-8");
+    std::set<QString> tags;
+    while (!in.atEnd()) {
+        QString tag = in.readLine();
+        if (tag[0] == '#') {
+            tag.remove(0,1);
+        }
+        tags.insert(tag);
+    }
+    file.close();
+    int i = 0;
+    for (const auto& tag : tags) {
+        hashtags.insert(tag, new QPushButton(tag));
+        ui->tag_grid->addWidget(hashtags[tag], i / 8, i % 8);
+        ++i;
+    }
+    ui->tag_grid->addWidget(new QPushButton("+"), i / 8, i % 8);
 }
 
 void MainWindow::clear_all() {

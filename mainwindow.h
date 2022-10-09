@@ -11,7 +11,9 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QImageReader>
+#include <QKeyEvent>
 #include "vk_manager.h"
+#include <set>
 
 namespace Ui {
 class MainWindow;
@@ -54,6 +56,7 @@ private:
     QStringList quotes;
     QVector<int> photo_ids;
     QStringList links;
+    QMap<QString, QWidget*> hashtags;
     QVector<Record> records;
     int pic_index;
     int quote_index;
@@ -63,6 +66,7 @@ private:
 
     // Setup functions
     void initialize();
+    void get_hashtags();
     void clear_all();
     void set_mode(Mode);
     void set_enabled(bool);
@@ -75,6 +79,8 @@ private:
     QImage image(QNetworkReply*);
     bool data_ready();
     void show_status();
+    void keyPressEvent(QKeyEvent*) override;
+    void keyReleaseEvent(QKeyEvent*) override;
 
     // Screenshot management
     bool load_albums(const QJsonObject&);
