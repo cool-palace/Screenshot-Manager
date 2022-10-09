@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include <QImageReader>
 #include <QKeyEvent>
+#include <QInputDialog>
 #include "vk_manager.h"
 #include <set>
 
@@ -43,6 +44,7 @@ public:
 private:
     Ui::MainWindow *ui;
     VK_Manager* manager;
+    QPushButton* add_tag_button;
     const QString group_id = "42265360";
     int client_id;
     Mode current_mode = IDLE;
@@ -56,7 +58,7 @@ private:
     QStringList quotes;
     QVector<int> photo_ids;
     QStringList links;
-    QMap<QString, QWidget*> hashtags;
+    QMap<QString, QPushButton*> hashtags;
     QVector<Record> records;
     int pic_index;
     int quote_index;
@@ -67,6 +69,8 @@ private:
     // Setup functions
     void initialize();
     void get_hashtags();
+    void create_hashtag_button(const QString&);
+    void update_hashtag_grid();
     void clear_all();
     void set_mode(Mode);
     void set_enabled(bool);

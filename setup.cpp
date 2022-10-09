@@ -8,6 +8,18 @@ MainWindow::MainWindow(QWidget *parent) :
     manager(new VK_Manager())
 {
     ui->setupUi(this);
+    add_tag_button = new QPushButton("+");
+    add_tag_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    connect(add_tag_button, &QPushButton::clicked, [this]() {
+        bool ok;
+        QString text = QInputDialog::getText(this, tr("Добавление хэштега"),
+                                                   tr("Введите новый хэштег:"), QLineEdit::Normal,
+                                                   "", &ok);
+        if (ok && !text.isEmpty() && !hashtags.contains(text)) {
+            create_hashtag_button(text);
+            update_hashtag_grid();
+        }
+    });
     get_hashtags();
     initialize();
 
@@ -226,13 +238,35 @@ void MainWindow::get_hashtags() {
         tags.insert(tag);
     }
     file.close();
-    int i = 0;
     for (const auto& tag : tags) {
-        hashtags.insert(tag, new QPushButton(tag));
-        ui->tag_grid->addWidget(hashtags[tag], i / 8, i % 8);
+        create_hashtag_button(tag);
+    }
+    update_hashtag_grid();
+}
+
+void MainWindow::create_hashtag_button(const QString& text) {
+    hashtags.insert(text, new QPushButton(text));
+    hashtags[text]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    connect(hashtags[text], &QPushButton::clicked, [this, text]() {
+        QRegularExpression regex("#" + text);
+        QRegularExpressionMatchIterator i = regex.globalMatch(ui->text->toPlainText());
+        if (!i.hasNext()) {
+            ui->text->setText(ui->text->toPlainText() + " #" + text);
+        }
+    });
+}
+
+void MainWindow::update_hashtag_grid() {
+    QLayoutItem *child;
+    while ((child = ui->tag_grid->takeAt(0)) != nullptr) {
+        // Clearing buttons from the grid
+    }
+    int i = 0;
+    for (const auto& button : hashtags) {
+        ui->tag_grid->addWidget(button, i / 10, i % 10);
         ++i;
     }
-    ui->tag_grid->addWidget(new QPushButton("+"), i / 8, i % 8);
+    ui->tag_grid->addWidget(add_tag_button, i / 10, i % 10);
 }
 
 void MainWindow::clear_all() {
