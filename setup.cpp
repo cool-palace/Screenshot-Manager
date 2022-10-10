@@ -229,18 +229,14 @@ void MainWindow::get_hashtags() {
     }
     QTextStream in(&file);
     in.setCodec("UTF-8");
-    std::set<QString> tags;
     while (!in.atEnd()) {
         QString tag = in.readLine();
         if (tag[0] == '#') {
             tag.remove(0,1);
         }
-        tags.insert(tag);
-    }
-    file.close();
-    for (const auto& tag : tags) {
         create_hashtag_button(tag);
     }
+    file.close();
     update_hashtag_grid();
 }
 
@@ -248,6 +244,7 @@ void MainWindow::create_hashtag_button(const QString& text) {
     hashtags.insert(text, new QPushButton(text));
     hashtags[text]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     connect(hashtags[text], &QPushButton::clicked, [this, text]() {
+        if (current_mode == IDLE) return;
         QRegularExpression regex("#" + text);
         QRegularExpressionMatchIterator i = regex.globalMatch(ui->text->toPlainText());
         if (!i.hasNext()) {
@@ -257,8 +254,7 @@ void MainWindow::create_hashtag_button(const QString& text) {
 }
 
 void MainWindow::update_hashtag_grid() {
-    QLayoutItem *child;
-    while ((child = ui->tag_grid->takeAt(0)) != nullptr) {
+    while (ui->tag_grid->takeAt(0) != nullptr) {
         // Clearing buttons from the grid
     }
     int i = 0;
