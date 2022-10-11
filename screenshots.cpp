@@ -53,6 +53,7 @@ bool MainWindow::update_quote_file() {
     QTextStream out(&file);
     out.setCodec("UTF-8");
     for (const auto& record : records) {
+        qDebug() << record.quote;
         out << record.quote + "\r\n";
     }
     file.close();

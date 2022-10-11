@@ -71,13 +71,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
     connect(ui->slider, &QAbstractSlider::valueChanged, [this](int value) {
-        pic_end_index = 0;
-        pic_index = value;
         switch (current_mode) {
-        case CONFIG_CREATION:
-            draw(pic_index);
-            break;
         case CONFIG_READING:
+            pic_end_index = 0;
+            pic_index = value;
             display(pic_index);
             break;
         default:
@@ -96,6 +93,7 @@ MainWindow::MainWindow(QWidget *parent) :
             show_status();
             break;
         case CONFIG_READING:
+            update_quote_file();
             save_title_config();
             break;
         default:
@@ -309,7 +307,7 @@ void MainWindow::set_enabled(bool enable) {
     ui->add->setEnabled(enable && listing_enabled);
     ui->text->setEnabled(enable);
     ui->make_private->setEnabled(enable);
-    ui->slider->setEnabled(enable);
+    ui->slider->setEnabled(current_mode == CONFIG_READING);
     ui->slider->setValue(0);
 }
 
