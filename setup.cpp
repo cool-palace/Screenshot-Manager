@@ -27,8 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
         disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::albums_ready);
         load_albums(reply(response));
         if (album_ids.empty()) {
-//            manager->get_access_token(client_id);
-            ui->statusBar->showMessage("Не удалось загрузить альбомы. Попробуйте авторизироваться вручную.");
+            ui->offline->setChecked(true);
+            ui->statusBar->showMessage("Не удалось загрузить альбомы. Попробуйте авторизироваться вручную или продолжите работу оффлайн.");
         }
     });
 
