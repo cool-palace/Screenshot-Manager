@@ -38,7 +38,6 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     connect(manager, &VK_Manager::image_ready, [this](QImage&& image) {
-        disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::image_ready);
         ui->image->setPixmap(scaled(image));
     });
 

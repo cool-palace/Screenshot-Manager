@@ -122,6 +122,6 @@ void VK_Manager::got_photo_ids(QNetworkReply *response) {
 
 void VK_Manager::got_image(QNetworkReply *response) {
     disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::image_ready);
-    emit image(response);
+    emit image_ready(image(response));
 }
 
