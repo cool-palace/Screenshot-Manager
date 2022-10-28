@@ -23,29 +23,23 @@ MainWindow::MainWindow(QWidget *parent) :
     get_hashtags();
     initialize();
 
-    connect(manager, &VK_Manager::albums_ready, [this](QNetworkReply *response) {
-        disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::albums_ready);
-        load_albums(reply(response));
+    connect(manager, &VK_Manager::albums_ready, [this](QMap<QString, int>&& ids) {
+        album_ids = ids;
         if (album_ids.empty()) {
             ui->offline->setChecked(true);
             ui->statusBar->showMessage("Не удалось загрузить альбомы. Попробуйте авторизироваться вручную или продолжите работу оффлайн.");
         }
     });
 
-    connect(manager, &VK_Manager::photo_ids_ready, [this](QNetworkReply *response) {
-        disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::photo_ids_ready);
-        get_ids(reply(response));
+    connect(manager, &VK_Manager::photo_ids_ready, [this](QVector<int>&& ids, QStringList&& urls) {
+        photo_ids = ids;
+        links = urls;
         set_mode(data_ready() ? CONFIG_CREATION : IDLE);
     });
 
-//    connect(manager, &VK_Manager::photo_ready, [this](QNetworkReply *response) {
-//        disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::photo_ready);
-//        get_link(reply(response));
-//    });
-
-    connect(manager, &VK_Manager::image_ready, [this](QNetworkReply *response) {
+    connect(manager, &VK_Manager::image_ready, [this](QImage&& image) {
         disconnect(manager, &QNetworkAccessManager::finished, manager, &VK_Manager::image_ready);
-        ui->image->setPixmap(scaled(image(response)));
+        ui->image->setPixmap(scaled(image));
     });
 
     connect(ui->open_folder, &QAction::triggered, [this]() {
@@ -342,39 +336,6 @@ bool MainWindow::save_json(const QJsonObject& object, QFile& file) {
     out << QJsonDocument(object).toJson();
     file.close();
     return true;
-}
-
-QJsonObject MainWindow::reply(QNetworkReply *response) {
-    response->deleteLater();
-    if (response->error() != QNetworkReply::NoError) return QJsonObject();
-    auto reply = QJsonDocument::fromJson(response->readAll()).object();
-    return reply;
-}
-
-QString MainWindow::link(const QJsonObject & photo_item) {
-    auto array = photo_item["sizes"].toArray();
-    QString url;
-    for (QJsonValueRef item : array) {
-        if (item.toObject()["type"].toString() == "z") {
-            url = item.toObject()["url"].toString();
-            break;
-        }
-    }
-    if (url.isEmpty()) {
-        for (QJsonValueRef item : array) {
-            if (item.toObject()["type"].toString() == "y") {
-                url = item.toObject()["url"].toString();
-                break;
-            }
-        }
-    }
-    return url;
-}
-
-QImage MainWindow::image(QNetworkReply *response) {
-    QImageReader reader(response);
-    QImage loaded_image = reader.read();
-    return loaded_image;
 }
 
 bool MainWindow::data_ready() {

@@ -10,7 +10,6 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QImageReader>
 #include <QKeyEvent>
 #include <QInputDialog>
 #include "vk_manager.h"
@@ -78,9 +77,6 @@ private:
     QPixmap scaled(const QImage& source);
     QJsonObject json_object(const QString&);
     bool save_json(const QJsonObject&, QFile&);
-    QJsonObject reply(QNetworkReply*);
-    QString link(const QJsonObject&);
-    QImage image(QNetworkReply*);
     bool data_ready();
     void show_status();
     void keyPressEvent(QKeyEvent*) override;

@@ -5,6 +5,8 @@
 #include <QNetworkReply>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonArray>
+#include <QImageReader>
 
 class VK_Manager : public QNetworkAccessManager
 {
@@ -13,23 +15,27 @@ public:
     VK_Manager();
 
 signals:
-    void albums_ready(QNetworkReply *);
-    void photo_ids_ready(QNetworkReply *);
-    void photo_ready(QNetworkReply *);
-    void image_ready(QNetworkReply *);
+    void albums_ready(QMap<QString, int>&&);
+    void photo_ids_ready(QVector<int>&&, QStringList&&);
+    void image_ready(QImage&&);
 
 public slots:
     void get_url(const QString& url);
     void get_photo_ids(int album_id, const QString& photo_ids = "");
-    void get_photo(int photo_id);
     void get_photo(const QString& url);
     void get_albums();
-    void get_access_token(int client_id);
     void set_access_token(const QString&);
-    QString current_token() const { return access_token; }
+//    void get_access_token(int client_id);
+//    QString current_token() const { return access_token; }
 
 private slots:
-    void access_token_ready(QNetworkReply *);
+    QJsonObject reply_json(QNetworkReply *response);
+    QString link(const QJsonObject & photo_item);
+    QImage image(QNetworkReply *response);
+    void got_albums(QNetworkReply *);
+    void got_photo_ids(QNetworkReply *);
+    void got_image(QNetworkReply *);
+//    void access_token_ready(QNetworkReply *);
 
 private:
     QString access_token;

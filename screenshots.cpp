@@ -2,31 +2,6 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 
-bool MainWindow::load_albums(const QJsonObject& reply) {
-    QJsonObject albums_config;
-    if (reply.contains("error")) {
-        return false;
-    }
-    auto items = reply["response"].toObject()["items"].toArray();
-    for (const QJsonValueRef album : items) {
-        auto album_object = album.toObject();
-        auto title = album_object["title"].toString();
-        int album_id = album_object["id"].toInt();
-        album_ids.insert(title, album_id);
-    }
-    return true;
-}
-
-void MainWindow::get_ids(const QJsonObject & reply) {
-    auto array = reply["response"].toObject()["items"].toArray();
-    for (const QJsonValueRef item : array) {
-        auto current_item = item.toObject();
-        auto id = current_item["id"].toInt();
-        photo_ids.push_back(id);
-        links.push_back(link(current_item));
-    }
-}
-
 bool MainWindow::read_quote_file(QFile& file) {
     if (!file.open(QIODevice::ReadOnly)) {
         ui->statusBar->showMessage("Не удалось открыть файл с цитатами.");
