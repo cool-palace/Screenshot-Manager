@@ -49,11 +49,11 @@ void VK_Manager::get_photo_ids(int album_id, const QString& photo_ids) {
                 + "&count=255"
                 + (!photo_ids.isEmpty() ? "&photo_ids=" : "") + photo_ids;
     get_url(url);
-    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::photo_ids_ready);
+    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_photo_ids);
 }
 
-void VK_Manager::get_photo(const QString& url) {
-    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::image_ready);
+void VK_Manager::get_image(const QString& url) {
+    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_image);
     get_url(url);
 }
 

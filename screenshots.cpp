@@ -157,7 +157,7 @@ QJsonObject MainWindow::reverse_index(const QJsonArray& array) {
 
 void MainWindow::display(int index) {
     if (!ui->offline->isChecked()) {
-        manager->get_photo(records[index].links[pic_end_index]);
+        manager->get_image(records[index].links[pic_end_index]);
     } else {
         auto image = QImage(dir.path() + QDir::separator() + records[index].pics[pic_end_index]);
         ui->image->setPixmap(scaled(image));
@@ -178,7 +178,7 @@ void MainWindow::display(int index) {
 
 void MainWindow::draw(int index = 0) {
     if (!ui->offline->isChecked()) {
-        manager->get_photo(links[index]);
+        manager->get_image(links[index]);
     } else {
         auto image = QImage(dir.path() + QDir::separator() + pics[index]);
         ui->image->setPixmap(scaled(image));

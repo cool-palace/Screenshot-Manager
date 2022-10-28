@@ -21,9 +21,9 @@ signals:
 
 public slots:
     void get_url(const QString& url);
-    void get_photo_ids(int album_id, const QString& photo_ids = "");
-    void get_photo(const QString& url);
     void get_albums();
+    void get_photo_ids(int album_id, const QString& photo_ids = "");
+    void get_image(const QString& url);
     void set_access_token(const QString&);
 //    void get_access_token(int client_id);
 //    QString current_token() const { return access_token; }
