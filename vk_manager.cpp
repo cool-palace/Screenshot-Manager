@@ -86,12 +86,12 @@ void VK_Manager::get_albums() {
 //    }
 //}
 
-//void VK_Manager::set_access_token(const QString& token) {
-//    access_token = token;
-//}
+void VK_Manager::set_access_token(const QString& token) {
+    access_token = token;
+}
 
 void VK_Manager::got_albums(QNetworkReply *response) {
-    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::albums_ready);
+    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_albums);
     auto reply = reply_json(response);
     if (reply.contains("error")) return;
     QMap<QString, int> album_ids;
@@ -102,11 +102,11 @@ void VK_Manager::got_albums(QNetworkReply *response) {
         int album_id = album_object["id"].toInt();
         album_ids.insert(title, album_id);
     }
-    emit albums_ready(std::move(album_ids));
+    emit albums_ready(album_ids);
 }
 
 void VK_Manager::got_photo_ids(QNetworkReply *response) {
-    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::photo_ids_ready);
+    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_photo_ids);
     auto reply = reply_json(response);
     QVector<int> photo_ids;
     QStringList links;
@@ -117,11 +117,11 @@ void VK_Manager::got_photo_ids(QNetworkReply *response) {
         photo_ids.push_back(id);
         links.push_back(link(current_item));
     }
-    emit photo_ids_ready(std::move(photo_ids), std::move(links));
+    emit photo_ids_ready(photo_ids, links);
 }
 
 void VK_Manager::got_image(QNetworkReply *response) {
-    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::image_ready);
+    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_image);
     emit image_ready(image(response));
 }
 

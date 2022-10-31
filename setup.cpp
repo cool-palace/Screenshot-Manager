@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
+#include <QRegularExpression>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -23,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     get_hashtags();
     initialize();
 
-    connect(manager, &VK_Manager::albums_ready, [this](QMap<QString, int>&& ids) {
+    connect(manager, &VK_Manager::albums_ready, [this](const QMap<QString, int>& ids) {
         album_ids = ids;
         if (album_ids.empty()) {
             ui->offline->setChecked(true);
@@ -31,13 +32,13 @@ MainWindow::MainWindow(QWidget *parent) :
         }
     });
 
-    connect(manager, &VK_Manager::photo_ids_ready, [this](QVector<int>&& ids, QStringList&& urls) {
+    connect(manager, &VK_Manager::photo_ids_ready, [this](const QVector<int>& ids, const QStringList& urls) {
         photo_ids = ids;
         links = urls;
         set_mode(data_ready() ? CONFIG_CREATION : IDLE);
     });
 
-    connect(manager, &VK_Manager::image_ready, [this](QImage&& image) {
+    connect(manager, &VK_Manager::image_ready, [this](const QImage& image) {
         ui->image->setPixmap(scaled(image));
     });
 
@@ -237,7 +238,7 @@ void MainWindow::create_hashtag_button(const QString& text) {
     connect(hashtags[text], &QPushButton::clicked, [this, text]() {
         if (current_mode == IDLE) return;
         QRegularExpression regex("#" + text);
-        QRegularExpressionMatchIterator i = regex.globalMatch(ui->text->toPlainText());
+        auto i = regex.globalMatch(ui->text->toPlainText());
         if (!i.hasNext()) {
             ui->text->setText(ui->text->toPlainText() + " #" + text);
         }

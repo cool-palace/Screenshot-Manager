@@ -15,9 +15,9 @@ public:
     VK_Manager();
 
 signals:
-    void albums_ready(QMap<QString, int>&&);
-    void photo_ids_ready(QVector<int>&&, QStringList&&);
-    void image_ready(QImage&&);
+    void albums_ready(const QMap<QString, int>&);
+    void photo_ids_ready(const QVector<int>&, const QStringList&);
+    void image_ready(const QImage&);
 
 public slots:
     void get_url(const QString& url);

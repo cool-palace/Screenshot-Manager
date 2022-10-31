@@ -13,7 +13,6 @@
 #include <QKeyEvent>
 #include <QInputDialog>
 #include "vk_manager.h"
-#include <set>
 
 namespace Ui {
 class MainWindow;
