@@ -57,6 +57,7 @@ bool MainWindow::open_title_config() {
     auto filepath = QFileDialog::getOpenFileName(nullptr, "Открыть конфигурационный файл",
                                                  configs_location,
                                                  "Файлы (*.json)");
+    if (filepath.isEmpty()) return false;
     auto json_file = json_object(filepath);
     if (!json_file.contains("title") || !json_file.contains("screens")) {
         ui->statusBar->showMessage("Неверный формат файла.");

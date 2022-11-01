@@ -32,6 +32,8 @@ QString VK_Manager::link(const QJsonObject & photo_item) {
 }
 
 QImage VK_Manager::image(QNetworkReply *response) {
+    response->deleteLater();
+    if (response->error() != QNetworkReply::NoError) return QImage();
     QImageReader reader(response);
     QImage loaded_image = reader.read();
     return loaded_image;

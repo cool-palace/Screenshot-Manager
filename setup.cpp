@@ -57,6 +57,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->open_config, &QAction::triggered, [this]() {
         if (!open_title_config()) {
+            set_mode(IDLE);
+            ui->statusBar->showMessage("Конфигурационный файл не открыт.");
             return;
         }
         set_mode(CONFIG_READING);
@@ -261,6 +263,7 @@ void MainWindow::clear_all() {
     quotes.clear();
     photo_ids.clear();
     pics.clear();
+    links.clear();
     records.clear();
 }
 
