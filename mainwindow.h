@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include <QKeyEvent>
 #include <QInputDialog>
+#include <QRegularExpression>
 #include "vk_manager.h"
 
 namespace Ui {
@@ -57,6 +58,8 @@ private:
     QVector<int> photo_ids;
     QStringList links;
     QMap<QString, QPushButton*> hashtags;
+    QMap<QString, size_t> hashtags_count;
+    QStringList current_hashtags;
     QVector<Record> records;
     int pic_index;
     int quote_index;
@@ -69,6 +72,12 @@ private:
     void get_hashtags();
     void create_hashtag_button(const QString&);
     void update_hashtag_grid();
+    void load_hashtag_info();
+    void update_hashtag_info();
+    void update_current_hashtags();
+    void recalculate_hashtags(bool);
+    QRegularExpressionMatchIterator hashtag_match(const QString&);
+    void highlight_current_hashtags(bool);
     void clear_all();
     void set_mode(Mode);
     void set_enabled(bool);

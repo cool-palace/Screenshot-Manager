@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
-#include <QRegularExpression>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -62,7 +61,6 @@ MainWindow::MainWindow(QWidget *parent) :
             return;
         }
         set_mode(CONFIG_READING);
-        show_status();
     });
 
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
@@ -72,6 +70,7 @@ MainWindow::MainWindow(QWidget *parent) :
             pic_end_index = 0;
             pic_index = value;
             display(pic_index);
+            update_current_hashtags();
             break;
         default:
             break;
@@ -237,6 +236,7 @@ void MainWindow::get_hashtags() {
 void MainWindow::create_hashtag_button(const QString& text) {
     hashtags.insert(text, new QPushButton(text));
     hashtags[text]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    hashtags[text]->setToolTip(text);
     connect(hashtags[text], &QPushButton::clicked, [this, text]() {
         if (current_mode == IDLE) return;
         QRegularExpression regex("#" + text);
@@ -252,11 +252,74 @@ void MainWindow::update_hashtag_grid() {
         // Clearing buttons from the grid
     }
     int i = 0;
-    for (const auto& button : hashtags) {
+    for (auto button : hashtags) {
         ui->tag_grid->addWidget(button, i / 10, i % 10);
         ++i;
     }
     ui->tag_grid->addWidget(add_tag_button, i / 10, i % 10);
+}
+
+void MainWindow::load_hashtag_info() {
+    for (auto record : records) {
+        auto i = hashtag_match(record.quote);
+        while (i.hasNext()) {
+            auto match = i.next().captured(1);
+            if (hashtags_count.contains(match)) {
+                ++hashtags_count[match];
+            } else {
+                hashtags_count[match] = 1;
+            }
+        }
+    }
+    for (auto hashtag : hashtags_count.keys()) {
+        auto button = hashtags.value(hashtag);
+        if (button) {
+            button->setText(button->toolTip() + ' ' + QString().setNum(hashtags_count[hashtag]));
+            button->setFlat(true);
+        }
+    }
+}
+
+void MainWindow::recalculate_hashtags(bool increase) {
+    for (const auto& hashtag : current_hashtags) {
+        size_t count = increase ? ++hashtags_count[hashtag] : --hashtags_count[hashtag];
+        auto button = hashtags.value(hashtag);
+        if (button) {
+            button->setText(button->toolTip() + ' ' + QString().setNum(count));
+            button->setFlat(count);
+        }
+    }
+}
+
+void MainWindow::update_hashtag_info() {
+    recalculate_hashtags(false);
+    update_current_hashtags();
+    recalculate_hashtags(true);
+}
+
+void MainWindow::update_current_hashtags() {
+    highlight_current_hashtags(false);
+    current_hashtags.clear();
+    auto i = hashtag_match(records[pic_index].quote);
+    while (i.hasNext()) {
+        current_hashtags.push_back(i.next().captured(1));
+    }
+    highlight_current_hashtags(true);
+}
+
+QRegularExpressionMatchIterator MainWindow::hashtag_match(const QString& text) {
+    QRegularExpression regex("#([а-яё0-9_]+)");
+    return regex.globalMatch(text);
+}
+
+void MainWindow::highlight_current_hashtags(bool enable) {
+    for (auto hashtag : current_hashtags) {
+        auto button = hashtags.value(hashtag);
+        if (!button) return;
+        auto font = button->font();
+        font.setBold(enable);
+        button->setFont(font);
+    }
 }
 
 void MainWindow::clear_all() {
@@ -265,6 +328,7 @@ void MainWindow::clear_all() {
     pics.clear();
     links.clear();
     records.clear();
+    hashtags_count.clear();
 }
 
 void MainWindow::set_mode(Mode mode) {
@@ -287,6 +351,8 @@ void MainWindow::set_mode(Mode mode) {
         ui->slider->setMaximum(records.size() - 1);
         connect(ui->make_private, &QPushButton::clicked, this, &MainWindow::set_edited);
         display(0);
+        load_hashtag_info();
+        update_current_hashtags();
         break;
     default:
         break;

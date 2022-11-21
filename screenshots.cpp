@@ -50,6 +50,7 @@ void MainWindow::update_record() {
     records[pic_index].quote = ui->text->toPlainText();
     records[pic_index].is_public = !ui->make_private->isChecked();
     record_edited = false;
+    update_hashtag_info();
 }
 
 bool MainWindow::open_title_config() {
