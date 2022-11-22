@@ -19,16 +19,7 @@
 namespace Ui {
 class MainWindow;
 }
-
-class HashtagButton : public QPushButton
-{
-    Q_OBJECT
-public:
-    HashtagButton(const QString&);
-    virtual ~HashtagButton() {}
-private:
-    QString text;
-};
+class HashtagButton;
 
 class MainWindow : public QMainWindow
 {
@@ -49,7 +40,12 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    virtual ~MainWindow();
+    virtual ~MainWindow() override;
+
+public slots:
+    bool is_idle() const { return !current_mode; }
+    QString text() const;
+    void set_text(const QString&);
 
 private:
     Ui::MainWindow *ui;
@@ -68,9 +64,9 @@ private:
     QStringList quotes;
     QVector<int> photo_ids;
     QStringList links;
-    QMap<QString, QPushButton*> hashtags;
+    QMap<QString, HashtagButton*> hashtags;
     QMap<QString, size_t> hashtags_count;
-    QStringList current_hashtags;
+    QVector<QPair<QChar, QString>> current_hashtags;
     QVector<Record> records;
     int pic_index;
     int quote_index;
@@ -89,7 +85,6 @@ private:
     void recalculate_hashtags(bool);
     QRegularExpressionMatchIterator hashtag_match(const QString&);
     void highlight_current_hashtags(bool);
-    void highlight_button(QPushButton*, bool);
     QString preprocessed(const QString&);
     void clear_all();
     void set_mode(Mode);
@@ -119,6 +114,20 @@ private:
     void display(int);
     void draw(int);
     void show_text(int);
+};
+
+class HashtagButton : public QPushButton
+{
+    Q_OBJECT
+public:
+    HashtagButton(const QString&, MainWindow*);
+    virtual ~HashtagButton() override {}
+    virtual void mousePressEvent(QMouseEvent*) override;
+    void highlight(QChar, bool);
+private:
+    MainWindow* parent;
+    QString text;
+    void hashtagEvent(QChar);
 };
 
 #endif // MAINWINDOW_H

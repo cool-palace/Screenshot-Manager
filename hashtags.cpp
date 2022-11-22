@@ -2,12 +2,44 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 
-HashtagButton::HashtagButton(const QString& text) :
-    QPushButton(text)
+HashtagButton::HashtagButton(const QString& text, MainWindow* window) :
+    QPushButton(text),
+    parent(window),
+    text(text)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setToolTip(text);
+}
 
+void HashtagButton::mousePressEvent(QMouseEvent * e) {
+    if (e->button() == Qt::LeftButton)
+        hashtagEvent('#');
+    else if (e->button() == Qt::RightButton)
+        hashtagEvent('&');
+}
+
+void HashtagButton::hashtagEvent(QChar c) {
+    if (parent->is_idle()) return;
+    QRegularExpression regex(QString("(.*)?") + c + text + "(\\s.*)?$");
+    auto i = regex.globalMatch(parent->text());
+    bool hashtag_is_in_text = i.hasNext();
+    if (!hashtag_is_in_text) {
+        parent->set_text(parent->text() + " " + c + text);
+    } else {
+        auto match = i.peekNext();
+        parent->set_text(match.captured(1).chopped(1) + match.captured(2));
+    }
+    highlight(c, !hashtag_is_in_text);
+}
+
+void HashtagButton::highlight(QChar c, bool enable) {
+    auto _font = font();
+    if (c == '#') {
+        _font.setBold(enable);
+    } else if (c == '&') {
+        _font.setItalic(enable);
+    }
+    setFont(_font);
 }
 
 void MainWindow::get_hashtags() {
@@ -29,20 +61,7 @@ void MainWindow::get_hashtags() {
 }
 
 void MainWindow::create_hashtag_button(const QString& text) {
-    hashtags.insert(text, new HashtagButton(text));
-    connect(hashtags[text], &QPushButton::clicked, [this, text]() {
-        if (current_mode == IDLE) return;
-        QRegularExpression regex("(.*)?#" + text + "(\\s.*)?$");
-        auto i = regex.globalMatch(ui->text->toPlainText());
-        bool hashtag_is_in_text = i.hasNext();
-        if (!hashtag_is_in_text) {
-            ui->text->setText(ui->text->toPlainText() + " #" + text);
-        } else {
-            auto match = i.peekNext();
-            ui->text->setText(match.captured(1).chopped(1) + match.captured(2));
-        }
-        highlight_button(hashtags[text], !hashtag_is_in_text);
-    });
+    hashtags.insert(text, new HashtagButton(text, this));
 }
 
 void MainWindow::update_hashtag_grid() {
@@ -87,7 +106,8 @@ void MainWindow::load_hashtag_info() {
 }
 
 void MainWindow::recalculate_hashtags(bool increase) {
-    for (const auto& hashtag : current_hashtags) {
+    for (const auto& hashtag_pair : current_hashtags) {
+        auto hashtag = hashtag_pair.second;
         size_t count = increase ? ++hashtags_count[hashtag] : --hashtags_count[hashtag];
         auto button = hashtags.value(hashtag);
         if (button) {
@@ -108,7 +128,8 @@ void MainWindow::update_current_hashtags() {
     current_hashtags.clear();
     auto i = hashtag_match(records[pic_index].quote);
     while (i.hasNext()) {
-        current_hashtags.push_back(i.next().captured(1));
+        current_hashtags.push_back(qMakePair(i.peekNext().captured()[0], i.peekNext().captured(1)));
+        i.next();
     }
     highlight_current_hashtags(true);
 }
@@ -119,20 +140,15 @@ QRegularExpressionMatchIterator MainWindow::hashtag_match(const QString& text) {
 }
 
 void MainWindow::highlight_current_hashtags(bool enable) {
-    for (auto hashtag : current_hashtags) {
+    for (auto hashtag_pair : current_hashtags) {
+        auto hashtag = hashtag_pair.second;
         auto button = hashtags.value(hashtag);
         if (!button) {
             qDebug() << "Unexpected tag: " << hashtag;
             return;
         }
-        highlight_button(button, enable);
+        button->highlight(hashtag_pair.first, enable);
     }
-}
-
-void MainWindow::highlight_button(QPushButton * button, bool enable) {
-    auto font = button->font();
-    font.setBold(enable);
-    button->setFont(font);
 }
 
 QString MainWindow::preprocessed(const QString& text) {
