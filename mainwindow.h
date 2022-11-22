@@ -78,6 +78,7 @@ private:
     void recalculate_hashtags(bool);
     QRegularExpressionMatchIterator hashtag_match(const QString&);
     void highlight_current_hashtags(bool);
+    void highlight_button(QPushButton*, bool);
     void clear_all();
     void set_mode(Mode);
     void set_enabled(bool);

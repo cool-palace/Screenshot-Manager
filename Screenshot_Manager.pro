@@ -25,6 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        hashtags.cpp \
         main.cpp \
         screenshots.cpp \
         setup.cpp \
