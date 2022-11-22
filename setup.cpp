@@ -221,7 +221,6 @@ void MainWindow::clear_all() {
     pics.clear();
     links.clear();
     records.clear();
-    hashtags_count.clear();
 }
 
 void MainWindow::set_mode(Mode mode) {

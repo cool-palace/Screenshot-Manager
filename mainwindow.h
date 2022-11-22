@@ -13,11 +13,22 @@
 #include <QKeyEvent>
 #include <QInputDialog>
 #include <QRegularExpression>
+#include <QPushButton>
 #include "vk_manager.h"
 
 namespace Ui {
 class MainWindow;
 }
+
+class HashtagButton : public QPushButton
+{
+    Q_OBJECT
+public:
+    HashtagButton(const QString&);
+    virtual ~HashtagButton() {}
+private:
+    QString text;
+};
 
 class MainWindow : public QMainWindow
 {
@@ -38,7 +49,7 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    virtual ~MainWindow();
 
 private:
     Ui::MainWindow *ui;
@@ -79,6 +90,7 @@ private:
     QRegularExpressionMatchIterator hashtag_match(const QString&);
     void highlight_current_hashtags(bool);
     void highlight_button(QPushButton*, bool);
+    QString preprocessed(const QString&);
     void clear_all();
     void set_mode(Mode);
     void set_enabled(bool);

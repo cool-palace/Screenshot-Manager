@@ -2,6 +2,14 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 
+HashtagButton::HashtagButton(const QString& text) :
+    QPushButton(text)
+{
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    setToolTip(text);
+
+}
+
 void MainWindow::get_hashtags() {
     QFile file("hashtags.txt");
     if (!file.open(QIODevice::ReadOnly)) {
@@ -21,9 +29,7 @@ void MainWindow::get_hashtags() {
 }
 
 void MainWindow::create_hashtag_button(const QString& text) {
-    hashtags.insert(text, new QPushButton(text));
-    hashtags[text]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    hashtags[text]->setToolTip(text);
+    hashtags.insert(text, new HashtagButton(text));
     connect(hashtags[text], &QPushButton::clicked, [this, text]() {
         if (current_mode == IDLE) return;
         QRegularExpression regex("(.*)?#" + text + "(\\s.*)?$");
@@ -52,6 +58,14 @@ void MainWindow::update_hashtag_grid() {
 }
 
 void MainWindow::load_hashtag_info() {
+    for (auto hashtag : hashtags_count.keys()) {
+        auto button = hashtags.value(hashtag);
+        if (button) {
+            button->setText(button->toolTip());
+            button->setFlat(false);
+        }
+    }
+    hashtags_count.clear();
     for (auto record : records) {
         auto i = hashtag_match(record.quote);
         while (i.hasNext()) {
@@ -100,7 +114,7 @@ void MainWindow::update_current_hashtags() {
 }
 
 QRegularExpressionMatchIterator MainWindow::hashtag_match(const QString& text) {
-    QRegularExpression regex("#([а-яё0-9_]+)");
+    QRegularExpression regex("[#&]([а-яё_]+)");
     return regex.globalMatch(text);
 }
 
@@ -119,4 +133,35 @@ void MainWindow::highlight_button(QPushButton * button, bool enable) {
     auto font = button->font();
     font.setBold(enable);
     button->setFont(font);
+}
+
+QString MainWindow::preprocessed(const QString& text) {
+    QString result = text;
+    {
+        // Replacing #программирование with #айти
+        QRegularExpression it_regex("(.*\\s)?#программирование(\\s.*)?$");
+        auto i = it_regex.globalMatch(text);
+        if (i.hasNext()) {
+            auto match = i.peekNext();
+            result = match.captured(1) + "#айти" + match.captured(2);
+            qDebug() << result;
+        }
+    }{
+        // Replacing #реакция+#hashtag with &hashtag
+        QRegularExpression reaction_regex("(.*\\s)?#реакция(\\s.*)?$");
+        auto i = reaction_regex.globalMatch(result);
+        QSet<QString> exceptions({"#обман", "#глупость", "#игнор"});
+        if (i.hasNext()) {
+            auto match = i.peekNext();
+            auto reactive_tags = match.captured(2).split(' ', QString::SkipEmptyParts);
+            for (auto& tag : reactive_tags) {
+                if (tag[0] == '#' && !exceptions.contains(tag)) {
+                    tag.replace(0, 1, "&");
+                }
+            }
+            result = match.captured(1) + reactive_tags.join(" ");
+            qDebug() << result;
+        }
+    }
+    return text;
 }

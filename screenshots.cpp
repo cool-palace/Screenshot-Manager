@@ -75,7 +75,7 @@ void MainWindow::read_title_config(const QJsonObject& json_file) {
     for (QJsonValueRef r : records_array) {
         Record record;
         auto object = r.toObject();
-        record.quote = object["caption"].toString();
+        record.quote = preprocessed(object["caption"].toString());
         record.is_public = object["public"].toBool();
         auto filename_array = object["filenames"].toArray();
         for (QJsonValueRef name : filename_array) {
