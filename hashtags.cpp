@@ -2,9 +2,8 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 
-HashtagButton::HashtagButton(MainWindow* window, const QString& text) :
+HashtagButton::HashtagButton(const QString& text) :
     QPushButton(text),
-    parent(window),
     text(text)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -15,10 +14,10 @@ HashtagButton::HashtagButton(MainWindow* window, const QString& text) :
 void HashtagButton::mousePressEvent(QMouseEvent * e) {
     switch (e->button()) {
     case Qt::LeftButton:
-        hashtagEvent('#');
+        emit hashtagEvent('#', text);
         break;
     case Qt::RightButton:
-        hashtagEvent('&');
+        emit hashtagEvent('&', text);
         break;
     case Qt::MiddleButton:
         setChecked(!isChecked());
@@ -47,20 +46,6 @@ void HashtagButton::add_index(int index) {
 void HashtagButton::remove_index(int index) {
     record_indices.remove(index);
     --count;
-}
-
-void HashtagButton::hashtagEvent(QChar c) {
-    if (parent->is_idle()) return;
-    QRegularExpression regex(QString("(.*)?") + c + text + "(\\s.*)?$");
-    auto i = regex.globalMatch(parent->text());
-    bool hashtag_is_in_text = i.hasNext();
-    if (!hashtag_is_in_text) {
-        parent->set_text(parent->text() + " " + c + text);
-    } else {
-        auto match = i.peekNext();
-        parent->set_text(match.captured(1).chopped(1) + match.captured(2));
-    }
-    highlight(c, !hashtag_is_in_text);
 }
 
 void HashtagButton::highlight(QChar c, bool enable) {
@@ -92,8 +77,23 @@ void MainWindow::get_hashtags() {
 }
 
 void MainWindow::create_hashtag_button(const QString& text) {
-    hashtags.insert(text, new HashtagButton(this, text));
+    hashtags.insert(text, new HashtagButton(text));
     connect(hashtags[text], SIGNAL(filterEvent(const QString&)), this, SLOT(filter_update(const QString&)));
+    connect(hashtags[text], SIGNAL(hashtagEvent(QChar, const QString&)), this, SLOT(hashtag_event(QChar, const QString&)));
+}
+
+void MainWindow::hashtag_event(QChar c, const QString& text) {
+    if (current_mode == IDLE) return;
+    QRegularExpression regex(QString("(.*)?") + c + text + "(\\s.*)?$");
+    auto i = regex.globalMatch(ui->text->toPlainText());
+    bool hashtag_is_in_text = i.hasNext();
+    if (!hashtag_is_in_text) {
+        ui->text->setText(ui->text->toPlainText() + " " + c + text);
+    } else {
+        auto match = i.peekNext();
+        ui->text->setText(match.captured(1).chopped(1) + match.captured(2));
+    }
+    hashtags[text]->highlight(c, !hashtag_is_in_text);
 }
 
 void MainWindow::update_hashtag_grid() {

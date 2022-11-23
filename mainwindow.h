@@ -44,9 +44,7 @@ public:
     virtual ~MainWindow() override;
 
 public slots:
-    bool is_idle() const { return !current_mode; }
-    QString text() const;
-    void set_text(const QString&);
+    void hashtag_event(QChar, const QString&);
     void filter_update(const QString&);
 
 private:
@@ -103,7 +101,6 @@ private:
     QRegularExpressionMatchIterator hashtag_match(const QString&);
     void highlight_current_hashtags(bool);
     QString preprocessed(const QString&);
-
     void filter(const QSet<int>&);
 
     // Screenshot management
@@ -128,7 +125,7 @@ class HashtagButton : public QPushButton
 {
     Q_OBJECT
 public:
-    HashtagButton(MainWindow*, const QString&);
+    HashtagButton(const QString&);
     virtual ~HashtagButton() override {}
     virtual void mousePressEvent(QMouseEvent*) override;
     void highlight(QChar, bool);
@@ -139,12 +136,11 @@ public:
     QSet<int> indices() const { return record_indices; }
 signals:
     void filterEvent(const QString&);
+    void hashtagEvent(QChar, const QString&);
 private:
-    MainWindow* parent;
     QString text;
     int count = 0;
     QSet<int> record_indices;
-    void hashtagEvent(QChar);
 };
 
 #endif // MAINWINDOW_H
