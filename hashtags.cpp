@@ -9,6 +9,7 @@ HashtagButton::HashtagButton(MainWindow* window, const QString& text) :
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setToolTip(text);
+    setCheckable(true);
 }
 
 void HashtagButton::mousePressEvent(QMouseEvent * e) {
@@ -20,6 +21,8 @@ void HashtagButton::mousePressEvent(QMouseEvent * e) {
         hashtagEvent('&');
         break;
     case Qt::MiddleButton:
+        setChecked(!isChecked());
+        emit filterEvent(text);
         break;
     default:
         break;
@@ -36,11 +39,13 @@ void HashtagButton::reset() {
     show_count();
 }
 
-void HashtagButton::increase() {
+void HashtagButton::add_index(int index) {
+    record_indices.insert(index);
     ++count;
 }
 
-void HashtagButton::decrease() {
+void HashtagButton::remove_index(int index) {
+    record_indices.remove(index);
     --count;
 }
 
@@ -88,6 +93,7 @@ void MainWindow::get_hashtags() {
 
 void MainWindow::create_hashtag_button(const QString& text) {
     hashtags.insert(text, new HashtagButton(this, text));
+    connect(hashtags[text], SIGNAL(filterEvent(const QString&)), this, SLOT(filter_update(const QString&)));
 }
 
 void MainWindow::update_hashtag_grid() {
@@ -103,22 +109,22 @@ void MainWindow::update_hashtag_grid() {
 }
 
 void MainWindow::load_hashtag_info() {
-    for (auto hashtag : hashtags_count) {
+    for (const auto& hashtag : hashtags_count) {
         auto button = hashtags.value(hashtag);
         if (button) {
             button->reset();
         }
     }
     hashtags_count.clear();
-    for (auto record : records) {
-        auto i = hashtag_match(record.quote);
+    for (int index = 0; index < records.size(); ++index) {
+        auto i = hashtag_match(records[index].quote);
         while (i.hasNext()) {
             auto match = i.next().captured(1);
             hashtags_count.insert(match);
-            hashtags[match]->increase();
+            hashtags[match]->add_index(index);
         }
     }
-    for (auto hashtag : hashtags_count) {
+    for (const auto& hashtag : hashtags_count) {
         auto button = hashtags.value(hashtag);
         if (button) {
             button->show_count();
@@ -129,7 +135,7 @@ void MainWindow::load_hashtag_info() {
 void MainWindow::recalculate_hashtags(bool increase) {
     for (const auto& tag : current_hashtags) {
         auto hashtag = tag.right(tag.size()-1);
-        increase ? hashtags[hashtag]->increase() : hashtags[hashtag]->decrease();
+        increase ? hashtags[hashtag]->add_index(pic_index) : hashtags[hashtag]->remove_index(pic_index);
         auto button = hashtags.value(hashtag);
         if (button) {
             button->show_count();
@@ -200,4 +206,41 @@ QString MainWindow::preprocessed(const QString& text) {
         }
     }
     return text;
+}
+
+void MainWindow::filter_update(const QString & text) {
+    if (filters.isEmpty()) {
+        filters.insert(text);
+        for (int index : hashtags[text]->indices()) {
+            filtration_results.insert(index, true);
+        }
+    } else if (!filters.contains(text)) {
+        filters.insert(text);
+        filter(hashtags[text]->indices());
+    } else {
+        filters.remove(text);
+        filtration_results.clear();
+        QSetIterator<QString> i(filters);
+        while (i.hasNext()) {
+            qDebug() << i.peekNext();
+            if (!i.hasPrevious()) {
+                for (int index : hashtags[i.next()]->indices()) {
+                    filtration_results.insert(index, true);
+                }
+            } else {
+                filter(hashtags[i.next()]->indices());
+            }
+        }
+    }
+    qDebug() << filtration_results.keys();
+}
+
+void MainWindow::filter(const QSet<int>& second) {
+    if (filtration_results.isEmpty()) return;
+    QMap<int, bool> result;
+    auto keys = QSet<int>::fromList(filtration_results.keys()).intersect(second);
+    for (const auto& key : keys) {
+        result.insert(key,true);
+    }
+    filtration_results = result;
 }

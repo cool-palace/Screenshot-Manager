@@ -35,7 +35,8 @@ class MainWindow : public QMainWindow
     enum Mode {
         IDLE,
         CONFIG_CREATION,
-        CONFIG_READING
+        CONFIG_READING,
+        FILTRATION
     };
 
 public:
@@ -46,6 +47,7 @@ public slots:
     bool is_idle() const { return !current_mode; }
     QString text() const;
     void set_text(const QString&);
+    void filter_update(const QString&);
 
 private:
     Ui::MainWindow *ui;
@@ -67,6 +69,8 @@ private:
     QMap<QString, HashtagButton*> hashtags;
     QSet<QString> hashtags_count;
     QVector<QString> current_hashtags;
+    QMap<int, bool> filtration_results;
+    QSet<QString> filters;
     QVector<Record> records;
     int pic_index;
     int quote_index;
@@ -76,16 +80,6 @@ private:
 
     // Setup functions
     void initialize();
-    void get_hashtags();
-    void create_hashtag_button(const QString&);
-    void update_hashtag_grid();
-    void load_hashtag_info();
-    void update_hashtag_info();
-    void update_current_hashtags();
-    void recalculate_hashtags(bool);
-    QRegularExpressionMatchIterator hashtag_match(const QString&);
-    void highlight_current_hashtags(bool);
-    QString preprocessed(const QString&);
     void clear_all();
     void set_mode(Mode);
     void set_enabled(bool);
@@ -97,6 +91,20 @@ private:
     void show_status();
     void keyPressEvent(QKeyEvent*) override;
     void keyReleaseEvent(QKeyEvent*) override;
+
+    // Hashtag management
+    void get_hashtags();
+    void create_hashtag_button(const QString&);
+    void update_hashtag_grid();
+    void load_hashtag_info();
+    void update_hashtag_info();
+    void update_current_hashtags();
+    void recalculate_hashtags(bool);
+    QRegularExpressionMatchIterator hashtag_match(const QString&);
+    void highlight_current_hashtags(bool);
+    QString preprocessed(const QString&);
+
+    void filter(const QSet<int>&);
 
     // Screenshot management
     bool load_albums(const QJsonObject&);
@@ -126,13 +134,16 @@ public:
     void highlight(QChar, bool);
     void show_count();
     void reset();
-    void increase();
-    void decrease();
+    void add_index(int);
+    void remove_index(int);
+    QSet<int> indices() const { return record_indices; }
+signals:
+    void filterEvent(const QString&);
 private:
     MainWindow* parent;
     QString text;
     int count = 0;
-    QSet<size_t> indices;
+    QSet<int> record_indices;
     void hashtagEvent(QChar);
 };
 
