@@ -109,22 +109,23 @@ void MainWindow::update_hashtag_grid() {
 }
 
 void MainWindow::load_hashtag_info() {
-    for (const auto& hashtag : hashtags_count) {
+    for (const auto& hashtag : hashtags_in_config) {
         auto button = hashtags.value(hashtag);
         if (button) {
             button->reset();
         }
     }
-    hashtags_count.clear();
+    hashtags_in_config.clear();
     for (int index = 0; index < records.size(); ++index) {
         auto i = hashtag_match(records[index].quote);
         while (i.hasNext()) {
             auto match = i.next().captured(1);
-            hashtags_count.insert(match);
+            hashtags_in_config.insert(match);
             hashtags[match]->add_index(index);
+            hashtags_by_index[index].push_back(match);
         }
     }
-    for (const auto& hashtag : hashtags_count) {
+    for (const auto& hashtag : hashtags_in_config) {
         auto button = hashtags.value(hashtag);
         if (button) {
             button->show_count();
@@ -133,7 +134,7 @@ void MainWindow::load_hashtag_info() {
 }
 
 void MainWindow::recalculate_hashtags(bool increase) {
-    for (const auto& tag : current_hashtags) {
+    for (const auto& tag : hashtags_by_index[pic_index]) {
         auto hashtag = tag.right(tag.size()-1);
         increase ? hashtags[hashtag]->add_index(pic_index) : hashtags[hashtag]->remove_index(pic_index);
         auto button = hashtags.value(hashtag);
@@ -151,11 +152,10 @@ void MainWindow::update_hashtag_info() {
 
 void MainWindow::update_current_hashtags() {
     highlight_current_hashtags(false);
-    current_hashtags.clear();
+    hashtags_by_index[pic_index].clear();
     auto i = hashtag_match(records[pic_index].quote);
     while (i.hasNext()) {
-        current_hashtags.push_back(i.peekNext().captured());
-        i.next();
+        hashtags_by_index[pic_index].push_back(i.next().captured());
     }
     highlight_current_hashtags(true);
 }
@@ -166,7 +166,7 @@ QRegularExpressionMatchIterator MainWindow::hashtag_match(const QString& text) {
 }
 
 void MainWindow::highlight_current_hashtags(bool enable) {
-    for (auto tag : current_hashtags) {
+    for (auto tag : hashtags_by_index[pic_index]) {
         auto hashtag = tag.right(tag.size()-1);
         auto button = hashtags.value(hashtag);
         if (!button) {

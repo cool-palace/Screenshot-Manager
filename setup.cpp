@@ -193,14 +193,6 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event) {
     }
 }
 
-QString MainWindow::text() const {
-    return ui->text->toPlainText();
-}
-
-void MainWindow::set_text(const QString& text) {
-    ui->text->setText(text);
-}
-
 void MainWindow::initialize() {
     auto json_file = json_object("config.json");
     if (!json_file.contains("screenshots") || !json_file.contains("docs") || !json_file.contains("configs")) {

@@ -65,8 +65,8 @@ private:
     QVector<int> photo_ids;
     QStringList links;
     QMap<QString, HashtagButton*> hashtags;
-    QSet<QString> hashtags_count;
-    QVector<QString> current_hashtags;
+    QSet<QString> hashtags_in_config;
+    QMap<int, QStringList> hashtags_by_index;
     QMap<int, bool> filtration_results;
     QSet<QString> filters;
     QVector<Record> records;
