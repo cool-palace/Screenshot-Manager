@@ -65,8 +65,8 @@ private:
     QVector<int> photo_ids;
     QStringList links;
     QMap<QString, HashtagButton*> hashtags;
-    QMap<QString, size_t> hashtags_count;
-    QVector<QPair<QChar, QString>> current_hashtags;
+    QSet<QString> hashtags_count;
+    QVector<QString> current_hashtags;
     QVector<Record> records;
     int pic_index;
     int quote_index;
@@ -120,13 +120,19 @@ class HashtagButton : public QPushButton
 {
     Q_OBJECT
 public:
-    HashtagButton(const QString&, MainWindow*);
+    HashtagButton(MainWindow*, const QString&);
     virtual ~HashtagButton() override {}
     virtual void mousePressEvent(QMouseEvent*) override;
     void highlight(QChar, bool);
+    void show_count();
+    void reset();
+    void increase();
+    void decrease();
 private:
     MainWindow* parent;
     QString text;
+    int count = 0;
+    QSet<size_t> indices;
     void hashtagEvent(QChar);
 };
 

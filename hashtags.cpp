@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 
-HashtagButton::HashtagButton(const QString& text, MainWindow* window) :
+HashtagButton::HashtagButton(MainWindow* window, const QString& text) :
     QPushButton(text),
     parent(window),
     text(text)
@@ -12,10 +12,36 @@ HashtagButton::HashtagButton(const QString& text, MainWindow* window) :
 }
 
 void HashtagButton::mousePressEvent(QMouseEvent * e) {
-    if (e->button() == Qt::LeftButton)
+    switch (e->button()) {
+    case Qt::LeftButton:
         hashtagEvent('#');
-    else if (e->button() == Qt::RightButton)
+        break;
+    case Qt::RightButton:
         hashtagEvent('&');
+        break;
+    case Qt::MiddleButton:
+        break;
+    default:
+        break;
+    }
+}
+
+void HashtagButton::show_count() {
+    setText(count ? text + ' ' + QString().setNum(count) : text);
+    setFlat(count);
+}
+
+void HashtagButton::reset() {
+    count = 0;
+    show_count();
+}
+
+void HashtagButton::increase() {
+    ++count;
+}
+
+void HashtagButton::decrease() {
+    --count;
 }
 
 void HashtagButton::hashtagEvent(QChar c) {
@@ -61,7 +87,7 @@ void MainWindow::get_hashtags() {
 }
 
 void MainWindow::create_hashtag_button(const QString& text) {
-    hashtags.insert(text, new HashtagButton(text, this));
+    hashtags.insert(text, new HashtagButton(this, text));
 }
 
 void MainWindow::update_hashtag_grid() {
@@ -77,11 +103,10 @@ void MainWindow::update_hashtag_grid() {
 }
 
 void MainWindow::load_hashtag_info() {
-    for (auto hashtag : hashtags_count.keys()) {
+    for (auto hashtag : hashtags_count) {
         auto button = hashtags.value(hashtag);
         if (button) {
-            button->setText(button->toolTip());
-            button->setFlat(false);
+            button->reset();
         }
     }
     hashtags_count.clear();
@@ -89,30 +114,25 @@ void MainWindow::load_hashtag_info() {
         auto i = hashtag_match(record.quote);
         while (i.hasNext()) {
             auto match = i.next().captured(1);
-            if (hashtags_count.contains(match)) {
-                ++hashtags_count[match];
-            } else {
-                hashtags_count[match] = 1;
-            }
+            hashtags_count.insert(match);
+            hashtags[match]->increase();
         }
     }
-    for (auto hashtag : hashtags_count.keys()) {
+    for (auto hashtag : hashtags_count) {
         auto button = hashtags.value(hashtag);
         if (button) {
-            button->setText(button->toolTip() + ' ' + QString().setNum(hashtags_count[hashtag]));
-            button->setFlat(true);
+            button->show_count();
         }
     }
 }
 
 void MainWindow::recalculate_hashtags(bool increase) {
-    for (const auto& hashtag_pair : current_hashtags) {
-        auto hashtag = hashtag_pair.second;
-        size_t count = increase ? ++hashtags_count[hashtag] : --hashtags_count[hashtag];
+    for (const auto& tag : current_hashtags) {
+        auto hashtag = tag.right(tag.size()-1);
+        increase ? hashtags[hashtag]->increase() : hashtags[hashtag]->decrease();
         auto button = hashtags.value(hashtag);
         if (button) {
-            button->setText(button->toolTip() + ' ' + QString().setNum(count));
-            button->setFlat(count);
+            button->show_count();
         }
     }
 }
@@ -128,7 +148,7 @@ void MainWindow::update_current_hashtags() {
     current_hashtags.clear();
     auto i = hashtag_match(records[pic_index].quote);
     while (i.hasNext()) {
-        current_hashtags.push_back(qMakePair(i.peekNext().captured()[0], i.peekNext().captured(1)));
+        current_hashtags.push_back(i.peekNext().captured());
         i.next();
     }
     highlight_current_hashtags(true);
@@ -140,14 +160,14 @@ QRegularExpressionMatchIterator MainWindow::hashtag_match(const QString& text) {
 }
 
 void MainWindow::highlight_current_hashtags(bool enable) {
-    for (auto hashtag_pair : current_hashtags) {
-        auto hashtag = hashtag_pair.second;
+    for (auto tag : current_hashtags) {
+        auto hashtag = tag.right(tag.size()-1);
         auto button = hashtags.value(hashtag);
         if (!button) {
             qDebug() << "Unexpected tag: " << hashtag;
             return;
         }
-        button->highlight(hashtag_pair.first, enable);
+        button->highlight(tag.front(), enable);
     }
 }
 
