@@ -111,8 +111,13 @@ MainWindow::MainWindow(QWidget *parent) :
             break;
         case CONFIG_READING:
             pic_end_index = 0;
-            display(--pic_index);
-            ui->slider->setValue(pic_index);
+            if (ui->text->isEnabled()) {
+                ui->slider->setValue(pic_index - 1);
+            } else {
+                auto it = --filtration_results.find(pic_index);
+                ui->slider->setValue(it.key());
+                ui->back->setEnabled(it != filtration_results.begin());
+            }
             break;
         default:
             break;
@@ -166,8 +171,13 @@ MainWindow::MainWindow(QWidget *parent) :
                 }
             }
             pic_end_index = 0;
-            display(++pic_index);
-            ui->slider->setValue(pic_index);
+            if (ui->text->isEnabled()) {
+                ui->slider->setValue(pic_index + 1);
+            } else {
+                auto it = ++filtration_results.find(pic_index);
+                ui->slider->setValue(it.key());
+                ui->ok->setEnabled(++it != filtration_results.end());
+            }
             break;
         default:
             break;
@@ -244,7 +254,6 @@ void MainWindow::set_mode(Mode mode) {
         connect(ui->make_private, &QPushButton::clicked, this, &MainWindow::set_edited);
         display(0);
         load_hashtag_info();
-        update_current_hashtags();
         break;
     default:
         break;

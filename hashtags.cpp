@@ -116,12 +116,13 @@ void MainWindow::load_hashtag_info() {
         }
     }
     hashtags_in_config.clear();
+    hashtags_by_index.clear();
     for (int index = 0; index < records.size(); ++index) {
         auto i = hashtag_match(records[index].quote);
         while (i.hasNext()) {
             auto hashtag = i.peekNext().captured(1);
             auto match = i.next().captured();
-            hashtags_in_config.insert(hashtag);
+            hashtags_in_config.push_back(hashtag);
             if (!hashtags[hashtag]) qDebug() << "Unexpected tag: " << hashtag;
             hashtags[hashtag]->add_index(index);
             hashtags_by_index[index].push_back(match);
@@ -225,6 +226,8 @@ void MainWindow::filter_update(const QString & text) {
     }
     // Updating filters
     if (filters.isEmpty()) {
+        ui->text->setDisabled(true);
+        ui->slider->setDisabled(true);
         filters.insert(text);
         for (int index : hashtags[text]->indices()) {
             filtration_results.insert(index, true);
@@ -252,16 +255,26 @@ void MainWindow::filter_update(const QString & text) {
         // Handling the filter not used in the config
         if (filtration_results.isEmpty()) {
             hashtags[text]->setEnabled(true);
-        }
-        // Enabling buttons for possible non-zero result filters
-        for (int index : filtration_results.keys()) {
-            for (const auto& tag : hashtags_by_index[index]) {
-                auto hashtag = tag.right(tag.size()-1);
-                hashtags[hashtag]->setEnabled(true);
+        } else {
+            ui->slider->setValue(filtration_results.begin().key());
+            ui->ok->setEnabled(filtration_results.size() > 1);
+            ui->back->setDisabled(true);
+            // Enabling buttons for possible non-zero result filters
+            for (int index : filtration_results.keys()) {
+                for (const auto& tag : hashtags_by_index[index]) {
+                    auto hashtag = tag.right(tag.size()-1);
+                    hashtags[hashtag]->setEnabled(true);
+                }
             }
         }
-    } else for (auto button : hashtags) {
-        button->setEnabled(true);
+    } else {
+        for (auto button : hashtags) {
+            button->setEnabled(true);
+        }
+        ui->ok->setEnabled(pic_index < records.size() - 1);
+        ui->back->setEnabled(pic_index > 0);
+        ui->text->setEnabled(true);
+        ui->slider->setEnabled(true);
     }
 }
 
