@@ -336,6 +336,31 @@ bool MainWindow::data_ready() {
     return true;
 }
 
+QString MainWindow::filtration_message(int i) {
+    QString found = "Найдено ";
+    QString recs = " записей по запросу";
+    if ((i % 100 - i % 10) != 10) {
+        if (i % 10 == 1) {
+            found = "Найдена ";
+            recs = " запись по запросу";
+        } else if (i % 10 > 1 && i % 10 < 5) {
+            recs = " записи по запросу";
+        }
+    }
+    return found + QString().setNum(i) + recs;
+}
+
+QString MainWindow::filtration_indices() {
+    if (filtration_results.isEmpty()) return ". ";
+    QString result = ": (";
+    for (int index : filtration_results.keys()) {
+        if (result.size() > 3) result.append(", ");
+        result.append(QString().setNum(index + 1));
+    }
+    result.append("). ");
+    return result;
+}
+
 void MainWindow::show_status() {
     if (current_mode == CONFIG_CREATION) {
         bool multiple_pics = pic_end_index > 0;
@@ -345,8 +370,11 @@ void MainWindow::show_status() {
         QString s_pic_from = " из " + QString().setNum(pics.size());
         ui->statusBar->showMessage("Цитата " + s_quote + ", " + s_pic + s_pic_index + s_pic_from);
     } else if (current_mode == CONFIG_READING) {
+        QString filtration = ui->text->isEnabled()
+                ? ""
+                : filtration_message(filtration_results.size()) + filtration_indices();
         QString s_rec = QString().setNum(pic_index + 1) + " из " + QString().setNum(records.size());
         QString s_pic = QString().setNum(pic_end_index + 1) + " из " + QString().setNum(records[pic_index].pics.size());
-        ui->statusBar->showMessage("Запись " + s_rec + ", кадр " + s_pic);
+        ui->statusBar->showMessage(filtration + "Запись " + s_rec + ", кадр " + s_pic);
     }
 }

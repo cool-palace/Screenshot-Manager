@@ -276,6 +276,7 @@ void MainWindow::filter_update(const QString & text) {
         ui->text->setEnabled(true);
         ui->slider->setEnabled(true);
     }
+    show_status();
 }
 
 void MainWindow::filter(const QSet<int>& second) {

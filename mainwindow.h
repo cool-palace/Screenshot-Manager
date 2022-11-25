@@ -90,6 +90,8 @@ private:
     void show_status();
     void keyPressEvent(QKeyEvent*) override;
     void keyReleaseEvent(QKeyEvent*) override;
+    QString filtration_indices();
+    QString filtration_message(int);
 
     // Hashtag management
     void get_hashtags();
