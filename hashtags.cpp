@@ -219,6 +219,11 @@ QString MainWindow::preprocessed(const QString& text) {
 }
 
 void MainWindow::filter_update(const QString & text) {
+    // Disabling all buttons
+    for (auto button : hashtags) {
+        button->setDisabled(true);
+    }
+    // Updating filters
     if (filters.isEmpty()) {
         filters.insert(text);
         for (int index : hashtags[text]->indices()) {
@@ -232,7 +237,6 @@ void MainWindow::filter_update(const QString & text) {
         filtration_results.clear();
         QSetIterator<QString> i(filters);
         while (i.hasNext()) {
-            qDebug() << i.peekNext();
             if (!i.hasPrevious()) {
                 for (int index : hashtags[i.next()]->indices()) {
                     filtration_results.insert(index, true);
@@ -243,6 +247,22 @@ void MainWindow::filter_update(const QString & text) {
         }
     }
     qDebug() << filtration_results.keys();
+    // Enabling necessary buttons
+    if (!filters.isEmpty()) {
+        // Handling the filter not used in the config
+        if (filtration_results.isEmpty()) {
+            hashtags[text]->setEnabled(true);
+        }
+        // Enabling buttons for possible non-zero result filters
+        for (int index : filtration_results.keys()) {
+            for (const auto& tag : hashtags_by_index[index]) {
+                auto hashtag = tag.right(tag.size()-1);
+                hashtags[hashtag]->setEnabled(true);
+            }
+        }
+    } else for (auto button : hashtags) {
+        button->setEnabled(true);
+    }
 }
 
 void MainWindow::filter(const QSet<int>& second) {
