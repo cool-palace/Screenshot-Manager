@@ -66,6 +66,7 @@ private:
     QStringList links;
     QMap<QString, HashtagButton*> hashtags;
     QSet<QString> hashtags_in_config;
+    QStringList current_hashtags;
     QMap<int, QStringList> hashtags_by_index;
     QMap<int, bool> filtration_results;
     QSet<QString> filters;
