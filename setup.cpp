@@ -338,16 +338,21 @@ bool MainWindow::data_ready() {
 
 QString MainWindow::filtration_message(int i) {
     QString found = "Найдено ";
-    QString recs = " записей по запросу";
+    QString recs = " записей по ";
+    QString filters_count = " фильтрам";
     if ((i % 100 - i % 10) != 10) {
         if (i % 10 == 1) {
             found = "Найдена ";
-            recs = " запись по запросу";
+            recs = " запись по ";
         } else if (i % 10 > 1 && i % 10 < 5) {
-            recs = " записи по запросу";
+            recs = " записи по ";
         }
     }
-    return found + QString().setNum(i) + recs;
+    int j = filters.size();
+    if ((j % 100 - j % 10) != 10 && j % 10 == 1) {
+        filters_count = " фильтру";
+    }
+    return found + QString().setNum(i) + recs + QString().setNum(j) + filters_count;
 }
 
 QString MainWindow::filtration_indices() {

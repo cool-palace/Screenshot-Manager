@@ -41,11 +41,11 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    virtual ~MainWindow() override;
+    ~MainWindow() override;
 
 public slots:
-    void hashtag_event(QChar, const QString&);
-    void filter_update(const QString&);
+    void hashtag_event(const QChar&, const QString&);
+    void filter_event(const QChar&, const QString&);
 
 private:
     Ui::MainWindow *ui;
@@ -105,6 +105,10 @@ private:
     void highlight_current_hashtags(bool);
     QString preprocessed(const QString&);
     void filter(const QSet<int>&);
+    void update_filters(const QChar&, const QString&);
+    void show_filtering_results();
+    void exit_filtering();
+    QMap<QChar, QChar> antisign = {{'#', '&'}, {'&', '#'}};
 
     // Screenshot management
     bool load_albums(const QJsonObject&);
@@ -129,21 +133,21 @@ class HashtagButton : public QPushButton
     Q_OBJECT
 public:
     HashtagButton(const QString&);
-    virtual ~HashtagButton() override {}
-    virtual void mousePressEvent(QMouseEvent*) override;
-    void highlight(QChar, bool);
+    ~HashtagButton() override {}
+    void mousePressEvent(QMouseEvent*) override;
+    void highlight(const QChar&, bool);
     void show_count();
     void reset();
-    void add_index(int);
-    void remove_index(int);
-    QSet<int> indices() const { return record_indices; }
+    void add_index(const QChar&, int);
+    void remove_index(const QChar&, int);
+    QSet<int> indices(const QChar&) const;
 signals:
-    void filterEvent(const QString&);
-    void hashtagEvent(QChar, const QString&);
+    void filterEvent(const QChar&, const QString&);
+    void hashtagEvent(const QChar&, const QString&);
 private:
     QString text;
     int count = 0;
-    QSet<int> record_indices;
+    QMap<QChar, QSet<int>> record_indices;
 };
 
 #endif // MAINWINDOW_H
