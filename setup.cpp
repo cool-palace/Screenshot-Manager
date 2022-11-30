@@ -231,6 +231,9 @@ void MainWindow::clear_all() {
     pics.clear();
     links.clear();
     records.clear();
+    hashtags_by_index.clear();
+    filters.clear();
+    filtration_results.clear();
 }
 
 void MainWindow::set_mode(Mode mode) {

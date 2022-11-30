@@ -27,9 +27,9 @@ void HashtagButton::mousePressEvent(QMouseEvent * e) {
             emit hashtagEvent('&', text);
         }
         break;
-//    case Qt::MiddleButton:
-//        emit filterEvent(' ', text);
-//        break;
+    case Qt::MiddleButton:
+        emit filterEvent('#', text);
+        break;
     default:
         break;
     }
@@ -43,6 +43,8 @@ void HashtagButton::show_count() {
 void HashtagButton::reset() {
     count = 0;
     record_indices.clear();
+    setChecked(false);
+    setEnabled(true);
     show_count();
 }
 
@@ -128,30 +130,23 @@ void MainWindow::update_hashtag_grid() {
 }
 
 void MainWindow::load_hashtag_info() {
-    for (const auto& hashtag : hashtags_in_config) {
-        auto button = hashtags.value(hashtag);
-        if (button) {
-            button->reset();
-        }
+    for (auto button : hashtags) {
+        button->reset();
     }
-    hashtags_in_config.clear();
-    hashtags_by_index.clear();
+    QSet<QString> hashtags_in_config;
     for (int index = 0; index < records.size(); ++index) {
         auto i = hashtag_match(records[index].quote);
         while (i.hasNext()) {
             auto hashtag = i.peekNext().captured(1);
             auto match = i.next().captured();
-            hashtags_in_config.push_back(hashtag);
+            hashtags_in_config.insert(hashtag);
             if (!hashtags[hashtag]) qDebug() << "Unexpected tag: " << hashtag;
             hashtags[hashtag]->add_index(match.front(), index);
             hashtags_by_index[index].push_back(match);
         }
     }
     for (const auto& hashtag : hashtags_in_config) {
-        auto button = hashtags.value(hashtag);
-        if (button) {
-            button->show_count();
-        }
+        hashtags[hashtag]->show_count();
     }
     highlight_current_hashtags(false);
     current_hashtags = hashtags_by_index[0];
@@ -210,12 +205,26 @@ void MainWindow::highlight_current_hashtags(bool enable) {
 QString MainWindow::preprocessed(const QString& text) {
     QString result = text;
     {
-        // Replacing #программирование with #айти
-        QMap<QString, QString> map = {{"программирование", "айти"}, {"имя", "имена"}, {"слово", "слова"}};
-        QRegularExpression it_regex("(.*\\s)?#([программирование|имя|слово])(\\s.*)?$");
-        auto i = it_regex.globalMatch(text);
+        // Setting #вопрос
+        QRegularExpression question_regex("(.*)?\\?\\s#(.*)?$");
+        auto i = question_regex.globalMatch(result);
         if (i.hasNext()) {
             auto match = i.peekNext();
+            result = match.captured(1) + "? #вопрос #" + match.captured(2);
+            qDebug() << result;
+        }
+    }{
+        // Replacing #программирование with #айти
+        QMap<QString, QString> map = {{" #программирование", " #айти"},
+                                      {" #имя", "# имена"},
+                                      {" #слово", " #слова"},
+                                      {" #настроение", ""},
+                                      {" #доброе_утро", " #приветствие"},
+                                      {" #соцсети", " #интернет"}};
+        QRegularExpression it_regex("(.*)?( #программирование| #имя| #слово| #настроение| #доброе_утро| #соцсети)(\\s.*)?$");
+        auto i = it_regex.globalMatch(result);
+        while (i.hasNext()) {
+            auto match = i.next();
             result = match.captured(1) + map[match.captured(2)] + match.captured(3);
             qDebug() << result;
         }
@@ -236,7 +245,7 @@ QString MainWindow::preprocessed(const QString& text) {
             qDebug() << result;
         }
     }
-    return text;
+    return result;
 }
 
 void MainWindow::filter_event(const QChar& sign, const QString& text) {
