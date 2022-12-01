@@ -28,7 +28,7 @@ void HashtagButton::mousePressEvent(QMouseEvent * e) {
         }
         break;
     case Qt::MiddleButton:
-        emit filterEvent('#', text);
+        emit filterEvent(' ', text);
         break;
     default:
         break;
@@ -210,8 +210,10 @@ QString MainWindow::preprocessed(const QString& text) {
         auto i = question_regex.globalMatch(result);
         if (i.hasNext()) {
             auto match = i.peekNext();
-            result = match.captured(1) + "? #вопрос #" + match.captured(2);
-            qDebug() << result;
+            if (!match.captured(2).contains("вопрос")) {
+                result = match.captured(1) + "? #вопрос #" + match.captured(2);
+                qDebug() << result;
+            }
         }
     }{
         // Replacing #программирование with #айти
@@ -249,7 +251,13 @@ QString MainWindow::preprocessed(const QString& text) {
 }
 
 void MainWindow::filter_event(const QChar& sign, const QString& text) {
-    if (filters.contains(text + antisign[sign])) return;
+    auto c = parallel_filter_sign(sign, text);
+    if (c != sign) {
+        QString tip = c == '#' ? "левую кнопку" : c == '&' ? "правую кнопку" : "колесико";
+        ui->statusBar->showMessage("Уже активен фильтр \"" + QString(c + text).simplified() + "\". "
+                                   "Нажмите " + tip + " мыши, чтобы снять действующий фильтр.");
+        return;
+    }
     // Disabling all buttons
     for (auto button : hashtags) {
         button->setDisabled(true);
@@ -265,6 +273,14 @@ void MainWindow::filter_event(const QChar& sign, const QString& text) {
         } else show_filtering_results();
     } else exit_filtering();
     show_status();
+}
+
+QChar MainWindow::parallel_filter_sign(const QChar& sign, const QString& text) {
+    for (const auto& c : sign_set) {
+        if (c != sign && filters.contains(text + c))
+            return c;
+    }
+    return sign;
 }
 
 void MainWindow::update_filters(const QChar& sign, const QString& text) {

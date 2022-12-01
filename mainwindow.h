@@ -75,6 +75,7 @@ private:
     int pic_end_index = 0;
     bool record_edited = false;
     bool config_edited = false;
+    QSet<QChar> sign_set = {'#', '&', ' '};
 
     // Setup functions
     void initialize();
@@ -105,9 +106,9 @@ private:
     QString preprocessed(const QString&);
     void filter(const QSet<int>&);
     void update_filters(const QChar&, const QString&);
+    QChar parallel_filter_sign(const QChar&, const QString&);
     void show_filtering_results();
     void exit_filtering();
-    QMap<QChar, QChar> antisign = {{'#', '&'}, {'&', '#'}};
 
     // Screenshot management
     bool load_albums(const QJsonObject&);
