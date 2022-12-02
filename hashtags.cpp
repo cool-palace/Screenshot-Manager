@@ -206,19 +206,19 @@ QString MainWindow::preprocessed(const QString& text) {
     QString result = text;
     {
         // Setting #вопрос
-        QRegularExpression question_regex("(.*)?\\?\\s#(.*)?$");
+        QRegularExpression question_regex("(.*)?(\\?!?\\s#)(.*)?$");
         auto i = question_regex.globalMatch(result);
         if (i.hasNext()) {
             auto match = i.peekNext();
-            if (!match.captured(2).contains("вопрос")) {
-                result = match.captured(1) + "? #вопрос #" + match.captured(2);
+            if (!match.captured(3).contains("вопрос")) {
+                result = match.captured(1) + "?" + (match.captured(2).at(1) == '!' ? "!" : "") + " #вопрос #" + match.captured(3);
                 qDebug() << result;
             }
         }
     }{
         // Replacing #программирование with #айти
         QMap<QString, QString> map = {{" #программирование", " #айти"},
-                                      {" #имя", "# имена"},
+                                      {" #имя", " #имена"},
                                       {" #слово", " #слова"},
                                       {" #настроение", ""},
                                       {" #доброе_утро", " #приветствие"},
