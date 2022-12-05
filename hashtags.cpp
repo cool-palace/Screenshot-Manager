@@ -133,6 +133,7 @@ void MainWindow::load_hashtag_info() {
     for (auto button : hashtags) {
         button->reset();
     }
+    all_records.clear();
     QSet<QString> hashtags_in_config;
     for (int index = 0; index < records.size(); ++index) {
         auto i = hashtag_match(records[index].quote);
@@ -144,6 +145,7 @@ void MainWindow::load_hashtag_info() {
             hashtags[hashtag]->add_index(match.front(), index);
             hashtags_by_index[index].push_back(match);
         }
+        all_records.insert(index);
     }
     for (const auto& hashtag : hashtags_in_config) {
         hashtags[hashtag]->show_count();
@@ -251,8 +253,8 @@ QString MainWindow::preprocessed(const QString& text) {
 }
 
 void MainWindow::filter_event(const QChar& sign, const QString& text) {
-    auto c = parallel_filter_sign(sign, text);
-    if (c != sign) {
+    if (filters.contains(text) && sign != filters.value(text).sign) {
+        QChar c = filters[text].sign;
         QString tip = c == '#' ? "левую кнопку" : c == '&' ? "правую кнопку" : "колесико";
         ui->statusBar->showMessage("Уже активен фильтр \"" + QString(c + text).simplified() + "\". "
                                    "Нажмите " + tip + " мыши, чтобы снять действующий фильтр.");
@@ -264,7 +266,7 @@ void MainWindow::filter_event(const QChar& sign, const QString& text) {
     }
     update_filters(sign, text);
     // Checking and unchecking filter buttons
-    hashtags[text]->setChecked(filters.contains(text + sign));
+    hashtags[text]->setChecked(filters.contains(text));
     // Enabling necessary buttons
     if (!filters.isEmpty()) {
         // Handling the filter not used in the config
@@ -284,33 +286,31 @@ QChar MainWindow::parallel_filter_sign(const QChar& sign, const QString& text) {
 }
 
 void MainWindow::update_filters(const QChar& sign, const QString& text) {
-    QString hashtag = text + sign;
     if (filters.isEmpty()) {
         ui->text->setDisabled(true);
         ui->slider->setDisabled(true);
-        filters.insert(hashtag);
-        for (int index : hashtags[text]->indices(sign)) {
-            filtration_results.insert(index, true);
-        }
-    } else if (!filters.contains(hashtag)) {
-        filters.insert(hashtag);
+        filters.insert(text, FilterSpecs(sign, true));
+        apply_first_filter();
+    } else if (!filters.contains(text)) {
+        filters.insert(text, FilterSpecs(sign, true));
         filter(hashtags[text]->indices(sign));
     } else {
-        filters.remove(hashtag);
+        filters.remove(text);
         filtration_results.clear();
-        QSetIterator<QString> i(filters);
-        while (i.hasNext()) {
-            auto filter_text = i.peekNext().chopped(1);
-            auto filter_sign = i.peekNext().back();
-            if (!i.hasPrevious()) {
-                for (int index : hashtags[filter_text]->indices(filter_sign)) {
-                    filtration_results.insert(index, true);
-                }
+        for (auto i = filters.begin(); i != filters.end(); ++i) {
+            if (i == filters.begin()) {
+                apply_first_filter();
             } else {
-                filter(hashtags[filter_text]->indices(filter_sign));
+                filter(hashtags[i.key()]->indices(i.value().sign));
             }
-            i.next();
         }
+    }
+}
+
+void MainWindow::apply_first_filter() {
+    auto i = filters.begin();
+    for (int index : hashtags[i.key()]->indices(i.value().sign)) {
+        filtration_results.insert(index, true);
     }
 }
 

@@ -38,6 +38,12 @@ class MainWindow : public QMainWindow
         CONFIG_READING,
         FILTRATION
     };
+    struct FilterSpecs {
+        QChar sign;
+        bool include;
+        FilterSpecs(const QChar& sign, bool include) : sign(sign), include(include) {}
+        FilterSpecs() : sign('#'), include(true) {}
+    };
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -68,7 +74,7 @@ private:
     QStringList current_hashtags;
     QMap<int, QStringList> hashtags_by_index;
     QMap<int, bool> filtration_results;
-    QSet<QString> filters;
+    QMap<QString, FilterSpecs> filters;
     QVector<Record> records;
     int pic_index;
     int quote_index;
@@ -76,6 +82,7 @@ private:
     bool record_edited = false;
     bool config_edited = false;
     QSet<QChar> sign_set = {'#', '&', ' '};
+    QSet<int> all_records;
 
     // Setup functions
     void initialize();
@@ -106,6 +113,7 @@ private:
     QString preprocessed(const QString&);
     void filter(const QSet<int>&);
     void update_filters(const QChar&, const QString&);
+    void apply_first_filter();
     QChar parallel_filter_sign(const QChar&, const QString&);
     void show_filtering_results();
     void exit_filtering();
