@@ -15,20 +15,28 @@ void HashtagButton::mousePressEvent(QMouseEvent * e) {
     switch (e->button()) {
     case Qt::LeftButton:
         if (e->modifiers() & Qt::ShiftModifier) {
-            emit filterEvent('#', text);
+            emit filterEvent('#', text, true);
+        } else if (e->modifiers() & Qt::AltModifier) {
+            emit filterEvent('#', text, false);
         } else {
             emit hashtagEvent('#', text);
         }
         break;
     case Qt::RightButton:
         if (e->modifiers() & Qt::ShiftModifier) {
-            emit filterEvent('&', text);
+            emit filterEvent('#', text, true);
+        } else if (e->modifiers() & Qt::AltModifier) {
+            emit filterEvent('#', text, false);
         } else {
             emit hashtagEvent('&', text);
         }
         break;
     case Qt::MiddleButton:
-        emit filterEvent(' ', text);
+        if (e->modifiers() & Qt::AltModifier) {
+            emit filterEvent(' ', text, false);
+        } else {
+            emit filterEvent(' ', text, true);
+        }
         break;
     default:
         break;
@@ -58,11 +66,11 @@ void HashtagButton::remove_index(const QChar& sign, int index) {
     --count;
 }
 
-QSet<int> HashtagButton::indices(const QChar& sign) const {
-    if (sign == ' ') {
-        return record_indices['#'] + record_indices['&'];
-    }
-    return record_indices[sign];
+QSet<int> HashtagButton::indices(const QChar& sign, bool include) const {
+    auto set = sign == ' '
+             ? record_indices['#'] + record_indices['&']
+             : record_indices[sign];
+    return include ? set : all_records.subtract(set);
 }
 
 void HashtagButton::highlight(const QChar& sign, bool enable) {
@@ -73,6 +81,27 @@ void HashtagButton::highlight(const QChar& sign, bool enable) {
         _font.setItalic(enable);
     }
     setFont(_font);
+}
+
+void HashtagButton::highlight(bool include, bool enable) {
+    auto _font = font();
+    if (include) {
+        _font.setUnderline(enable);
+    } else {
+        _font.setStrikeOut(enable);
+    }
+    setFont(_font);
+    setChecked(enable);
+    setEnabled(true);
+}
+
+QSet<int> HashtagButton::all_records;
+
+void HashtagButton::update_on_records(int size) {
+    all_records.clear();
+    for (int i = 0; i < size; ++i) {
+        all_records.insert(i);
+    }
 }
 
 void MainWindow::get_hashtags() {
@@ -95,14 +124,14 @@ void MainWindow::get_hashtags() {
 
 void MainWindow::create_hashtag_button(const QString& text) {
     hashtags.insert(text, new HashtagButton(text));
-    connect(hashtags[text], SIGNAL(filterEvent(const QChar&, const QString&)), this, SLOT(filter_event(const QChar&, const QString&)));
+    connect(hashtags[text], SIGNAL(filterEvent(const QChar&, const QString&, bool)), this, SLOT(filter_event(const QChar&, const QString&, bool)));
     connect(hashtags[text], SIGNAL(hashtagEvent(const QChar&, const QString&)), this, SLOT(hashtag_event(const QChar&, const QString&)));
 }
 
 void MainWindow::hashtag_event(const QChar& c, const QString& text) {
     if (current_mode == IDLE) return;
     if (!filters.isEmpty()) {
-        filter_event(c, text);
+        filter_event(c, text, true);
         return;
     }
     QRegularExpression regex(QString("(.*)?") + c + text + "(\\s.*)?$");
@@ -133,7 +162,7 @@ void MainWindow::load_hashtag_info() {
     for (auto button : hashtags) {
         button->reset();
     }
-    all_records.clear();
+    HashtagButton::update_on_records(records.size());
     QSet<QString> hashtags_in_config;
     for (int index = 0; index < records.size(); ++index) {
         auto i = hashtag_match(records[index].quote);
@@ -145,7 +174,6 @@ void MainWindow::load_hashtag_info() {
             hashtags[hashtag]->add_index(match.front(), index);
             hashtags_by_index[index].push_back(match);
         }
-        all_records.insert(index);
     }
     for (const auto& hashtag : hashtags_in_config) {
         hashtags[hashtag]->show_count();
@@ -252,8 +280,8 @@ QString MainWindow::preprocessed(const QString& text) {
     return result;
 }
 
-void MainWindow::filter_event(const QChar& sign, const QString& text) {
-    if (filters.contains(text) && sign != filters.value(text).sign) {
+void MainWindow::filter_event(const QChar& sign, const QString& text, bool include) {
+    if (filters.contains(text) && (sign != filters[text].sign || include != filters[text].include)) {
         QChar c = filters[text].sign;
         QString tip = c == '#' ? "левую кнопку" : c == '&' ? "правую кнопку" : "колесико";
         ui->statusBar->showMessage("Уже активен фильтр \"" + QString(c + text).simplified() + "\". "
@@ -264,7 +292,7 @@ void MainWindow::filter_event(const QChar& sign, const QString& text) {
     for (auto button : hashtags) {
         button->setDisabled(true);
     }
-    update_filters(sign, text);
+    update_filters(sign, text, include);
     // Checking and unchecking filter buttons
     hashtags[text]->setChecked(filters.contains(text));
     // Enabling necessary buttons
@@ -277,31 +305,27 @@ void MainWindow::filter_event(const QChar& sign, const QString& text) {
     show_status();
 }
 
-QChar MainWindow::parallel_filter_sign(const QChar& sign, const QString& text) {
-    for (const auto& c : sign_set) {
-        if (c != sign && filters.contains(text + c))
-            return c;
-    }
-    return sign;
-}
-
-void MainWindow::update_filters(const QChar& sign, const QString& text) {
+void MainWindow::update_filters(const QChar& sign, const QString& text, bool include) {
     if (filters.isEmpty()) {
         ui->text->setDisabled(true);
         ui->slider->setDisabled(true);
-        filters.insert(text, FilterSpecs(sign, true));
+        filters.insert(text, FilterSpecs(sign, include));
+        hashtags[text]->highlight(include, true);
         apply_first_filter();
     } else if (!filters.contains(text)) {
-        filters.insert(text, FilterSpecs(sign, true));
-        filter(hashtags[text]->indices(sign));
+        filters.insert(text, FilterSpecs(sign, include));
+        filter(hashtags[text]->indices(sign, include));
+        hashtags[text]->highlight(include, true);
     } else {
+        hashtags[text]->highlight(include, false);
         filters.remove(text);
         filtration_results.clear();
+        hashtags[text]->setEnabled(true);
         for (auto i = filters.begin(); i != filters.end(); ++i) {
             if (i == filters.begin()) {
                 apply_first_filter();
             } else {
-                filter(hashtags[i.key()]->indices(i.value().sign));
+                filter(hashtags[i.key()]->indices(i.value().sign, i.value().include));
             }
         }
     }
@@ -309,7 +333,7 @@ void MainWindow::update_filters(const QChar& sign, const QString& text) {
 
 void MainWindow::apply_first_filter() {
     auto i = filters.begin();
-    for (int index : hashtags[i.key()]->indices(i.value().sign)) {
+    for (int index : hashtags[i.key()]->indices(i.value().sign, i.value().include)) {
         filtration_results.insert(index, true);
     }
 }
@@ -324,6 +348,10 @@ void MainWindow::show_filtering_results() {
             auto hashtag = tag.right(tag.size()-1);
             hashtags[hashtag]->setEnabled(true);
         }
+    }
+    // Making sure the excluding filter buttons stay enabled
+    for (const auto& hashtag : filters.keys()) {
+        hashtags[hashtag]->highlight(filters[hashtag].include, true);
     }
 }
 

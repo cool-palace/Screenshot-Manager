@@ -361,9 +361,23 @@ QString MainWindow::filtration_message(int i) {
 QString MainWindow::filtration_indices() {
     if (filtration_results.isEmpty()) return ". ";
     QString result = ": (";
+    int buffer = 0;
+    bool range_active = false;
     for (int index : filtration_results.keys()) {
-        if (result.size() > 3) result.append(", ");
-        result.append(QString().setNum(index + 1));
+        if (index == buffer + 1) {
+            range_active = true;
+            if (index == filtration_results.keys().last()) {
+                result.append('-' + QString().setNum(index + 1));
+            } else buffer = index;
+        } else if (range_active) {
+            result.append('-' + QString().setNum(buffer + 1));
+            result.append(", " + QString().setNum(index + 1));
+            range_active = false;
+        } else {
+            if (result.size() > 3) result.append(", ");
+            result.append(QString().setNum(index + 1));
+        }
+        buffer = index;
     }
     result.append("). ");
     return result;

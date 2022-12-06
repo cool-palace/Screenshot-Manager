@@ -51,7 +51,7 @@ public:
 
 public slots:
     void hashtag_event(const QChar&, const QString&);
-    void filter_event(const QChar&, const QString&);
+    void filter_event(const QChar&, const QString&, bool);
 
 private:
     Ui::MainWindow *ui;
@@ -112,9 +112,8 @@ private:
     void highlight_current_hashtags(bool);
     QString preprocessed(const QString&);
     void filter(const QSet<int>&);
-    void update_filters(const QChar&, const QString&);
+    void update_filters(const QChar&, const QString&, bool);
     void apply_first_filter();
-    QChar parallel_filter_sign(const QChar&, const QString&);
     void show_filtering_results();
     void exit_filtering();
 
@@ -144,18 +143,21 @@ public:
     ~HashtagButton() override {}
     void mousePressEvent(QMouseEvent*) override;
     void highlight(const QChar&, bool);
+    void highlight(bool, bool);
     void show_count();
     void reset();
     void add_index(const QChar&, int);
     void remove_index(const QChar&, int);
-    QSet<int> indices(const QChar&) const;
+    QSet<int> indices(const QChar&, bool) const;
+    static void update_on_records(int);
 signals:
-    void filterEvent(const QChar&, const QString&);
+    void filterEvent(const QChar&, const QString&, bool);
     void hashtagEvent(const QChar&, const QString&);
 private:
     QString text;
     int count = 0;
     QMap<QChar, QSet<int>> record_indices;
+    static QSet<int> all_records;
 };
 
 #endif // MAINWINDOW_H
