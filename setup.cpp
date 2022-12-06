@@ -361,7 +361,7 @@ QString MainWindow::filtration_message(int i) {
 QString MainWindow::filtration_indices() {
     if (filtration_results.isEmpty()) return ". ";
     QString result = ": (";
-    int buffer = 0;
+    int buffer = -2;
     bool range_active = false;
     for (int index : filtration_results.keys()) {
         if (index == buffer + 1) {
