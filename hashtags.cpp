@@ -216,7 +216,7 @@ void MainWindow::update_current_hashtags() {
 }
 
 QRegularExpressionMatchIterator MainWindow::hashtag_match(const QString& text) {
-    QRegularExpression regex("[#&]([а-яё_]+)");
+    QRegularExpression regex("[#&]([а-яё_123]+)");
     return regex.globalMatch(text);
 }
 
@@ -252,8 +252,16 @@ QString MainWindow::preprocessed(const QString& text) {
                                       {" #слово", " #слова"},
                                       {" #настроение", ""},
                                       {" #доброе_утро", " #приветствие"},
-                                      {" #соцсети", " #интернет"}};
-        QRegularExpression it_regex("(.*)?( #программирование| #имя| #слово| #настроение| #доброе_утро| #соцсети)(\\s.*)?$");
+                                      {" #соцсети", " #интернет"},
+                                      {" #чтение", " #книги"},
+                                      {" #петух", " #геи"},
+                                      {" #битва", " #поединок"},
+                                      {" #смешное", ""},
+                                      {" #серьёзное", ""},
+                                     };
+        QRegularExpression it_regex("(.*)?( #программирование| #имя| #слово| "
+                                    "#настроение| #доброе_утро| #соцсети| "
+                                    "#чтение| #петух| #битва| #смешное| #серьёзное)(\\s.*)?$");
         auto i = it_regex.globalMatch(result);
         while (i.hasNext()) {
             auto match = i.next();
