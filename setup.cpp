@@ -79,6 +79,10 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 //    connect(ui->refactor, &QAction::triggered, this, &MainWindow::refactor_configs);
 
+    connect(ui->main_view, &QAction::triggered, [this]() { set_view(MAIN); });
+    connect(ui->list_view, &QAction::triggered, [this]() { set_view(LIST); });
+    connect(ui->gallery_view, &QAction::triggered, [this]() { set_view(GALLERY); });
+
     connect(ui->skip, &QPushButton::clicked, [this]() {
         switch (current_mode) {
         case CONFIG_CREATION:
@@ -198,8 +202,21 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent* event) {
-    if (event->key() == Qt::Key_Control) {
+    switch (event->key()) {
+    case Qt::Key_Control:
         ui->stackedWidget->setCurrentIndex(0);
+        break;
+    case Qt::Key_F1:
+        set_view(MAIN);
+        break;
+    case Qt::Key_F2:
+        set_view(LIST);
+        break;
+    case Qt::Key_F3:
+        set_view(GALLERY);
+        break;
+    default:
+        break;
     }
 }
 
@@ -234,6 +251,13 @@ void MainWindow::clear_all() {
     hashtags_by_index.clear();
     filters.clear();
     filtration_results.clear();
+    while (ui->view_grid->takeAt(0) != nullptr) {
+        // Clearing items from the grid
+    }
+    for (auto item : record_items) {
+        delete item;
+    }
+    record_items.clear();
 }
 
 void MainWindow::set_mode(Mode mode) {
@@ -257,12 +281,48 @@ void MainWindow::set_mode(Mode mode) {
         connect(ui->make_private, &QPushButton::clicked, this, &MainWindow::set_edited);
         display(0);
         load_hashtag_info();
+        for (auto record : record_items) {
+            ui->view_grid->addWidget(record);
+        }
         break;
     default:
         break;
     }
     set_enabled(mode);
     show_status();
+}
+
+void MainWindow::set_view(View view) {
+    if (view == current_view) return;
+    current_view = view;
+    switch (view) {
+    case MAIN:
+        ui->stacked_view->setCurrentIndex(0);
+        break;
+    case LIST:
+        ui->stacked_view->setCurrentIndex(1);
+        while (ui->view_grid->takeAt(0) != nullptr) {
+            // Clearing items from the grid
+        }
+        for (int i = 0; i < record_items.size(); ++i) {
+            record_items[i]->set_list_view();
+            ui->view_grid->addWidget(record_items[i], i, 0);
+        }
+        break;
+    case GALLERY:
+        ui->stacked_view->setCurrentIndex(1);
+        while (ui->view_grid->takeAt(0) != nullptr) {
+            // Clearing items from the grid
+        }
+        for (int i = 0; i < record_items.size(); ++i) {
+            record_items[i]->set_gallery_view();
+            ui->view_grid->addWidget(record_items[i], i/5, i%5);
+        }
+        break;
+    }
+    ui->main_view->setChecked(current_view == MAIN);
+    ui->list_view->setChecked(current_view == LIST);
+    ui->gallery_view->setChecked(current_view == GALLERY);
 }
 
 void MainWindow::set_enabled(bool enable) {
@@ -284,11 +344,11 @@ void MainWindow::set_edited() {
     ui->ok->setEnabled(true);
 }
 
-QPixmap MainWindow::scaled(const QImage& source) {
+QPixmap MainWindow::scaled(const QImage& source) const {
     return QPixmap::fromImage(source.scaled(ui->image->geometry().size(), Qt::KeepAspectRatio));
 }
 
-QJsonObject MainWindow::json_object(const QString& filepath) {
+QJsonObject MainWindow::json_object(const QString& filepath) const {
     QFile config(filepath);
     if (!config.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return QJsonObject();
@@ -300,7 +360,7 @@ QJsonObject MainWindow::json_object(const QString& filepath) {
     return json_file;
 }
 
-bool MainWindow::save_json(const QJsonObject& object, QFile& file) {
+bool MainWindow::save_json(const QJsonObject& object, QFile& file) const {
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         return false;
     }
@@ -339,7 +399,7 @@ bool MainWindow::data_ready() {
     return true;
 }
 
-QString MainWindow::filtration_message(int i) {
+QString MainWindow::filtration_message(int i) const {
     QString found = "Найдено ";
     QString recs = " записей по ";
     QString filters_count = " фильтрам";
@@ -358,7 +418,7 @@ QString MainWindow::filtration_message(int i) {
     return found + QString().setNum(i) + recs + QString().setNum(j) + filters_count;
 }
 
-QString MainWindow::filtration_indices() {
+QString MainWindow::filtration_indices() const {
     if (filtration_results.isEmpty()) return ". ";
     QString result = ": (";
     int buffer = -2;

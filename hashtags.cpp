@@ -215,7 +215,7 @@ void MainWindow::update_current_hashtags() {
     highlight_current_hashtags(true);
 }
 
-QRegularExpressionMatchIterator MainWindow::hashtag_match(const QString& text) {
+QRegularExpressionMatchIterator MainWindow::hashtag_match(const QString& text) const {
     QRegularExpression regex("[#&]([а-яё_123]+)");
     return regex.globalMatch(text);
 }
@@ -232,7 +232,7 @@ void MainWindow::highlight_current_hashtags(bool enable) {
     }
 }
 
-QString MainWindow::preprocessed(const QString& text) {
+QString MainWindow::preprocessed(const QString& text) const {
     QString result = text;
     {
         // Setting #вопрос

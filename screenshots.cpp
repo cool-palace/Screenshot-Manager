@@ -91,6 +91,13 @@ void MainWindow::read_title_config(const QJsonObject& json_file) {
         }
         records.push_back(record);
     }
+    for (int i = 0; i < records.size(); ++i) {
+        record_items.push_back(new RecordItem(records[i], i, path()));
+        connect(record_items[i], &RecordItem::selected, [this](int index){
+            ui->slider->setValue(index);
+            set_view(MAIN);
+        });
+    }
 }
 
 void MainWindow::save_title_config() {
@@ -161,7 +168,8 @@ void MainWindow::display(int index) {
     if (!ui->offline->isChecked()) {
         manager->get_image(records[index].links[pic_end_index]);
     } else {
-        auto image = QImage(dir.path() + QDir::separator() + records[index].pics[pic_end_index]);
+//        auto image = QImage(dir.path() + QDir::separator() + records[index].pics[pic_end_index]);
+        auto image = QImage(QString(dir.path() + QDir::separator() + records[index].pics[pic_end_index]).chopped(3) + "jpg");
         ui->image->setPixmap(scaled(image));
     }
     disconnect(ui->text, &QTextEdit::textChanged, this, &MainWindow::set_edited);
@@ -194,20 +202,4 @@ void MainWindow::draw(int index = 0) {
 void MainWindow::show_text(int index) {
     if (quotes.size() <= index) return;
     ui->text->setText(quotes[index]);
-}
-
-QJsonObject MainWindow::Record::to_json() const {
-    QJsonObject current_record;
-    QJsonArray pic_array, id_array, link_array;
-    for (int i = 0; i < pics.size(); ++i) {
-        pic_array.push_back(pics[i]);
-        id_array.push_back(ids[i]);
-        link_array.push_back(links[i]);
-    }
-    current_record["filenames"] = pic_array;
-    current_record["photo_ids"] = id_array;
-    current_record["links"] = link_array;
-    current_record["caption"] = quote;
-    current_record["public"] = is_public;
-    return current_record;
 }

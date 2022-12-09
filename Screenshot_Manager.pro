@@ -27,12 +27,14 @@ CONFIG += c++11
 SOURCES += \
         hashtags.cpp \
         main.cpp \
+        record.cpp \
         screenshots.cpp \
         setup.cpp \
         vk_manager.cpp
 
 HEADERS += \
         mainwindow.h \
+        record.h \
         vk_manager.h
 
 FORMS += \

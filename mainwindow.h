@@ -15,6 +15,7 @@
 #include <QRegularExpression>
 #include <QPushButton>
 #include "vk_manager.h"
+#include "record.h"
 
 namespace Ui {
 class MainWindow;
@@ -24,19 +25,16 @@ class HashtagButton;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-    struct Record {
-        QString quote;
-        QStringList pics;
-        QList<int> ids;
-        QStringList links;
-        bool is_public;
-        QJsonObject to_json() const;
-    };
     enum Mode {
         IDLE,
         CONFIG_CREATION,
         CONFIG_READING,
         FILTRATION
+    };
+    enum View {
+        MAIN,
+        LIST,
+        GALLERY
     };
     struct FilterSpecs {
         QChar sign;
@@ -60,6 +58,7 @@ private:
     const QString group_id = "42265360";
     int client_id;
     Mode current_mode = IDLE;
+    View current_view = MAIN;
     QString screenshots_location;
     QString quotes_location;
     QString configs_location;
@@ -76,6 +75,7 @@ private:
     QMap<int, bool> filtration_results;
     QMap<QString, FilterSpecs> filters;
     QVector<Record> records;
+    QVector<RecordItem*> record_items;
     int pic_index;
     int quote_index;
     int pic_end_index = 0;
@@ -88,17 +88,19 @@ private:
     void initialize();
     void clear_all();
     void set_mode(Mode);
+    void set_view(View);
     void set_enabled(bool);
     void set_edited();
-    QPixmap scaled(const QImage& source);
-    QJsonObject json_object(const QString&);
-    bool save_json(const QJsonObject&, QFile&);
+    QPixmap scaled(const QImage& source) const;
+    QJsonObject json_object(const QString&) const;
+    bool save_json(const QJsonObject&, QFile&) const;
     bool data_ready();
     void show_status();
     void keyPressEvent(QKeyEvent*) override;
     void keyReleaseEvent(QKeyEvent*) override;
-    QString filtration_indices();
-    QString filtration_message(int);
+    QString filtration_indices() const;
+    QString filtration_message(int) const;
+    QString path() const { return dir.path() + QDir::separator(); }
 
     // Hashtag management
     void get_hashtags();
@@ -108,9 +110,9 @@ private:
     void update_hashtag_info();
     void update_current_hashtags();
     void recalculate_hashtags(bool);
-    QRegularExpressionMatchIterator hashtag_match(const QString&);
+    QRegularExpressionMatchIterator hashtag_match(const QString&) const;
     void highlight_current_hashtags(bool);
-    QString preprocessed(const QString&);
+    QString preprocessed(const QString&) const;
     void filter(const QSet<int>&);
     void update_filters(const QChar&, const QString&, bool);
     void apply_first_filter();
