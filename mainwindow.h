@@ -72,10 +72,10 @@ private:
     QMap<QString, HashtagButton*> hashtags;
     QStringList current_hashtags;
     QMap<int, QStringList> hashtags_by_index;
-    QMap<int, bool> filtration_results;
+    QMap<int, RecordItem*> filtration_results;
     QMap<QString, FilterSpecs> filters;
     QVector<Record> records;
-    QVector<RecordItem*> record_items;
+    QList<RecordItem*> record_items;
     int pic_index;
     int quote_index;
     int pic_end_index = 0;

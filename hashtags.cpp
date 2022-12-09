@@ -342,7 +342,7 @@ void MainWindow::update_filters(const QChar& sign, const QString& text, bool inc
 void MainWindow::apply_first_filter() {
     auto i = filters.begin();
     for (int index : hashtags[i.key()]->indices(i.value().sign, i.value().include)) {
-        filtration_results.insert(index, true);
+        filtration_results.insert(index, record_items[index]);
     }
 }
 
@@ -375,10 +375,10 @@ void MainWindow::exit_filtering() {
 
 void MainWindow::filter(const QSet<int>& second) {
     if (filtration_results.isEmpty()) return;
-    QMap<int, bool> result;
+    QMap<int, RecordItem*> result;
     auto keys = QSet<int>::fromList(filtration_results.keys()).intersect(second);
     for (const auto& key : keys) {
-        result.insert(key,true);
+        result.insert(key,record_items[key]);
     }
     filtration_results = result;
 }

@@ -299,24 +299,24 @@ void MainWindow::set_view(View view) {
     case MAIN:
         ui->stacked_view->setCurrentIndex(0);
         break;
-    case LIST:
+    case LIST: case GALLERY:
         ui->stacked_view->setCurrentIndex(1);
-        while (ui->view_grid->takeAt(0) != nullptr) {
+        QLayoutItem* child;
+        while ((child = ui->view_grid->takeAt(0))) {
             // Clearing items from the grid
+            child->widget()->hide();
         }
-        for (int i = 0; i < record_items.size(); ++i) {
-            record_items[i]->set_list_view();
-            ui->view_grid->addWidget(record_items[i], i, 0);
-        }
-        break;
-    case GALLERY:
-        ui->stacked_view->setCurrentIndex(1);
-        while (ui->view_grid->takeAt(0) != nullptr) {
-            // Clearing items from the grid
-        }
-        for (int i = 0; i < record_items.size(); ++i) {
-            record_items[i]->set_gallery_view();
-            ui->view_grid->addWidget(record_items[i], i/5, i%5);
+        const auto& items = filtration_results.empty()
+                ? record_items
+                : filtration_results.values();
+        for (int i = 0; i < items.size(); ++i) {
+            if (view == LIST) {
+                items[i]->set_list_view();
+                ui->view_grid->addWidget(items[i], i, 0);
+            } else {
+                items[i]->set_gallery_view();
+                ui->view_grid->addWidget(items[i], i/5, i%5);
+            }
         }
         break;
     }
