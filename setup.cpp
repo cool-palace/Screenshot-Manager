@@ -8,18 +8,6 @@ MainWindow::MainWindow(QWidget *parent) :
     manager(new VK_Manager())
 {
     ui->setupUi(this);
-    add_tag_button = new QPushButton("+");
-    add_tag_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    connect(add_tag_button, &QPushButton::clicked, [this]() {
-        bool ok;
-        QString text = QInputDialog::getText(this, tr("Добавление хэштега"),
-                                                   tr("Введите новый хэштег:"), QLineEdit::Normal,
-                                                   "", &ok);
-        if (ok && !text.isEmpty() && !hashtags.contains(text)) {
-            create_hashtag_button(text);
-            update_hashtag_grid();
-        }
-    });
     get_hashtags();
     initialize();
 
@@ -64,6 +52,17 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
+    connect(ui->add_hashtag, &QAction::triggered, [this]() {
+        bool ok;
+        QString text = QInputDialog::getText(this, tr("Добавление хэштега"),
+                                                   tr("Введите новый хэштег:"), QLineEdit::Normal,
+                                                   "", &ok);
+        if (ok && !text.isEmpty() && !hashtags.contains(text)) {
+            create_hashtag_button(text);
+            update_hashtag_grid();
+        }
+    });
+
     connect(ui->slider, &QAbstractSlider::valueChanged, [this](int value) {
         switch (current_mode) {
         case CONFIG_READING:

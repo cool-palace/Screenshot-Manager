@@ -168,8 +168,8 @@ void MainWindow::display(int index) {
     if (!ui->offline->isChecked()) {
         manager->get_image(records[index].links[pic_end_index]);
     } else {
-//        auto image = QImage(dir.path() + QDir::separator() + records[index].pics[pic_end_index]);
-        auto image = QImage(QString(dir.path() + QDir::separator() + records[index].pics[pic_end_index]).chopped(3) + "jpg");
+        auto image = QImage(path() + records[index].pics[pic_end_index]);
+//        auto image = QImage(QString(dir.path() + QDir::separator() + records[index].pics[pic_end_index]).chopped(3) + "jpg");
         ui->image->setPixmap(scaled(image));
     }
     disconnect(ui->text, &QTextEdit::textChanged, this, &MainWindow::set_edited);

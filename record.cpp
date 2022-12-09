@@ -24,8 +24,8 @@ RecordItem::RecordItem(const Record& record, int index, const QString& path) :
     box(new QCheckBox("Кадров: " + QString().setNum(record.pics.size()))),
     layout(new QGridLayout)
 {
-//    auto pic = QImage(path + record.pics[0]);
-    auto pic = QImage(path + record.pics[0].chopped(3) + "jpg");
+    auto pic = QImage(path + record.pics[0]);
+//    auto pic = QImage(path + record.pics[0].chopped(3) + "jpg");
     image->setPixmap(QPixmap::fromImage(pic.scaled(QSize(160, 120), Qt::KeepAspectRatio)));
     image->setToolTip(record.quote);
     text->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);

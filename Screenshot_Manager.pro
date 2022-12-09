@@ -25,6 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        hashtag_button.cpp \
         hashtags.cpp \
         main.cpp \
         record.cpp \
@@ -33,6 +34,7 @@ SOURCES += \
         vk_manager.cpp
 
 HEADERS += \
+        hashtag_button.h \
         mainwindow.h \
         record.h \
         vk_manager.h
