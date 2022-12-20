@@ -18,40 +18,31 @@ QJsonObject Record::to_json() const {
 
 RecordItem::RecordItem(const Record& record, int index, const QString& path) :
     QWidget(),
-    index(index),
-    image(new QLabel),
-    text(new QLabel(record.quote)),
-    box(new QCheckBox("Кадров: " + QString().setNum(record.pics.size()))),
-    layout(new QGridLayout)
+    index(index)
 {
     auto pic = QImage(path + record.pics[0]);
 //    auto pic = QImage(path + record.pics[0].chopped(3) + "jpg");
-    image->setPixmap(QPixmap::fromImage(pic.scaled(QSize(160, 120), Qt::KeepAspectRatio)));
-    image->setToolTip(record.quote);
-    text->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    text->setMaximumHeight(120);
-    text->setWordWrap(true);
-    auto font = text->font();
+    image.setPixmap(QPixmap::fromImage(pic.scaled(QSize(160, 120), Qt::KeepAspectRatio)));
+    image.setToolTip(record.quote);
+    text.setText(record.quote);
+    text.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    text.setMaximumHeight(120);
+    text.setWordWrap(true);
+    auto font = text.font();
     font.setPointSize(12);
-    text->setFont(font);
-    text->hide();
-    box->setMinimumHeight(15);
-    box->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    box->setChecked(record.is_public);
-    box->setEnabled(false);
-    box->hide();
-    layout->setContentsMargins(0,0,0,0);
-    layout->addWidget(image,0,0);
-    layout->addWidget(text,0,1);
-    layout->addWidget(box,1,0);
-    setLayout(layout);
-}
-
-RecordItem::~RecordItem() {
-    delete image;
-    delete text;
-    delete box;
-    delete layout;
+    text.setFont(font);
+    text.hide();
+    box.setText("Кадров: " + QString().setNum(record.pics.size()));
+    box.setMinimumHeight(15);
+    box.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    box.setChecked(record.is_public);
+    box.setEnabled(false);
+    box.hide();
+    layout.setContentsMargins(0,0,0,0);
+    layout.addWidget(&image,0,0);
+    layout.addWidget(&text,0,1);
+    layout.addWidget(&box,1,0);
+    setLayout(&layout);
 }
 
 void RecordItem::mouseDoubleClickEvent(QMouseEvent* e) {
@@ -61,12 +52,12 @@ void RecordItem::mouseDoubleClickEvent(QMouseEvent* e) {
 }
 
 void RecordItem::set_gallery_view() {
-    text->hide();
-    box->show();
+    text.hide();
+    box.show();
     show();
 }
 void RecordItem::set_list_view() {
-    box->hide();
-    text->show();
+    box.hide();
+    text.show();
     show();
 }

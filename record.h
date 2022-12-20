@@ -21,7 +21,7 @@ class RecordItem : public QWidget
     Q_OBJECT
 public:
     RecordItem(const Record&, int, const QString&);
-    ~RecordItem() override;
+    ~RecordItem() override {}
     void set_gallery_view();
     void set_list_view();
     void mouseDoubleClickEvent(QMouseEvent*) override;
@@ -29,10 +29,10 @@ signals:
     void selected(int);
 private:
     int index;
-    QLabel* image;
-    QLabel* text;
-    QCheckBox* box;
-    QGridLayout *layout;
+    QLabel image;
+    QLabel text;
+    QCheckBox box;
+    QGridLayout layout;
 };
 
 #endif // RECORD_ITEMS_H
