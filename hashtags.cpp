@@ -2,10 +2,8 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 
-
-
 void MainWindow::get_hashtags() {
-    QFile file("hashtags.txt");
+    QFile file(configs_location + "hashtags.txt");
     if (!file.open(QIODevice::ReadOnly)) {
         ui->statusBar->showMessage("Не удалось открыть файл с хэштегами.");
     }
@@ -134,6 +132,13 @@ void MainWindow::highlight_current_hashtags(bool enable) {
 QString MainWindow::preprocessed(const QString& text) const {
     QString result = text;
     {
+        // Managing textless records
+        if ((result[0] == '#' || result.startsWith(" #") || result.startsWith(" &")) && !result.contains("#без_текста")) {
+            result += " #без_текста";
+            qDebug() << result;
+        }
+    }
+    {
         // Setting #вопрос
         QRegularExpression question_regex("(.*)?(\\?!?\\s#)(.*)?$");
         auto i = question_regex.globalMatch(result);
@@ -157,10 +162,11 @@ QString MainWindow::preprocessed(const QString& text) const {
                                       {" #битва", " #поединок"},
                                       {" #смешное", ""},
                                       {" #серьёзное", ""},
+                                      {" #комментарий", ""},
                                      };
         QRegularExpression it_regex("(.*)?( #программирование| #имя| #слово| "
                                     "#настроение| #доброе_утро| #соцсети| "
-                                    "#чтение| #петух| #битва| #смешное| #серьёзное)(\\s.*)?$");
+                                    "#чтение| #петух| #битва| #смешное| #серьёзное| #комментарий)(\\s.*)?$");
         auto i = it_regex.globalMatch(result);
         while (i.hasNext()) {
             auto match = i.next();

@@ -8,8 +8,8 @@ MainWindow::MainWindow(QWidget *parent) :
     manager(new VK_Manager())
 {
     ui->setupUi(this);
-    get_hashtags();
     initialize();
+    get_hashtags();
 
     connect(manager, &VK_Manager::albums_ready, [this](const QMap<QString, int>& ids) {
         album_ids = ids;
@@ -213,6 +213,27 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event) {
         break;
     case Qt::Key_F3:
         set_view(GALLERY);
+        break;
+    case Qt::Key_1:
+        emit hashtags["тема_1_лицо"]->hashtagEvent('#',"тема_1_лицо");
+        break;
+    case Qt::Key_2:
+        emit hashtags["тема_2_лицо"]->hashtagEvent('#',"тема_2_лицо");
+        break;
+    case Qt::Key_3:
+        emit hashtags["тема_3_лицо"]->hashtagEvent('#',"тема_3_лицо");
+        break;
+    case Qt::Key_4:
+        emit hashtags["тема_безличная"]->hashtagEvent('#',"тема_безличная");
+        break;
+    case Qt::Key_5:
+        emit hashtags["тема_объект"]->hashtagEvent('#',"тема_объект");
+        break;
+    case Qt::Key_Enter:
+        emit ui->ok->clicked();
+        break;
+    case Qt::Key_Left:
+        emit ui->back->clicked();
         break;
     default:
         break;
