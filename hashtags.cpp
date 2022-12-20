@@ -9,12 +9,20 @@ void MainWindow::get_hashtags() {
     }
     QTextStream in(&file);
     in.setCodec("UTF-8");
+    for (int i = 0; i < 10; ++i) {
+        ranked_hashtags.append(QStringList());
+    }
     while (!in.atEnd()) {
-        QString tag = in.readLine();
-        if (tag[0] == '#') {
-            tag.remove(0,1);
+        auto line = in.readLine().split(' ');
+        int rank = line.size() > 1 ? line[1].toInt() : 0;
+        auto text = line.first();
+        if (rank >= ranked_hashtags.size()) {
+            for (int i = ranked_hashtags.size(); i <= rank; ++i) {
+                ranked_hashtags.append(QStringList());
+            }
         }
-        create_hashtag_button(tag);
+        ranked_hashtags[rank].append(text);
+        create_hashtag_button(text);
     }
     file.close();
     update_hashtag_grid();
@@ -49,9 +57,18 @@ void MainWindow::update_hashtag_grid() {
         // Clearing buttons from the grid
     }
     int i = 0;
-    for (auto button : hashtags) {
-        ui->tag_grid->addWidget(button, i / 10, i % 10);
-        ++i;
+    if (ui->alphabet_order->isChecked()) {
+        for (auto button : hashtags) {
+            ui->tag_grid->addWidget(button, i / 10, i % 10);
+            ++i;
+        }
+    } else if (ui->addition_order->isChecked()) {
+        for (const auto& list : ranked_hashtags) {
+            for (const auto& text : list) {
+                ui->tag_grid->addWidget(hashtags[text], i / 10, i % 10);
+                ++i;
+            }
+        }
     }
 }
 

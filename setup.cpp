@@ -82,6 +82,15 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->list_view, &QAction::triggered, [this]() { set_view(LIST); });
     connect(ui->gallery_view, &QAction::triggered, [this]() { set_view(GALLERY); });
 
+    connect(ui->alphabet_order, &QAction::triggered, [this]() {
+        ui->addition_order->setChecked(false);
+        update_hashtag_grid();
+    });
+    connect(ui->addition_order, &QAction::triggered, [this]() {
+        ui->alphabet_order->setChecked(false);
+        update_hashtag_grid();
+    });
+
     connect(ui->skip, &QPushButton::clicked, [this]() {
         switch (current_mode) {
         case CONFIG_CREATION:

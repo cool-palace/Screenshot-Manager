@@ -68,6 +68,7 @@ private:
     QVector<int> photo_ids;
     QStringList links;
     QMap<QString, HashtagButton*> hashtags;
+    QList<QStringList> ranked_hashtags;
     QStringList current_hashtags;
     QMap<int, QStringList> hashtags_by_index;
     QMap<int, RecordItem*> filtration_results;
