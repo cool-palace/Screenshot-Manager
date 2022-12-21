@@ -93,6 +93,14 @@ void HashtagButton::highlight(bool include, bool enable) {
     setEnabled(true);
 }
 
+void HashtagButton::highlight_unregistered() {
+    auto _font = font();
+    _font.setOverline(true);
+    setFont(_font);
+    setToolTip("Вероятно, этот тег ошибочный");
+    disconnect(SIGNAL(hashtagEvent(const QChar&, const QString&)));
+}
+
 QSet<int> HashtagButton::all_records;
 
 void HashtagButton::update_on_records(int size) {

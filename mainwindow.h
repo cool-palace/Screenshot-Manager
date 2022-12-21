@@ -13,6 +13,7 @@
 #include <QKeyEvent>
 #include <QInputDialog>
 #include <QRegularExpression>
+#include <QMessageBox>
 #include "vk_manager.h"
 #include "hashtag_button.h"
 #include "record.h"
@@ -45,6 +46,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
+
+protected:
+    void closeEvent(QCloseEvent*) override;
 
 public slots:
     void hashtag_event(const QChar&, const QString&);

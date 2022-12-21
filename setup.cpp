@@ -262,6 +262,18 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event) {
     }
 }
 
+void MainWindow::closeEvent(QCloseEvent *event) {
+    if (config_edited) {
+        event->ignore();
+        if (QMessageBox::question(this,
+                                  "Подтверждение выхода",
+                                  "В конфигурационном файле есть несохранённые изменения.\nВыйти без сохранения?",
+                                  QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
+            event->accept();
+        }
+    }
+}
+
 void MainWindow::initialize() {
     auto json_file = json_object("config.json");
     if (!json_file.contains("screenshots") || !json_file.contains("docs") || !json_file.contains("configs")) {

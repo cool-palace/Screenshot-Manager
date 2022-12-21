@@ -105,7 +105,12 @@ void MainWindow::load_hashtag_info() {
             auto hashtag = i.peekNext().captured(1);
             auto match = i.next().captured();
             hashtags_in_config.insert(hashtag);
-            if (!hashtags[hashtag]) qDebug() << "Unexpected tag: " << hashtag;
+            if (!hashtags.contains(hashtag)) {
+                qDebug() << "Unexpected tag: " << hashtag;
+                create_hashtag_button(hashtag);
+                hashtags[hashtag]->highlight_unregistered();
+                update_hashtag_grid();
+            }
             hashtags[hashtag]->add_index(match.front(), index);
             hashtags_by_index[index].push_back(match);
         }
@@ -158,11 +163,14 @@ QRegularExpressionMatchIterator MainWindow::hashtag_match(const QString& text) c
 void MainWindow::highlight_current_hashtags(bool enable) {
     for (auto tag : current_hashtags) {
         auto hashtag = tag.right(tag.size()-1);
-        auto button = hashtags.value(hashtag);
-        if (!button) {
+        if (!hashtags.contains(hashtag)) {
             qDebug() << "Unexpected tag: " << hashtag;
-            return;
+            create_hashtag_button(hashtag);
+            hashtags[hashtag]->highlight_unregistered();
+            ranked_hashtags.last().append(hashtag);
+            update_hashtag_grid();
         }
+        auto button = hashtags.value(hashtag);
         button->highlight(tag.front(), enable);
     }
 }

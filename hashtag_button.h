@@ -12,6 +12,7 @@ public:
     void mousePressEvent(QMouseEvent*) override;
     void highlight(const QChar&, bool);
     void highlight(bool, bool);
+    void highlight_unregistered();
     void show_count();
     void reset();
     void add_index(const QChar&, int);
