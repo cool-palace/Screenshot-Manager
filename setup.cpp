@@ -83,13 +83,23 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->gallery_view, &QAction::triggered, [this]() { set_view(GALLERY); });
 
     connect(ui->alphabet_order, &QAction::triggered, [this]() {
-        ui->addition_order->setChecked(false);
+        ui->addition_order->setChecked(!ui->alphabet_order->isChecked());
         update_hashtag_grid();
     });
     connect(ui->addition_order, &QAction::triggered, [this]() {
-        ui->alphabet_order->setChecked(false);
+        ui->alphabet_order->setChecked(!ui->addition_order->isChecked());
         update_hashtag_grid();
     });
+
+    connect(ui->hashtags_full, &QAction::triggered, [this]() {
+        ui->hashtags_newest->setChecked(!ui->hashtags_full->isChecked());
+        update_hashtag_grid();
+    });
+    connect(ui->hashtags_newest, &QAction::triggered, [this]() {
+        ui->hashtags_full->setChecked(!ui->hashtags_newest->isChecked());
+        update_hashtag_grid();
+    });
+
 
     connect(ui->skip, &QPushButton::clicked, [this]() {
         switch (current_mode) {
@@ -243,6 +253,12 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event) {
         break;
     case Qt::Key_Left:
         emit ui->back->clicked();
+        break;
+    case Qt::Key_Home:
+        ui->alphabet_order->trigger();
+        break;
+    case Qt::Key_End:
+        ui->hashtags_full->trigger();
         break;
     default:
         break;

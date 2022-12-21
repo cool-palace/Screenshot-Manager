@@ -53,19 +53,40 @@ void MainWindow::hashtag_event(const QChar& c, const QString& text) {
 }
 
 void MainWindow::update_hashtag_grid() {
-    while (ui->tag_grid->takeAt(0) != nullptr) {
+    QLayoutItem* child;
+    while ((child = ui->tag_grid->takeAt(0))) {
         // Clearing buttons from the grid
+        child->widget()->hide();
     }
     int i = 0;
     if (ui->alphabet_order->isChecked()) {
-        for (auto button : hashtags) {
-            ui->tag_grid->addWidget(button, i / 10, i % 10);
-            ++i;
+        if (ui->hashtags_full->isChecked()) {
+            // Displaying all buttons in alphabet order
+            for (auto button : hashtags) {
+                ui->tag_grid->addWidget(button, i / 10, i % 10);
+                button->show();
+                ++i;
+            }
+        } else if (ui->hashtags_newest->isChecked()) {
+            // Sorting newest buttons to display them in alphabet order
+            QMap<QString, HashtagButton*> tags;
+            for (int index = 1; index < ranked_hashtags.size(); ++index) {
+                for (const auto& text : ranked_hashtags[index]) {
+                    tags.insert(text, hashtags[text]);
+                }
+            }
+            for (auto button : tags) {
+                ui->tag_grid->addWidget(button, i / 10, i % 10);
+                button->show();
+                ++i;
+            }
         }
     } else if (ui->addition_order->isChecked()) {
-        for (const auto& list : ranked_hashtags) {
-            for (const auto& text : list) {
+        // Displaying buttons in addition order
+        for (int index = ui->hashtags_full->isChecked() ? 0 : 1; index < ranked_hashtags.size(); ++index) {
+            for (const auto& text : ranked_hashtags[index]) {
                 ui->tag_grid->addWidget(hashtags[text], i / 10, i % 10);
+                hashtags[text]->show();
                 ++i;
             }
         }
