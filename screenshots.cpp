@@ -47,8 +47,10 @@ void MainWindow::register_record() {
 }
 
 void MainWindow::update_record() {
-    records[pic_index].quote = ui->text->toPlainText();
+    auto text = ui->text->toPlainText();
+    records[pic_index].quote = text;
     records[pic_index].is_public = !ui->make_private->isChecked();
+    record_items[pic_index]->update_text(text);
     record_edited = false;
     update_hashtag_info();
 }
@@ -134,6 +136,7 @@ void MainWindow::compile_configs() {
             auto record = item.toObject();
 //                record["title"] = title;
 //                record["album_id"] = album_id;
+            record["index"] = (record["public"].toBool() ? resulting_array : hidden_array).size() ;
             (record["public"].toBool() ? resulting_array : hidden_array).push_back(record);
         }
     }

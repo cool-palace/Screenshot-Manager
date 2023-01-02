@@ -88,7 +88,7 @@ private:
     QSet<int> all_records;
 
     // Setup functions
-    void initialize();
+    bool initialize();
     void clear_all();
     void set_mode(Mode);
     void set_view(View);
