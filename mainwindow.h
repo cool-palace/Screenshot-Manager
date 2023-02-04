@@ -78,6 +78,7 @@ private:
     QMap<int, RecordItem*> filtration_results;
     QMap<QString, FilterSpecs> filters;
     QVector<Record> records;
+//    RecordItem* record_items_array;
     QList<RecordItem*> record_items;
     int pic_index;
     int quote_index;

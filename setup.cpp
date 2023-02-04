@@ -2,10 +2,11 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    manager(new VK_Manager())
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , manager(new VK_Manager())
+//    , record_items_array(reinterpret_cast<RecordItem*>(new char[250 * sizeof(RecordItem)]))
 {
     ui->setupUi(this);
     if (initialize()) {
@@ -309,6 +310,7 @@ void MainWindow::clear_all() {
     }
     for (auto item : record_items) {
         delete item;
+//        item->~RecordItem();
     }
     record_items.clear();
 }

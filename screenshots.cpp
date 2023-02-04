@@ -94,6 +94,7 @@ void MainWindow::read_title_config(const QJsonObject& json_file) {
         records.push_back(record);
     }
     for (int i = 0; i < records.size(); ++i) {
+//        record_items.append(new(record_items_array + i) RecordItem(records[i], i, path()));
         record_items.push_back(new RecordItem(records[i], i, path()));
         connect(record_items[i], &RecordItem::selected, [this](int index){
             ui->slider->setValue(index);

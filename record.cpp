@@ -20,9 +20,7 @@ RecordItem::RecordItem(const Record& record, int index, const QString& path) :
     QWidget(),
     index(index)
 {
-    auto pic = QImage(path + record.pics[0]);
-//    auto pic = QImage(path + record.pics[0].chopped(3) + "jpg");
-    image.setPixmap(QPixmap::fromImage(pic.scaled(QSize(160, 120), Qt::KeepAspectRatio)));
+    QtConcurrent::run(this, &RecordItem::load_thumbmnail, path + record.pics[0]);
     update_text(record.quote);
     text.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     text.setMaximumHeight(120);
@@ -69,4 +67,10 @@ void RecordItem::update_text(const QString& caption) {
         text.setText(match.captured(1) + '\n' + match.captured(2) + match.captured(3));
     } else text.setText(caption);
     image.setToolTip(caption);
+}
+
+void RecordItem::load_thumbmnail(const QString& picture) {
+    auto pic = QImage(picture);
+//    auto pic = QImage(path + record.pics[0].chopped(3) + "jpg");
+    image.setPixmap(QPixmap::fromImage(pic.scaled(QSize(160, 120), Qt::KeepAspectRatio)));
 }

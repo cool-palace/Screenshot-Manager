@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QMouseEvent>
+#include <QtConcurrent>
 
 struct Record {
     QString quote;
@@ -34,6 +35,7 @@ private:
     QLabel text;
     QCheckBox box;
     QGridLayout layout;
+    void load_thumbmnail(const QString&);
 };
 
 #endif // RECORD_ITEMS_H
