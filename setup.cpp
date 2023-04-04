@@ -51,6 +51,8 @@ MainWindow::MainWindow(QWidget *parent) :
         set_mode(CONFIG_READING);
     });
 
+    connect(ui->read_text, &QAction::triggered, this, &MainWindow::read_text_from_subs);
+
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
     connect(ui->add_hashtag, &QAction::triggered, [this]() {
         bool ok;
@@ -286,7 +288,7 @@ void MainWindow::initialize() {
     access_token = json_file.value("access_token").toString();
     client_id = json_file.value("client").toInt();
     manager->set_access_token(access_token);
-    manager->get_albums();
+//    manager->get_albums();
     if (!QDir(screenshots_location).exists() || !QDir(quotes_location).exists()) {
         screenshots_location = QString();
         quotes_location = QString();

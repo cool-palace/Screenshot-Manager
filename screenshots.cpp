@@ -120,6 +120,88 @@ void MainWindow::save_title_config() {
     ui->statusBar->showMessage(message);
 }
 
+void MainWindow::read_text_from_subs() {
+    auto dir_pics = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
+                                                           screenshots_location));
+    pics = dir_pics.entryList(QDir::Files | QDir::NoDotAndDotDot);
+    QMultiMap<QString, QTime> timestamps_for_filenames;
+    QMap<QTime, QString> sub_quotes;
+    int ms_offset = -250;
+    for (const auto& pic : pics) {
+        QRegularExpression regex("(.*)?-(\\d-\\d\\d-\\d\\d-\\d{3})");
+        auto i = regex.globalMatch(pic);
+        if (i.hasNext()) {
+            auto match = i.next();
+            auto filename = match.captured(1);
+            auto time = QTime::fromString(match.captured(2), "h-mm-ss-zzz").addMSecs(ms_offset);
+//            QTime time(match.captured(2).toInt(), match.captured(3).toInt(), match.captured(4).toInt(), match.captured(5).toInt());
+            timestamps_for_filenames.insert(filename, time);
+        }
+    }
+    qDebug() << timestamps_for_filenames;
+
+    if (!timestamps_for_filenames.isEmpty()) {
+        auto dir_subs = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с cубтитрами",
+                                                               screenshots_location));
+        qDebug() << dir_subs.path();
+        for (const auto& filename : timestamps_for_filenames.uniqueKeys()) {
+            auto path = QDir::toNativeSeparators(dir_subs.path()) + QDir::separator() + filename + ".ass";
+            QFile file(path);
+            if (!file.open(QIODevice::ReadOnly)) {
+                qDebug() << file.exists();
+                return;
+            }
+            auto timestamps = timestamps_for_filenames.values(filename);
+            qDebug() << timestamps;
+            QTextStream in(&file);
+            in.setCodec("UTF-8");
+            QRegularExpression regex("Dialogue: 0,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,,0,0,0,,(.+)");
+            QString last_line;
+            while (!timestamps.isEmpty() && !in.atEnd()) {
+                auto line = in.readLine();
+                auto i = regex.globalMatch(line);
+                auto time = timestamps.last();
+                if (i.hasNext()) {
+                    auto match = i.next();
+                    auto line_start = QTime::fromString(match.captured(1), "h:mm:ss.z");
+                    auto line_finish = QTime::fromString(match.captured(2), "h:mm:ss.z");
+                    if (time < line_start && time.addSecs(10) > line_start) {
+                        qDebug() << filename << line_start << line_finish << time << last_line;
+                        sub_quotes.insert(time, last_line);
+                        timestamps.pop_back();
+                    } else if (time <= line_finish) {
+                        sub_quotes.insert(time, match.captured(3));
+                        timestamps.pop_back();
+                    }
+                    last_line = match.captured(3);
+                }
+            }
+            file.close();
+        }
+        qDebug() << sub_quotes;
+    }
+
+    QFile file(quotes_location + dir_pics.dirName() + " ("+ QString().setNum(ms_offset) +" backup).txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        ui->statusBar->showMessage("Не удалось открыть файл для записи.");
+//        return false;
+    }
+    QTextStream out(&file);
+    out.setCodec("UTF-8");
+    for (const auto& pic : pics) {
+        QRegularExpression regex("(.*)?-(\\d-\\d\\d-\\d\\d-\\d{3})");
+        auto i = regex.globalMatch(pic);
+        if (i.hasNext()) {
+            auto match = i.next();
+            auto filename = match.captured(1);
+            auto time = QTime::fromString(match.captured(2), "h-mm-ss-zzz").addMSecs(ms_offset);
+            out << sub_quotes[time] + "\r\n";
+        }
+    }
+    file.close();
+//    return true;
+}
+
 void MainWindow::compile_configs() {
     QDir dir = QDir(configs_location);
     auto configs = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);

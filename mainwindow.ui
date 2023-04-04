@@ -291,8 +291,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>59</width>
-             <height>24</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -332,6 +332,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="compile"/>
     <addaction name="decompile"/>
     <addaction name="add_hashtag"/>
+    <addaction name="read_text"/>
    </widget>
    <widget class="QMenu" name="view_menu">
     <property name="title">
@@ -492,6 +493,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Только новые</string>
+   </property>
+  </action>
+  <action name="read_text">
+   <property name="text">
+    <string>Прочитать текст</string>
    </property>
   </action>
  </widget>

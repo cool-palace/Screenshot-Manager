@@ -132,6 +132,7 @@ private:
     bool open_title_config();
     void read_title_config(const QJsonObject&);
     void save_title_config();
+    void read_text_from_subs();
     void compile_configs();
     QJsonObject reverse_index(const QJsonArray&);
     void refactor_configs();
