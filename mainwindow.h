@@ -133,6 +133,8 @@ private:
     void read_title_config(const QJsonObject&);
     void save_title_config();
     void read_text_from_subs();
+    QMultiMap<QString, QTime> timestamps_multimap();
+    void find_lines_by_timestamps(const QMultiMap<QString, QTime>&);
     void compile_configs();
     QJsonObject reverse_index(const QJsonArray&);
     void refactor_configs();

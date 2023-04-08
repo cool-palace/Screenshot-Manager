@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 
 struct Record {
+    Record(const QString& quote = QString()) : quote(quote) {}
     QString quote;
     QStringList pics;
     QList<int> ids;
