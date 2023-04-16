@@ -87,6 +87,10 @@ MainWindow::MainWindow(QWidget *parent) :
             display(pic_index);
             update_current_hashtags();
             break;
+        case TEXT_READING:
+            quote_index = value;
+            show_text(value);
+            break;
         default:
             break;
         }
@@ -116,6 +120,26 @@ MainWindow::MainWindow(QWidget *parent) :
         update_hashtag_grid();
     });
 
+    connect(ui->make_private, &QPushButton::clicked, [this] () {
+        switch (current_mode) {
+        case CONFIG_READING:
+            set_edited();
+            break;
+        case TEXT_READING:
+            if (get_subs_for_pic()) {
+                ui->add->setEnabled(true);
+                ui->skip->setEnabled(true);
+                quote_index = subs.indexOf(ui->text->toPlainText());
+                ui->slider->setEnabled(true);
+                ui->slider->setMaximum(subs.size() - 1);
+                ui->slider->setValue(quote_index);
+            }
+            break;
+        default:
+            break;
+        }
+    });
+
     connect(ui->skip, &QPushButton::clicked, [this]() {
         switch (current_mode) {
         case CONFIG_CREATION:
@@ -130,7 +154,7 @@ MainWindow::MainWindow(QWidget *parent) :
             break;
         case TEXT_READING:
             if (quote_index > 0) {
-                show_text(--quote_index);
+                ui->slider->setValue(--quote_index);
             }
             break;
         default:
@@ -153,7 +177,7 @@ MainWindow::MainWindow(QWidget *parent) :
             break;
         case TEXT_READING:
             if (quote_index < subs.size() - 1) {
-                show_text(++quote_index);
+                ui->slider->setValue(++quote_index);
             }
             break;
         default:
@@ -190,7 +214,8 @@ MainWindow::MainWindow(QWidget *parent) :
             subs.clear();
             draw(--pic_index);
             show_text(pic_index);
-            ui->slider->setValue(pic_index);
+            ui->slider->setEnabled(false);
+//            ui->slider->setValue(pic_index);
             ui->skip->setEnabled(false);
             ui->add->setEnabled(false);
             break;
@@ -240,12 +265,13 @@ MainWindow::MainWindow(QWidget *parent) :
                 quotes[pic_index] = ui->text->toPlainText();
                 subs.clear();
                 ui->make_private->setChecked(false);
+                ui->slider->setEnabled(false);
             }
             ++pic_index;
             if (pic_index < pics.size()) {
                 draw(pic_index);
                 show_text(pic_index);
-                ui->slider->setValue(pic_index);
+//                ui->slider->setValue(pic_index);
             } else {
                 for (const auto& quote : quotes) {
                     records.append(Record(quote));
@@ -372,7 +398,6 @@ void MainWindow::clear_all() {
 void MainWindow::set_mode(Mode mode) {
     current_mode = mode;
     quote_index = pic_index = pic_end_index = 0;
-    ui->make_private->disconnect();
     switch (mode) {
     case CONFIG_CREATION:
         ui->ok->setText("Готово");
@@ -388,7 +413,6 @@ void MainWindow::set_mode(Mode mode) {
         ui->skip->setText("Сохранить");
         ui->make_private->setText("Скрыто");
         ui->slider->setMaximum(records.size() - 1);
-        connect(ui->make_private, &QPushButton::clicked, this, &MainWindow::set_edited);
         display(0);
         load_hashtag_info();
         for (auto record : record_items) {
@@ -400,14 +424,7 @@ void MainWindow::set_mode(Mode mode) {
         ui->skip->setText("Предыдущий");
         ui->add->setText("Следующий");
         ui->make_private->setText("Субтитры");
-        connect(ui->make_private, &QPushButton::clicked, [this] () {
-            if (get_subs_for_pic()) {
-                ui->add->setEnabled(true);
-                ui->skip->setEnabled(true);
-                quote_index = subs.indexOf(ui->text->toPlainText());
-            }
-        });
-        ui->slider->setMaximum(pics.size() - 1);
+//        ui->slider->setMaximum(pics.size() - 1);
         draw(0);
         show_text(0);
 //        for (auto record : record_items) {
@@ -573,19 +590,34 @@ QString MainWindow::filtration_indices() const {
 }
 
 void MainWindow::show_status() {
-    if (current_mode == CONFIG_CREATION) {
+    switch (current_mode) {
+    case CONFIG_CREATION: {
         bool multiple_pics = pic_end_index > 0;
         QString s_quote = QString().setNum(quote_index + 1) + " из " + QString().setNum(quotes.size());
         QString s_pic = multiple_pics ? "кадры " : "кадр ";
         QString s_pic_index = QString().setNum(pic_index + 1) + (multiple_pics ? "-" + QString().setNum(pic_end_index + 1) : "");
         QString s_pic_from = " из " + QString().setNum(pics.size());
         ui->statusBar->showMessage("Цитата " + s_quote + ", " + s_pic + s_pic_index + s_pic_from);
-    } else if (current_mode == CONFIG_READING) {
+        break;
+    }
+    case CONFIG_READING: {
         QString filtration = ui->text->isEnabled()
                 ? ""
                 : filtration_message(filtration_results.size()) + filtration_indices();
         QString s_rec = QString().setNum(pic_index + 1) + " из " + QString().setNum(records.size());
         QString s_pic = QString().setNum(pic_end_index + 1) + " из " + QString().setNum(records[pic_index].pics.size());
         ui->statusBar->showMessage(filtration + "Запись " + s_rec + ", кадр " + s_pic);
+        break;
+    }
+    case TEXT_READING: {
+        QString s_line = subs.isEmpty()
+                ? ""
+                : ", строка " + QString().setNum(quote_index + 1) + " из " + QString().setNum(subs.size());;
+        QString s_pic = QString().setNum(pic_index + 1) + " из " + QString().setNum(pics.size());
+        ui->statusBar->showMessage("Кадр " + s_pic + s_line);
+        break;
+    }
+    default:
+        break;
     }
 }

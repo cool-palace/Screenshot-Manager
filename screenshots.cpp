@@ -175,7 +175,7 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
                 auto line_start = QTime::fromString(match.captured(1), "h:mm:ss.z");
                 auto line_finish = QTime::fromString(match.captured(2), "h:mm:ss.z");
                 bool time_within_bounds = time <= line_finish && time >= line_start;
-                bool time_missed = time < line_start && time.addSecs(5) > line_start;
+                bool time_missed = time < line_start && time.addSecs(3) > line_start;
                 if (time_within_bounds || time_missed) {
                     quotes.append(time_within_bounds ? match.captured(3) : last_line);
 //                    records.append(Record(time_within_bounds ? match.captured(3) : last_line));
@@ -195,7 +195,8 @@ bool MainWindow::get_subs_for_pic() {
         QRegularExpression regex("(.*)?-(\\d-\\d\\d-\\d\\d-\\d{3})");
         auto i = regex.globalMatch(pics[pic_index]);
         if (i.hasNext()) {
-            filename = i.next().captured(1);
+            auto match = i.next();
+            filename = match.captured(1);
         } else return false;
     }
     auto path = QDir::toNativeSeparators(subs_location) + QDir::separator() + dir.dirName() + QDir::separator() + filename + ".ass";
@@ -208,7 +209,6 @@ bool MainWindow::get_subs_for_pic() {
     QTextStream in(&file);
     in.setCodec("UTF-8");
     QRegularExpression regex("Dialogue: 0,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,0,0,0,,(.+)");
-    QString last_line;
     while (!in.atEnd()) {
         auto line = in.readLine();
         auto i = regex.globalMatch(line);
@@ -301,7 +301,7 @@ void MainWindow::draw(int index = 0) {
 }
 
 void MainWindow::show_text(int index) {
-    if (quotes.size() <= index) return;
+    if (quotes.size() <= index && subs.empty()) return;
     bool subtitles_on = !subs.empty();
     ui->text->setText(subtitles_on ? subs[index] : quotes[index]);
 }
