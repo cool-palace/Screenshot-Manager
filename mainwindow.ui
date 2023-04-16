@@ -64,6 +64,22 @@
               <property name="verticalSpacing">
                <number>7</number>
               </property>
+              <item row="2" column="0" colspan="5">
+               <widget class="QSlider" name="slider">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="maximum">
+                 <number>0</number>
+                </property>
+                <property name="pageStep">
+                 <number>1</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
               <item row="1" column="1">
                <widget class="QPushButton" name="make_private">
                 <property name="enabled">
@@ -102,22 +118,6 @@
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0" colspan="5">
-               <widget class="QSlider" name="slider">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="maximum">
-                 <number>0</number>
-                </property>
-                <property name="pageStep">
-                 <number>1</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
                 </property>
                </widget>
               </item>
@@ -291,8 +291,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>28</height>
+             <width>59</width>
+             <height>24</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -320,10 +320,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <widget class="QMenu" name="menu">
     <property name="title">
-     <string>Открыть</string>
+     <string>Запуск</string>
     </property>
-    <addaction name="open_folder"/>
-    <addaction name="open_config"/>
+    <addaction name="text_reading"/>
+    <addaction name="config_creation"/>
+    <addaction name="config_reading"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -332,7 +333,6 @@ p, li { white-space: pre-wrap; }
     <addaction name="compile"/>
     <addaction name="decompile"/>
     <addaction name="add_hashtag"/>
-    <addaction name="read_text"/>
    </widget>
    <widget class="QMenu" name="view_menu">
     <property name="title">
@@ -376,9 +376,9 @@ p, li { white-space: pre-wrap; }
    <addaction name="menu_4"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="open_folder">
+  <action name="config_creation">
    <property name="text">
-    <string>Открыть папку</string>
+    <string>Создание конф. файла</string>
    </property>
   </action>
   <action name="open_doc">
@@ -386,9 +386,9 @@ p, li { white-space: pre-wrap; }
     <string>Открыть документ</string>
    </property>
   </action>
-  <action name="open_config">
+  <action name="config_reading">
    <property name="text">
-    <string>Открыть конфиг</string>
+    <string>Чтение конф. файла</string>
    </property>
   </action>
   <action name="offline">
@@ -396,7 +396,7 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Работа оффлайн</string>
@@ -495,9 +495,9 @@ p, li { white-space: pre-wrap; }
     <string>Только новые</string>
    </property>
   </action>
-  <action name="read_text">
+  <action name="text_reading">
    <property name="text">
-    <string>Прочитать текст</string>
+    <string>Чтение субтитров</string>
    </property>
   </action>
  </widget>

@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->image->setPixmap(scaled(image));
     });
 
-    connect(ui->open_folder, &QAction::triggered, [this]() {
+    connect(ui->config_creation, &QAction::triggered, [this]() {
         clear_all();
         dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
                                                      screenshots_location));
@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
         manager->get_photo_ids(album_ids[dir.dirName()]);
     });
 
-    connect(ui->open_config, &QAction::triggered, [this]() {
+    connect(ui->config_reading, &QAction::triggered, [this]() {
         if (!open_title_config()) {
             set_mode(IDLE);
             ui->statusBar->showMessage("Конфигурационный файл не открыт.");
@@ -51,7 +51,21 @@ MainWindow::MainWindow(QWidget *parent) :
         set_mode(CONFIG_READING);
     });
 
-    connect(ui->read_text, &QAction::triggered, this, &MainWindow::read_text_from_subs);
+    connect(ui->text_reading, &QAction::triggered, [this]() {
+        clear_all();
+        dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
+                                                     screenshots_location));
+        pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+        auto timestamps_for_filenames = timestamps_multimap();
+        if (timestamps_for_filenames.isEmpty()) {
+            set_mode(IDLE);
+            ui->statusBar->showMessage("Не удалось извлечь временные метки из кадров.");
+            return;
+        }
+        if (find_lines_by_timestamps(timestamps_for_filenames)) {
+            set_mode(TEXT_READING);
+        }
+    });
 
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
     connect(ui->add_hashtag, &QAction::triggered, [this]() {
@@ -102,7 +116,6 @@ MainWindow::MainWindow(QWidget *parent) :
         update_hashtag_grid();
     });
 
-
     connect(ui->skip, &QPushButton::clicked, [this]() {
         switch (current_mode) {
         case CONFIG_CREATION:
@@ -115,9 +128,38 @@ MainWindow::MainWindow(QWidget *parent) :
             update_quote_file();
             save_title_config();
             break;
+        case TEXT_READING:
+            if (quote_index > 0) {
+                show_text(--quote_index);
+            }
+            break;
         default:
             break;
         }
+    });
+
+    connect(ui->add, &QPushButton::clicked, [this]() {
+        switch (current_mode) {
+        case CONFIG_CREATION:
+            // Adding one more image to current record
+            pic_end_index = qMax(pic_index, pic_end_index) + 1;
+            draw(pic_end_index);
+            ui->slider->setValue(pic_end_index);
+            break;
+        case CONFIG_READING:
+            // Showing next image in current record
+            ++pic_end_index;
+            display(pic_index);
+            break;
+        case TEXT_READING:
+            if (quote_index < subs.size() - 1) {
+                show_text(++quote_index);
+            }
+            break;
+        default:
+            break;
+        }
+        show_status();
     });
 
     connect(ui->back, &QPushButton::clicked, [this]() {
@@ -143,24 +185,14 @@ MainWindow::MainWindow(QWidget *parent) :
                 ui->back->setEnabled(it != filtration_results.begin());
             }
             break;
-        default:
-            break;
-        }
-        show_status();
-    });
-
-    connect(ui->add, &QPushButton::clicked, [this]() {
-        switch (current_mode) {
-        case CONFIG_CREATION:
-            // Adding one more image to current record
-            pic_end_index = qMax(pic_index, pic_end_index) + 1;
-            draw(pic_end_index);
-            ui->slider->setValue(pic_end_index);
-            break;
-        case CONFIG_READING:
-            // Showing next image in current record
-            ++pic_end_index;
-            display(pic_index);
+        case TEXT_READING:
+            if (pic_index == 0) break;
+            subs.clear();
+            draw(--pic_index);
+            show_text(pic_index);
+            ui->slider->setValue(pic_index);
+            ui->skip->setEnabled(false);
+            ui->add->setEnabled(false);
             break;
         default:
             break;
@@ -201,6 +233,25 @@ MainWindow::MainWindow(QWidget *parent) :
                 auto it = ++filtration_results.find(pic_index);
                 ui->slider->setValue(it.key());
                 ui->ok->setEnabled(++it != filtration_results.end());
+            }
+            break;
+        case TEXT_READING:
+            if (!subs.isEmpty()) {
+                quotes[pic_index] = ui->text->toPlainText();
+                subs.clear();
+                ui->make_private->setChecked(false);
+            }
+            ++pic_index;
+            if (pic_index < pics.size()) {
+                draw(pic_index);
+                show_text(pic_index);
+                ui->slider->setValue(pic_index);
+            } else {
+                for (const auto& quote : quotes) {
+                    records.append(Record(quote));
+                }
+                update_quote_file();
+                set_mode(IDLE);
             }
             break;
         default:
@@ -284,6 +335,7 @@ void MainWindow::initialize() {
     }
     screenshots_location = json_file.value("screenshots").toString();
     quotes_location = json_file.value("docs").toString();
+    subs_location = json_file.value("subs").toString();
     configs_location = json_file.value("configs").toString();
     access_token = json_file.value("access_token").toString();
     client_id = json_file.value("client").toInt();
@@ -304,6 +356,7 @@ void MainWindow::clear_all() {
     pics.clear();
     links.clear();
     records.clear();
+    subs.clear();
     hashtags_by_index.clear();
     filters.clear();
     filtration_results.clear();
@@ -319,6 +372,7 @@ void MainWindow::clear_all() {
 void MainWindow::set_mode(Mode mode) {
     current_mode = mode;
     quote_index = pic_index = pic_end_index = 0;
+    ui->make_private->disconnect();
     switch (mode) {
     case CONFIG_CREATION:
         ui->ok->setText("Готово");
@@ -340,6 +394,25 @@ void MainWindow::set_mode(Mode mode) {
         for (auto record : record_items) {
             ui->view_grid->addWidget(record);
         }
+        break;
+    case TEXT_READING:
+        ui->ok->setText("Готово");
+        ui->skip->setText("Предыдущий");
+        ui->add->setText("Следующий");
+        ui->make_private->setText("Субтитры");
+        connect(ui->make_private, &QPushButton::clicked, [this] () {
+            if (get_subs_for_pic()) {
+                ui->add->setEnabled(true);
+                ui->skip->setEnabled(true);
+                quote_index = subs.indexOf(ui->text->toPlainText());
+            }
+        });
+        ui->slider->setMaximum(pics.size() - 1);
+        draw(0);
+        show_text(0);
+//        for (auto record : record_items) {
+//            ui->view_grid->addWidget(record);
+//        }
         break;
     default:
         break;
@@ -388,7 +461,7 @@ void MainWindow::set_enabled(bool enable) {
     bool listing_enabled = (current_mode == CONFIG_CREATION && pics.size() > 1)
             || (current_mode == CONFIG_READING && records[0].pics.size() > 1);
     ui->add->setEnabled(enable && listing_enabled);
-    ui->text->setEnabled(enable);
+    ui->text->setEnabled(enable && current_mode != TEXT_READING);
     ui->make_private->setEnabled(enable);
     ui->slider->setEnabled(current_mode == CONFIG_READING);
     ui->slider->setValue(0);

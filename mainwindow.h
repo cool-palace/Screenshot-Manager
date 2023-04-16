@@ -29,7 +29,7 @@ class MainWindow : public QMainWindow
         IDLE,
         CONFIG_CREATION,
         CONFIG_READING,
-        FILTRATION
+        TEXT_READING
     };
     enum View {
         MAIN,
@@ -64,6 +64,7 @@ private:
     QString screenshots_location;
     QString quotes_location;
     QString configs_location;
+    QString subs_location;
     QString access_token;
     QMap<QString, int> album_ids;
     QDir dir;
@@ -86,6 +87,7 @@ private:
     bool config_edited = false;
     QSet<QChar> sign_set = {'#', '&', ' '};
     QSet<int> all_records;
+    QStringList subs;
 
     // Setup functions
     void initialize();
@@ -134,7 +136,8 @@ private:
     void save_title_config();
     void read_text_from_subs();
     QMultiMap<QString, QTime> timestamps_multimap();
-    void find_lines_by_timestamps(const QMultiMap<QString, QTime>&);
+    bool find_lines_by_timestamps(const QMultiMap<QString, QTime>&);
+    bool get_subs_for_pic();
     void compile_configs();
     QJsonObject reverse_index(const QJsonArray&);
     void refactor_configs();
