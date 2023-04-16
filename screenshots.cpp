@@ -164,7 +164,7 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
         auto timestamps = timestamps_for_filenames.values(filename);
         QTextStream in(&file);
         in.setCodec("UTF-8");
-        QRegularExpression regex("Dialogue: 0,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,0,0,0,,(.+)");
+        QRegularExpression regex("Dialogue: \\d+,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,0+,0+,0+,,(.+)");
         QString last_line;
         while (!timestamps.isEmpty() && !in.atEnd()) {
             auto line = in.readLine();
@@ -175,7 +175,7 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
                 auto line_start = QTime::fromString(match.captured(1), "h:mm:ss.z");
                 auto line_finish = QTime::fromString(match.captured(2), "h:mm:ss.z");
                 bool time_within_bounds = time <= line_finish && time >= line_start;
-                bool time_missed = time < line_start && time.addSecs(3) > line_start;
+                bool time_missed = time < line_start && time.addSecs(5) > line_start;
                 if (time_within_bounds || time_missed) {
                     quotes.append(time_within_bounds ? match.captured(3) : last_line);
 //                    records.append(Record(time_within_bounds ? match.captured(3) : last_line));
@@ -184,7 +184,13 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
                 last_line = match.captured(3);
             }
         }
+        if (in.atEnd() && !timestamps.isEmpty()) {
+            quotes.append("// Пропуск //");
+        }
         file.close();
+    }
+    while (quotes.size() < pics.size()) {
+        quotes.append("// Добор //");
     }
     return true;
 }
@@ -208,7 +214,7 @@ bool MainWindow::get_subs_for_pic() {
     }
     QTextStream in(&file);
     in.setCodec("UTF-8");
-    QRegularExpression regex("Dialogue: 0,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,0,0,0,,(.+)");
+    QRegularExpression regex("Dialogue: \\d+,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,0+,0+,0+,,(.+)");
     while (!in.atEnd()) {
         auto line = in.readLine();
         auto i = regex.globalMatch(line);

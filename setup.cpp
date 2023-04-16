@@ -133,6 +133,18 @@ MainWindow::MainWindow(QWidget *parent) :
                 ui->slider->setEnabled(true);
                 ui->slider->setMaximum(subs.size() - 1);
                 ui->slider->setValue(quote_index);
+                QMap<QString, int> lines;
+                for (int i = 0; i < subs.size(); ++i) {
+                    lines.insert(subs[i], i);
+                }
+                for (const auto& line : lines.keys()) {
+                    record_items.push_back(new RecordItem(line, lines[line]));
+                    connect(record_items.back(), &RecordItem::selected, [this](int index){
+                        ui->slider->setValue(index);
+                        set_view(MAIN);
+                    });
+                    ui->view_grid->addWidget(record_items.back());
+                }
             }
             break;
         default:
@@ -212,6 +224,10 @@ MainWindow::MainWindow(QWidget *parent) :
         case TEXT_READING:
             if (pic_index == 0) break;
             subs.clear();
+            for (auto item : record_items) {
+                delete item;
+            }
+            record_items.clear();
             draw(--pic_index);
             show_text(pic_index);
             ui->slider->setEnabled(false);
@@ -264,6 +280,10 @@ MainWindow::MainWindow(QWidget *parent) :
             if (!subs.isEmpty()) {
                 quotes[pic_index] = ui->text->toPlainText();
                 subs.clear();
+                for (auto item : record_items) {
+                    delete item;
+                }
+                record_items.clear();
                 ui->make_private->setChecked(false);
                 ui->slider->setEnabled(false);
             }

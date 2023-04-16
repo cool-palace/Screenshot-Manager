@@ -45,6 +45,29 @@ RecordItem::RecordItem(const Record& record, int index, const QString& path) :
     setLayout(&layout);
 }
 
+RecordItem::RecordItem(const QString& quote, int index) :
+    QWidget(),
+    index(index)
+{
+    text.setText(quote);
+    text.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    text.setMaximumHeight(120);
+    text.setWordWrap(true);
+    auto font = text.font();
+    font.setPointSize(12);
+    text.setFont(font);
+    text.hide();
+    box.setMinimumHeight(15);
+    box.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    box.setEnabled(false);
+    box.hide();
+    layout.setContentsMargins(0,0,0,0);
+    layout.addWidget(&image,0,0);
+    layout.addWidget(&text,0,1);
+    layout.addWidget(&box,1,0);
+    setLayout(&layout);
+}
+
 void RecordItem::mouseDoubleClickEvent(QMouseEvent* e) {
     if (e->button() == Qt::LeftButton ) {
         emit selected(index);

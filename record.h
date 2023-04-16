@@ -22,6 +22,7 @@ class RecordItem : public QWidget
     Q_OBJECT
 public:
     RecordItem(const Record&, int, const QString&);
+    RecordItem(const QString&, int);
     ~RecordItem() override {}
     void set_gallery_view();
     void set_list_view();
