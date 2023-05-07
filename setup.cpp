@@ -201,15 +201,31 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->back, &QPushButton::clicked, [this]() {
         switch (current_mode) {
         case CONFIG_CREATION:
-            if (pic_index == pic_end_index) {
-                pic_end_index = 0;
+            if (ui->back->text() == "Назад") {
+                // Going back in picture list
+                if (pic_index == pic_end_index) {
+                    pic_end_index = 0;
+                }
+            {
+                int& current_index = pic_index > pic_end_index ? pic_index : pic_end_index;
+                if (current_index == 0) break;
+                draw(--current_index);
+                ui->slider->setValue(current_index);
             }
-        {
-            int& current_index = pic_index > pic_end_index ? pic_index : pic_end_index;
-            if (current_index == 0) break;
-            draw(--current_index);
-            ui->slider->setValue(current_index);
-        }
+            } else { // Cancelling the latest operation
+                if (pic_end_index > 0) {
+                    // Pic was added by mistake
+                    pic_end_index = 0;
+                    draw(pic_index);
+                } else {
+                    // A record was registered by mistake
+                    auto rec = records.takeLast();
+                    pic_index -= rec.pics.size();
+                    draw(pic_index);
+                    ui->slider->setValue(pic_index);
+                    show_text(--quote_index);
+                }
+            }
             break;
         case CONFIG_READING:
             pic_end_index = 0;
@@ -314,14 +330,22 @@ MainWindow::~MainWindow() {
 
 void MainWindow::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Control) {
-        ui->stackedWidget->setCurrentIndex(1);
+        if (current_mode == CONFIG_READING) {
+            ui->stackedWidget->setCurrentIndex(1);
+        } else if (current_mode == CONFIG_CREATION) {
+            ui->back->setText("Отмена");
+        }
     }
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent* event) {
     switch (event->key()) {
     case Qt::Key_Control:
-        ui->stackedWidget->setCurrentIndex(0);
+        if (current_mode == CONFIG_READING) {
+            ui->stackedWidget->setCurrentIndex(0);
+        } else if (current_mode == CONFIG_CREATION) {
+            ui->back->setText("Назад");
+        }
         break;
     case Qt::Key_PageDown:
         set_view(current_view == MAIN ? LIST : current_view == LIST ? GALLERY : MAIN);
@@ -386,7 +410,7 @@ void MainWindow::initialize() {
     access_token = json_file.value("access_token").toString();
     client_id = json_file.value("client").toInt();
     manager->set_access_token(access_token);
-//    manager->get_albums();
+    manager->get_albums();
     if (!QDir(screenshots_location).exists() || !QDir(quotes_location).exists()) {
         screenshots_location = QString();
         quotes_location = QString();
@@ -635,6 +659,7 @@ void MainWindow::show_status() {
                 : ", строка " + QString().setNum(quote_index + 1) + " из " + QString().setNum(subs.size());;
         QString s_pic = QString().setNum(pic_index + 1) + " из " + QString().setNum(pics.size());
         ui->statusBar->showMessage("Кадр " + s_pic + s_line);
+        qDebug() << quotes.size();
         break;
     }
     default:

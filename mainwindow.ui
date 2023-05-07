@@ -211,6 +211,9 @@
             <property name="text">
              <string>Назад</string>
             </property>
+            <property name="checkable">
+             <bool>false</bool>
+            </property>
            </widget>
           </item>
           <item>
@@ -396,7 +399,7 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>Работа оффлайн</string>

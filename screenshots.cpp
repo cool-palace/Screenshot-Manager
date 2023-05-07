@@ -175,7 +175,7 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
                 auto line_start = QTime::fromString(match.captured(1), "h:mm:ss.z");
                 auto line_finish = QTime::fromString(match.captured(2), "h:mm:ss.z");
                 bool time_within_bounds = time <= line_finish && time >= line_start;
-                bool time_missed = time < line_start && time.addSecs(5) > line_start;
+                bool time_missed = time < line_start && time.addSecs(30) > line_start;
                 if (time_within_bounds || time_missed) {
                     quotes.append(time_within_bounds ? match.captured(3) : last_line);
 //                    records.append(Record(time_within_bounds ? match.captured(3) : last_line));
@@ -188,9 +188,6 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
             quotes.append("// Пропуск //");
         }
         file.close();
-    }
-    while (quotes.size() < pics.size()) {
-        quotes.append("// Добор //");
     }
     return true;
 }
