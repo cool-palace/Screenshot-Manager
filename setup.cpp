@@ -68,6 +68,7 @@ MainWindow::MainWindow(QWidget *parent) :
     });
 
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
+    connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
     connect(ui->add_hashtag, &QAction::triggered, [this]() {
         bool ok;
         QString text = QInputDialog::getText(this, tr("Добавление хэштега"),

@@ -139,6 +139,7 @@ private:
     bool find_lines_by_timestamps(const QMultiMap<QString, QTime>&);
     bool get_subs_for_pic();
     void compile_configs();
+    void export_text();
     QJsonObject reverse_index(const QJsonArray&);
     void refactor_configs();
     void display(int);

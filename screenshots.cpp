@@ -257,6 +257,37 @@ void MainWindow::compile_configs() {
     ui->statusBar->showMessage(message);
 }
 
+void MainWindow::export_text() {
+    QFile file("exported_text.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        ui->statusBar->showMessage("Не удалось открыть выходной файл.");
+        return;
+    }
+    QRegularExpression regex("(.*?)\\s[#&].*$");
+    QTextStream out(&file);
+    out.setCodec("UTF-8");
+    QDir dir = QDir(configs_location);
+    auto configs = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+    for (const auto& config : configs) {
+//        if (config.startsWith("Kono")) break;
+        auto object = json_object(configs_location + config);
+        auto array = object["screens"].toArray();
+        for (QJsonValueRef item : array) {
+            auto record = item.toObject();
+            if (record["public"].toBool()) {
+                auto quote = record["caption"].toString();
+//                auto i = regex.globalMatch(quote);
+//                if (i.hasNext()) {
+//                    auto match = i.next();
+//                    quote = match.captured(1);
+//                }
+                out << quote + "\r\n";
+            }
+        }
+    }
+    file.close();
+}
+
 QJsonObject MainWindow::reverse_index(const QJsonArray& array) {
     QJsonObject result;
     for (int index = 0; index < array.size(); ++index) {
