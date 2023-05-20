@@ -53,11 +53,13 @@ protected:
 public slots:
     void hashtag_event(const QChar&, const QString&);
     void filter_event(const QChar&, const QString&, bool);
+    void lay_previews(int page = 1);
 
 private:
     Ui::MainWindow *ui;
     VK_Manager* manager;
     const QString group_id = "42265360";
+    const int pics_per_page = 70;
     int client_id;
     Mode current_mode = IDLE;
     View current_view = MAIN;

@@ -259,6 +259,8 @@ void MainWindow::filter_event(const QChar& sign, const QString& text, bool inclu
         // Handling the filter not used in the config
         if (filtration_results.isEmpty()) {
             hashtags[text]->setEnabled(true);
+            ui->back->setDisabled(true);
+            ui->ok->setDisabled(true);
         } else show_filtering_results();
     } else exit_filtering();
     show_status();

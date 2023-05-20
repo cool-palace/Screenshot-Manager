@@ -97,6 +97,8 @@ MainWindow::MainWindow(QWidget *parent) :
         }
         show_status();
     });
+
+    connect(ui->page_index, SIGNAL(valueChanged(int)), this, SLOT(lay_previews(int)));
 //    connect(ui->refactor, &QAction::triggered, this, &MainWindow::refactor_configs);
 
     connect(ui->main_view, &QAction::triggered, [this]() { set_view(MAIN); });
@@ -458,10 +460,14 @@ void MainWindow::set_mode(Mode mode) {
         ui->skip->setText("Сохранить");
         ui->make_private->setText("Скрыто");
         ui->slider->setMaximum(records.size() - 1);
+        ui->page_index->setMaximum(records.size() / pics_per_page + 1);
         display(0);
         load_hashtag_info();
         for (auto record : record_items) {
             ui->view_grid->addWidget(record);
+        }
+        if (ui->stacked_view->currentIndex() > 0) {
+            lay_previews();
         }
         break;
     case TEXT_READING:
@@ -492,28 +498,36 @@ void MainWindow::set_view(View view) {
         break;
     case LIST: case GALLERY:
         ui->stacked_view->setCurrentIndex(1);
-        QLayoutItem* child;
-        while ((child = ui->view_grid->takeAt(0))) {
-            // Clearing items from the grid
-            child->widget()->hide();
-        }
-        const auto& items = filtration_results.empty()
-                ? record_items
-                : filtration_results.values();
-        for (int i = 0; i < items.size(); ++i) {
-            if (view == LIST) {
-                items[i]->set_list_view();
-                ui->view_grid->addWidget(items[i], i, 0);
-            } else {
-                items[i]->set_gallery_view();
-                ui->view_grid->addWidget(items[i], i/5, i%5);
-            }
-        }
+        lay_previews();
         break;
     }
     ui->main_view->setChecked(current_view == MAIN);
     ui->list_view->setChecked(current_view == LIST);
     ui->gallery_view->setChecked(current_view == GALLERY);
+}
+
+void MainWindow::lay_previews(int page) {
+    if (current_view == MAIN || current_mode == IDLE) return;
+    ui->page_index->setMaximum((filtration_results.isEmpty()
+                               ? records.size()
+                               : filtration_results.values().size()) / pics_per_page + 1);
+    QLayoutItem* child;
+    while ((child = ui->view_grid->takeAt(0))) {
+        // Clearing items from the grid
+        child->widget()->hide();
+    }
+    const auto& items = filtration_results.empty()
+                        ? record_items
+                        : filtration_results.values();
+    for (int i = (page - 1) * pics_per_page ; i < qMin(items.size(), page * pics_per_page); ++i) {
+        if (current_view == LIST) {
+            items[i]->set_list_view();
+            ui->view_grid->addWidget(items[i], i, 0);
+        } else {
+            items[i]->set_gallery_view();
+            ui->view_grid->addWidget(items[i], i/10, i%10);
+        }
+    }
 }
 
 void MainWindow::set_enabled(bool enable) {
