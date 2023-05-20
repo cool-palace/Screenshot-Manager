@@ -660,7 +660,6 @@ void MainWindow::show_status() {
                 : ", строка " + QString().setNum(quote_index + 1) + " из " + QString().setNum(subs.size());;
         QString s_pic = QString().setNum(pic_index + 1) + " из " + QString().setNum(pics.size());
         ui->statusBar->showMessage("Кадр " + s_pic + s_line);
-        qDebug() << quotes.size();
         break;
     }
     default:

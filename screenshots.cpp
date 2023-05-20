@@ -153,6 +153,13 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
 //    auto dir_subs = QDir(subs_location);
 //    auto dir_subs = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с cубтитрами",
 //                                                           screenshots_location));
+    // The following lines are to be used when pic names and keys in multimap are sorted differently
+//    auto keys = timestamps_for_filenames.uniqueKeys();
+//    QList<QString> first, second;
+//    for (auto&& key : keys) {
+//        (key.startsWith('[') ? first : second).append(key);
+//    }
+//    auto filenames = first + second;
     for (const auto& filename : timestamps_for_filenames.uniqueKeys()) {
         auto path = QDir::toNativeSeparators(subs_location) + QDir::separator() + dir.dirName() + QDir::separator() + filename + ".ass";
         QFile file(path);
@@ -163,7 +170,6 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
         }
         auto timestamps = timestamps_for_filenames.values(filename);
         QTextStream in(&file);
-        in.setCodec("UTF-8");
         QRegularExpression regex("Dialogue: \\d+,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,0+,0+,0+,,(.+)");
         QString last_line;
         while (!timestamps.isEmpty() && !in.atEnd()) {
@@ -177,11 +183,11 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
                 bool time_within_bounds = time <= line_finish && time >= line_start;
                 bool time_missed = time < line_start && time.addSecs(30) > line_start;
                 if (time_within_bounds || time_missed) {
-                    quotes.append(time_within_bounds ? match.captured(3) : last_line);
+                    quotes.append(time_within_bounds ? match.captured(3).replace("\\N", " ") : last_line);
 //                    records.append(Record(time_within_bounds ? match.captured(3) : last_line));
                     timestamps.pop_back();
                 }
-                last_line = match.captured(3);
+                last_line = match.captured(3).replace("\\N", " ");
             }
         }
         if (in.atEnd() && !timestamps.isEmpty()) {
@@ -210,14 +216,13 @@ bool MainWindow::get_subs_for_pic() {
         return false;
     }
     QTextStream in(&file);
-    in.setCodec("UTF-8");
     QRegularExpression regex("Dialogue: \\d+,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,0+,0+,0+,,(.+)");
     while (!in.atEnd()) {
         auto line = in.readLine();
         auto i = regex.globalMatch(line);
         if (i.hasNext()) {
             auto match = i.next();
-            subs.append(match.captured(3));
+            subs.append(match.captured(3).replace("\\N", " "));
         }
     }
     file.close();
@@ -322,7 +327,7 @@ void MainWindow::display(int index) {
 }
 
 void MainWindow::draw(int index = 0) {
-    if (!ui->offline->isChecked()) {
+    if (!ui->offline->isChecked() && current_mode != TEXT_READING) {
         manager->get_image(links[index]);
     } else {
         auto image = QImage(dir.path() + QDir::separator() + pics[index]);
