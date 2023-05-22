@@ -2,15 +2,16 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    manager(new VK_Manager())
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , manager(new VK_Manager())
+//    , record_items_array(reinterpret_cast<RecordItem*>(new char[250 * sizeof(RecordItem)]))
 {
     ui->setupUi(this);
-    initialize();
-    get_hashtags();
-
+    if (initialize()) {
+        get_hashtags();
+    }
     connect(manager, &VK_Manager::albums_ready, [this](const QMap<QString, int>& ids) {
         album_ids = ids;
         if (album_ids.empty()) {
@@ -400,11 +401,11 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     }
 }
 
-void MainWindow::initialize() {
+bool MainWindow::initialize() {
     auto json_file = json_object("config.json");
-    if (!json_file.contains("screenshots") || !json_file.contains("docs") || !json_file.contains("configs")) {
+    if (!json_file.contains("screenshots") /*|| !json_file.contains("docs")*/ || !json_file.contains("configs")) {
         ui->statusBar->showMessage("Неверный формат конфигурационного файла.");
-        return;
+        return false;
     }
     screenshots_location = json_file.value("screenshots").toString();
     quotes_location = json_file.value("docs").toString();
@@ -414,13 +415,12 @@ void MainWindow::initialize() {
     client_id = json_file.value("client").toInt();
     manager->set_access_token(access_token);
     manager->get_albums();
-    if (!QDir(screenshots_location).exists() || !QDir(quotes_location).exists()) {
-        screenshots_location = QString();
-        quotes_location = QString();
+    if (!QDir(screenshots_location).exists() || !QDir(configs_location).exists()) {
         ui->statusBar->showMessage("Указаны несуществующие директории. Перепроверьте конфигурационный файл.");
-        return;
+        return false;
     }
     ui->statusBar->showMessage("Конфигурация успешно загружена.");
+    return true;
 }
 
 void MainWindow::clear_all() {
@@ -438,6 +438,7 @@ void MainWindow::clear_all() {
     }
     for (auto item : record_items) {
         delete item;
+//        item->~RecordItem();
     }
     record_items.clear();
 }

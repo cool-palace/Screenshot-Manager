@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QMouseEvent>
+#include <QtConcurrent>
 
 struct Record {
     Record(const QString& quote = QString()) : quote(quote) {}
@@ -27,6 +28,7 @@ public:
     void set_gallery_view();
     void set_list_view();
     void mouseDoubleClickEvent(QMouseEvent*) override;
+    void update_text(const QString&);
 signals:
     void selected(int);
 private:
@@ -35,6 +37,7 @@ private:
     QLabel text;
     QCheckBox box;
     QGridLayout layout;
+    void load_thumbmnail(const QString&);
 };
 
 #endif // RECORD_ITEMS_H

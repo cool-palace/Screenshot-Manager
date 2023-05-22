@@ -81,6 +81,7 @@ private:
     QMap<int, RecordItem*> filtration_results;
     QMap<QString, FilterSpecs> filters;
     QVector<Record> records;
+//    RecordItem* record_items_array;
     QList<RecordItem*> record_items;
     int pic_index;
     int quote_index;
@@ -92,7 +93,7 @@ private:
     QStringList subs;
 
     // Setup functions
-    void initialize();
+    bool initialize();
     void clear_all();
     void set_mode(Mode);
     void set_view(View);

@@ -63,7 +63,7 @@ void MainWindow::update_hashtag_grid() {
         if (ui->hashtags_full->isChecked()) {
             // Displaying all buttons in alphabet order
             for (auto button : hashtags) {
-                ui->tag_grid->addWidget(button, i / 10, i % 10);
+                ui->tag_grid->addWidget(button, i / 11, i % 11);
                 button->show();
                 ++i;
             }
@@ -83,9 +83,10 @@ void MainWindow::update_hashtag_grid() {
         }
     } else if (ui->addition_order->isChecked()) {
         // Displaying buttons in addition order
+        int columns_count = ui->hashtags_full->isChecked() ? 11 : 10;
         for (int index = ui->hashtags_full->isChecked() ? 0 : 1; index < ranked_hashtags.size(); ++index) {
             for (const auto& text : ranked_hashtags[index]) {
-                ui->tag_grid->addWidget(hashtags[text], i / 10, i % 10);
+                ui->tag_grid->addWidget(hashtags[text], i / columns_count, i % columns_count);
                 hashtags[text]->show();
                 ++i;
             }
