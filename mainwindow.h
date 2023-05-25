@@ -70,6 +70,7 @@ private:
     QString access_token;
     QMap<QString, int> album_ids;
     QDir dir;
+    QMap<int, QString> title_map;
     QStringList pics;
     QStringList quotes;
     QVector<int> photo_ids;

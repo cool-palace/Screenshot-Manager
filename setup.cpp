@@ -137,6 +137,7 @@ MainWindow::MainWindow(QWidget *parent)
                 ui->slider->setEnabled(true);
                 ui->slider->setMaximum(subs.size() - 1);
                 ui->slider->setValue(quote_index);
+                ui->page_index->setMaximum(subs.size() / pics_per_page + 1);
                 QMap<QString, int> lines;
                 for (int i = 0; i < subs.size(); ++i) {
                     lines.insert(subs[i], i);
@@ -317,6 +318,7 @@ MainWindow::MainWindow(QWidget *parent)
                     records.append(Record(quote));
                 }
                 update_quote_file();
+                ui->statusBar->showMessage("Цитаты записаны в файл " + dir.dirName() + ".txt");
                 set_mode(IDLE);
             }
             break;
@@ -509,9 +511,12 @@ void MainWindow::set_view(View view) {
 
 void MainWindow::lay_previews(int page) {
     if (current_view == MAIN || current_mode == IDLE) return;
-    ui->page_index->setMaximum((filtration_results.isEmpty()
-                               ? records.size()
-                               : filtration_results.values().size()) / pics_per_page + 1);
+    int total_previews = current_mode == CONFIG_READING
+                            ? (filtration_results.isEmpty()
+                                ? records.size()
+                                : filtration_results.values().size())
+                            : record_items.size();
+    ui->page_index->setMaximum(total_previews / pics_per_page + 1);
     QLayoutItem* child;
     while ((child = ui->view_grid->takeAt(0))) {
         // Clearing items from the grid

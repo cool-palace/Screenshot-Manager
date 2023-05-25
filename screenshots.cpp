@@ -57,22 +57,25 @@ void MainWindow::update_record() {
 
 bool MainWindow::open_title_config() {
     clear_all();
-    auto filepath = QFileDialog::getOpenFileName(nullptr, "Открыть конфигурационный файл",
+    auto filepaths = QFileDialog::getOpenFileNames(nullptr, "Открыть конфигурационный файл",
                                                  configs_location,
                                                  "Файлы (*.json)");
-    if (filepath.isEmpty()) return false;
-    auto json_file = json_object(filepath);
-    if (!json_file.contains("title") || !json_file.contains("screens")) {
-        ui->statusBar->showMessage("Неверный формат файла.");
-        return false;
+    if (filepaths.isEmpty()) return false;
+    for (const auto& filepath : filepaths) {
+        auto json_file = json_object(filepath);
+        if (!json_file.contains("title") || !json_file.contains("screens")) {
+            ui->statusBar->showMessage("Неверный формат файла: " + filepath);
+            return false;
+        }
+        read_title_config(json_file);
     }
-    read_title_config(json_file);
     return !records.empty();
 }
 
 void MainWindow::read_title_config(const QJsonObject& json_file) {
     auto title = json_file.value("title").toString();
     dir = QDir(screenshots_location + title);
+    title_map[records.size()] = title;
     auto records_array = json_file.value("screens").toArray();
     for (QJsonValueRef r : records_array) {
         Record record;
@@ -173,7 +176,7 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
         }
         auto timestamps = timestamps_for_filenames.values(filename);
         QTextStream in(&file);
-        QRegularExpression regex("Dialogue: \\d+,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,0+,0+,0+,,(.+)");
+        QRegularExpression regex("Dialogue: \\d+,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,0+,0+,0+,,({.+?})?(.+)");
         QString last_line;
         while (!timestamps.isEmpty() && !in.atEnd()) {
             auto line = in.readLine();
@@ -186,11 +189,11 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
                 bool time_within_bounds = time <= line_finish && time >= line_start;
                 bool time_missed = time < line_start && time.addSecs(30) > line_start;
                 if (time_within_bounds || time_missed) {
-                    quotes.append(time_within_bounds ? match.captured(3).replace("\\N", " ") : last_line);
+                    quotes.append(time_within_bounds ? match.captured(4).replace("\\N", " ") : last_line);
 //                    records.append(Record(time_within_bounds ? match.captured(3) : last_line));
                     timestamps.pop_back();
                 }
-                last_line = match.captured(3).replace("\\N", " ");
+                last_line = match.captured(4).replace("\\N", " ");
             }
         }
         if (in.atEnd() && !timestamps.isEmpty()) {
@@ -219,13 +222,13 @@ bool MainWindow::get_subs_for_pic() {
         return false;
     }
     QTextStream in(&file);
-    QRegularExpression regex("Dialogue: \\d+,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,0+,0+,0+,,(.+)");
+    QRegularExpression regex("Dialogue: \\d+,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,0+,0+,0+,,({.+?})?(.+)");
     while (!in.atEnd()) {
         auto line = in.readLine();
         auto i = regex.globalMatch(line);
         if (i.hasNext()) {
             auto match = i.next();
-            subs.append(match.captured(3).replace("\\N", " "));
+            subs.append(match.captured(4).replace("\\N", " "));
         }
     }
     file.close();
