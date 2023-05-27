@@ -19,8 +19,8 @@ bool MainWindow::read_quote_file(QFile& file) {
     } else return false;
 }
 
-bool MainWindow::update_quote_file() {
-    QFile file(quotes_location + dir.dirName() + ".txt");
+bool MainWindow::update_quote_file(const QString& title) {
+    QFile file(quotes_location + title + ".txt");
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         ui->statusBar->showMessage("Не удалось открыть файл с цитатами.");
         return false;
@@ -29,6 +29,21 @@ bool MainWindow::update_quote_file() {
     out.setCodec("UTF-8");
     for (const auto& record : records) {
         out << record.quote + "\r\n";
+    }
+    file.close();
+    return true;
+}
+
+bool MainWindow::update_quote_file(int start, int end) {
+    QFile file(quotes_location + title_map.value(start) + ".txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        ui->statusBar->showMessage("Не удалось открыть файл с цитатами.");
+        return false;
+    }
+    QTextStream out(&file);
+    out.setCodec("UTF-8");
+    for (int i = start; i <= end; ++i) {
+        out << records[i].quote + "\r\n";
     }
     file.close();
     return true;
@@ -96,9 +111,8 @@ void MainWindow::read_title_config(const QJsonObject& json_file) {
         }
         records.push_back(record);
     }
-    for (int i = 0; i < records.size(); ++i) {
-//        record_items.append(new(record_items_array + i) RecordItem(records[i], i, path()));
-        record_items.push_back(new RecordItem(records[i], i, path()));
+    for (int i = records.size() - records_array.size(); i < records.size(); ++i) {
+        record_items.push_back(new RecordItem(records[i], i, screenshots_location + title + QDir::separator()));
         connect(record_items[i], &RecordItem::selected, [this](int index){
             ui->slider->setValue(index);
             set_view(MAIN);
@@ -106,23 +120,36 @@ void MainWindow::read_title_config(const QJsonObject& json_file) {
     }
 }
 
-void MainWindow::save_title_config() {
+void MainWindow::save_title_config(const QString& title) {
     QJsonArray record_array;
     for (const auto& record : records) {
         record_array.push_back(record.to_json());
     }
-    QFile file(configs_location + dir.dirName() + ".json");
+    QFile file(configs_location + title + ".json");
     QJsonObject object;
-    object["title"] = dir.dirName();
-    object["album_id"] = album_ids[dir.dirName()];
+    object["title"] = title;
+    object["album_id"] = album_ids[title];
     object["screens"] = record_array;
     auto message = save_json(object, file)
             ? "Конфигурационный файл сохранён."
             : "Не удалось сохранить файл.";
-    if (current_mode == CONFIG_READING) {
-        config_edited = false;
-        ui->skip->setEnabled(false);
+    ui->statusBar->showMessage(message);
+}
+
+void MainWindow::save_title_config(int start, int end) {
+    QJsonArray record_array;
+    for (int i = start; i <= end; ++i) {
+        record_array.push_back(records[i].to_json());
     }
+    auto title = title_map.value(start);
+    QFile file(configs_location + title + ".json");
+    QJsonObject object;
+    object["title"] = title;
+    object["album_id"] = album_ids[title];
+    object["screens"] = record_array;
+    auto message = save_json(object, file)
+            ? "Конфигурационный файл сохранён."
+            : "Не удалось сохранить файл.";
     ui->statusBar->showMessage(message);
 }
 
@@ -133,7 +160,7 @@ void MainWindow::read_text_from_subs() {
     auto timestamps_for_filenames = timestamps_multimap();
     if (timestamps_for_filenames.isEmpty()) return;
     find_lines_by_timestamps(timestamps_for_filenames);
-    update_quote_file();
+    update_quote_file(dir.dirName());
     QString message = "Записан файл " + dir.dirName() + ".txt";
     ui->statusBar->showMessage(message);
     clear_all();
@@ -315,7 +342,7 @@ void MainWindow::display(int index) {
     if (!ui->offline->isChecked()) {
         manager->get_image(records[index].links[pic_end_index]);
     } else {
-        auto image = QImage(path() + records[index].pics[pic_end_index]);
+        auto image = QImage(path(index) + records[index].pics[pic_end_index]);
 //        auto image = QImage(QString(dir.path() + QDir::separator() + records[index].pics[pic_end_index]).chopped(3) + "jpg");
         ui->image->setPixmap(scaled(image));
     }
@@ -324,13 +351,14 @@ void MainWindow::display(int index) {
     connect(ui->text, &QTextEdit::textChanged, this, &MainWindow::set_edited);
     bool reached_end = index + 1 >= records.size();
     bool listing_on = pic_end_index + 1 < records[index].pics.size();
-    ui->skip->setEnabled(config_edited);
+    ui->skip->setEnabled(!edited_ranges.empty());
     disconnect(ui->make_private, &QPushButton::toggled, this, &MainWindow::set_edited);
     ui->make_private->setChecked(!records[index].is_public);
     connect(ui->make_private, &QPushButton::toggled, this, &MainWindow::set_edited);
     ui->add->setEnabled(listing_on);
     ui->ok->setEnabled(!reached_end);
     ui->back->setEnabled(index > 0);
+    qDebug() << title_range(index);
 }
 
 void MainWindow::draw(int index = 0) {

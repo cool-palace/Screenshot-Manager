@@ -127,7 +127,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->make_private, &QPushButton::clicked, [this] () {
         switch (current_mode) {
         case CONFIG_READING:
-            set_edited();
+//            set_edited();
             break;
         case TEXT_READING:
             if (get_subs_for_pic()) {
@@ -166,8 +166,17 @@ MainWindow::MainWindow(QWidget *parent)
             show_status();
             break;
         case CONFIG_READING:
-            update_quote_file();
-            save_title_config();
+            // Saving button
+            qDebug() << edited_ranges;
+            for (auto pair : edited_ranges) {
+                int start = pair.first;
+                int end = pair.second;
+                update_quote_file(start, end);
+                save_title_config(start, end);
+                edited_ranges.remove(pair);
+                record_edited = false;
+                ui->skip->setEnabled(false);
+            }
             break;
         case TEXT_READING:
             if (quote_index > 0) {
@@ -274,8 +283,8 @@ MainWindow::MainWindow(QWidget *parent)
                 ui->slider->setValue(pic_index);
                 show_text(++quote_index);
             } else {
-                save_title_config();
-                update_quote_file();
+                save_title_config(dir.dirName());
+                update_quote_file(dir.dirName());
                 set_mode(IDLE);
             }
             break;
@@ -317,7 +326,7 @@ MainWindow::MainWindow(QWidget *parent)
                 for (const auto& quote : quotes) {
                     records.append(Record(quote));
                 }
-                update_quote_file();
+                update_quote_file(dir.dirName());
                 ui->statusBar->showMessage("Цитаты записаны в файл " + dir.dirName() + ".txt");
                 set_mode(IDLE);
             }
@@ -392,7 +401,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event) {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-    if (config_edited) {
+    if (!edited_ranges.empty()) {
         event->ignore();
         if (QMessageBox::question(this,
                                   "Подтверждение выхода",
@@ -431,6 +440,7 @@ void MainWindow::clear_all() {
     pics.clear();
     links.clear();
     records.clear();
+    title_map.clear();
     subs.clear();
     hashtags_by_index.clear();
     filters.clear();
@@ -471,6 +481,9 @@ void MainWindow::set_mode(Mode mode) {
         }
         if (ui->stacked_view->currentIndex() > 0) {
             lay_previews();
+        }
+        for (int i = 0; i < records.size(); ++i) {
+            qDebug() << i << title_name(i);
         }
         break;
     case TEXT_READING:
@@ -551,8 +564,41 @@ void MainWindow::set_enabled(bool enable) {
 
 void MainWindow::set_edited() {
     record_edited = true;
-    config_edited = true;
+    edited_ranges.insert(title_range(pic_index));
     ui->ok->setEnabled(true);
+}
+
+QString MainWindow::title_name(int index) {
+    if (title_map.contains(index)) return title_map.value(index);
+    title_map[index] = QString();
+    auto it = title_map.find(index);
+    auto title = (--it).value();
+    title_map.remove(index);
+    return title;
+}
+
+QPair<int, int> MainWindow::title_range(int index) {
+    // Returns starting and ending indices for a title containing records[index]
+    int start, end;
+    if (title_map.contains(index)) {
+        auto it = title_map.find(index);
+        if (++it != title_map.end()) {
+            end = it.key() - 1;
+        } else end = records.size() - 1;
+        return qMakePair(index, end);
+    }
+    title_map[index] = QString();
+    auto it = title_map.find(index);
+    start = (--it).key();
+    title_map.remove(index);
+    if (++it != title_map.end()) {
+        end = it.key() - 1;
+    } else end = records.size() - 1;
+    return qMakePair(start, end);
+}
+
+QString MainWindow::path(int index) {
+    return screenshots_location + title_name(index) + QDir::separator();
 }
 
 QPixmap MainWindow::scaled(const QImage& source) const {

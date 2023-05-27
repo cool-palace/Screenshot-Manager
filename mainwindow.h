@@ -89,6 +89,7 @@ private:
     int pic_end_index = 0;
     bool record_edited = false;
     bool config_edited = false;
+    QSet<QPair<int, int>> edited_ranges;
     QSet<QChar> sign_set = {'#', '&', ' '};
     QSet<int> all_records;
     QStringList subs;
@@ -109,7 +110,9 @@ private:
     void keyReleaseEvent(QKeyEvent*) override;
     QString filtration_indices() const;
     QString filtration_message(int) const;
-    QString path() const { return dir.path() + QDir::separator(); }
+    QString path(int index);
+    QString title_name(int);
+    QPair<int, int> title_range(int);
 
     // Hashtag management
     void get_hashtags();
@@ -132,12 +135,14 @@ private:
     bool load_albums(const QJsonObject&);
     void get_ids(const QJsonObject&);
     bool read_quote_file(QFile&);
-    bool update_quote_file();
+    bool update_quote_file(const QString&);
+    bool update_quote_file(int, int);
     void register_record();
     void update_record();
     bool open_title_config();
     void read_title_config(const QJsonObject&);
-    void save_title_config();
+    void save_title_config(const QString&);
+    void save_title_config(int, int);
     void read_text_from_subs();
     QMultiMap<QString, QTime> timestamps_multimap();
     bool find_lines_by_timestamps(const QMultiMap<QString, QTime>&);
