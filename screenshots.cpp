@@ -358,7 +358,6 @@ void MainWindow::display(int index) {
     ui->add->setEnabled(listing_on);
     ui->ok->setEnabled(!reached_end);
     ui->back->setEnabled(index > 0);
-    qDebug() << title_range(index);
 }
 
 void MainWindow::draw(int index = 0) {

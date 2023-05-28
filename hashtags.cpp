@@ -240,6 +240,46 @@ QString MainWindow::preprocessed(const QString& text) const {
     return result;
 }
 
+void MainWindow::filter_event(const QString& text) {
+//    if (filters.contains(text) && (sign != filters[text].sign || include != filters[text].include)) {
+//        QChar c = filters[text].sign;
+//        QString tip = c == '#' ? "левую кнопку" : c == '&' ? "правую кнопку" : "колесико";
+//        ui->statusBar->showMessage("Уже активен фильтр \"" + QString(c + text).simplified() + "\". "
+//                                   "Нажмите " + tip + " мыши, чтобы снять действующий фильтр.");
+//        return;
+//    }
+    filtration_results.clear();
+    if (text.size() < 3) {
+        exit_filtering();
+        return;
+    }
+    // Disabling all buttons
+    for (auto button : hashtags) {
+        button->setDisabled(true);
+    }
+    ui->text->setDisabled(true);
+    ui->slider->setDisabled(true);
+    for (int i = 0; i < records.size(); ++i) {
+        QString quote;
+        QRegularExpression regex("(.*?)?([#&])(.*)?$");
+        auto it = regex.globalMatch(records[i].quote);
+        if (it.hasNext()) {
+            auto match = it.peekNext();
+            quote = match.captured(1);
+        } else quote = records[i].quote;
+        if (quote.contains(text, Qt::CaseInsensitive)) {
+            filtration_results.insert(i, record_items[i]);
+        }
+    }
+    qDebug() << filtration_results;
+    // Handling the filter not used in the config
+    if (filtration_results.isEmpty()) {
+        ui->back->setDisabled(true);
+        ui->ok->setDisabled(true);
+    } else show_filtering_results();
+    show_status();
+}
+
 void MainWindow::filter_event(const QChar& sign, const QString& text, bool include) {
     if (filters.contains(text) && (sign != filters[text].sign || include != filters[text].include)) {
         QChar c = filters[text].sign;
@@ -304,6 +344,7 @@ void MainWindow::show_filtering_results() {
     ui->slider->setValue(filtration_results.begin().key());
     ui->ok->setEnabled(filtration_results.size() > 1);
     ui->back->setDisabled(true);
+    if (!ui->search_bar->text().isEmpty()) return;
     // Enabling buttons for possible non-zero result filters
     for (int index : filtration_results.keys()) {
         for (const auto& tag : hashtags_by_index[index]) {

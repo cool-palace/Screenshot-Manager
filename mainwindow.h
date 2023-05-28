@@ -52,6 +52,7 @@ protected:
 
 public slots:
     void hashtag_event(const QChar&, const QString&);
+    void filter_event(const QString&);
     void filter_event(const QChar&, const QString&, bool);
     void lay_previews(int page = 1);
 

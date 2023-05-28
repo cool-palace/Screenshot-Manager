@@ -100,6 +100,10 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(ui->page_index, SIGNAL(valueChanged(int)), this, SLOT(lay_previews(int)));
+    connect(ui->search_bar, &QLineEdit::editingFinished, [this]() {
+        filter_event(ui->search_bar->text());
+        set_view(MAIN);
+    });
 //    connect(ui->refactor, &QAction::triggered, this, &MainWindow::refactor_configs);
 
     connect(ui->main_view, &QAction::triggered, [this]() { set_view(MAIN); });
@@ -167,7 +171,6 @@ MainWindow::MainWindow(QWidget *parent)
             break;
         case CONFIG_READING:
             // Saving button
-            qDebug() << edited_ranges;
             for (auto pair : edited_ranges) {
                 int start = pair.first;
                 int end = pair.second;
@@ -200,6 +203,7 @@ MainWindow::MainWindow(QWidget *parent)
             // Showing next image in current record
             ++pic_end_index;
             display(pic_index);
+            ui->back->setDisabled(!filtration_results.isEmpty() && filtration_results.find(pic_index) == filtration_results.begin());
             break;
         case TEXT_READING:
             if (quote_index < subs.size() - 1) {
@@ -481,9 +485,6 @@ void MainWindow::set_mode(Mode mode) {
         }
         if (ui->stacked_view->currentIndex() > 0) {
             lay_previews();
-        }
-        for (int i = 0; i < records.size(); ++i) {
-            qDebug() << i << title_name(i);
         }
         break;
     case TEXT_READING:
