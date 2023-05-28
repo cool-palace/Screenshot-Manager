@@ -203,7 +203,9 @@ MainWindow::MainWindow(QWidget *parent)
             // Showing next image in current record
             ++pic_end_index;
             display(pic_index);
-            ui->back->setDisabled(!filtration_results.isEmpty() && filtration_results.find(pic_index) == filtration_results.begin());
+            if (!filtration_results.isEmpty() && filtration_results.find(pic_index) == filtration_results.begin()) {
+                ui->back->setDisabled(true);
+            }
             break;
         case TEXT_READING:
             if (quote_index < subs.size() - 1) {
