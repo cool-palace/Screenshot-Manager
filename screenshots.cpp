@@ -73,8 +73,8 @@ void MainWindow::update_record() {
 bool MainWindow::open_title_config() {
     clear_all();
     auto filepaths = QFileDialog::getOpenFileNames(nullptr, "Открыть конфигурационный файл",
-                                                 configs_location,
-                                                 "Файлы (*.json)");
+                                                   configs_location,
+                                                   "Файлы (*.json)");
     if (filepaths.isEmpty()) return false;
     for (const auto& filepath : filepaths) {
         auto json_file = json_object(filepath);
@@ -112,7 +112,7 @@ void MainWindow::read_title_config(const QJsonObject& json_file) {
         records.push_back(record);
     }
     for (int i = records.size() - records_array.size(); i < records.size(); ++i) {
-        record_items.push_back(new RecordItem(records[i], i, screenshots_location + title + QDir::separator()));
+        record_items.push_back(new RecordItem(records[i], i, path(i)));
         connect(record_items[i], &RecordItem::selected, [this](int index){
             ui->slider->setValue(index);
             set_view(MAIN);
@@ -343,7 +343,7 @@ void MainWindow::display(int index) {
         manager->get_image(records[index].links[pic_end_index]);
     } else {
         auto image = QImage(path(index) + records[index].pics[pic_end_index]);
-//        auto image = QImage(QString(dir.path() + QDir::separator() + records[index].pics[pic_end_index]).chopped(3) + "jpg");
+//        auto image = QImage(QString(path(index) + records[index].pics[pic_end_index]).chopped(3) + "jpg");
         ui->image->setPixmap(scaled(image));
     }
     disconnect(ui->text, &QTextEdit::textChanged, this, &MainWindow::set_edited);
