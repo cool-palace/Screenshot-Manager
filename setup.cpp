@@ -102,7 +102,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->page_index, SIGNAL(valueChanged(int)), this, SLOT(lay_previews(int)));
     connect(ui->search_bar, &QLineEdit::editingFinished, [this]() {
         filter_event(ui->search_bar->text());
-        set_view(MAIN);
+        lay_previews();
     });
 //    connect(ui->refactor, &QAction::triggered, this, &MainWindow::refactor_configs);
 

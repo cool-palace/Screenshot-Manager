@@ -249,7 +249,7 @@ void MainWindow::filter_event(const QString& text) {
 //        return;
 //    }
     filtration_results.clear();
-    if (text.size() < 3) {
+    if (text.size() < 2) {
         exit_filtering();
         return;
     }
