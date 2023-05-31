@@ -343,7 +343,7 @@ void MainWindow::display(int index) {
         manager->get_image(records[index].links[pic_end_index]);
     } else {
         auto image = QImage(path(index) + records[index].pics[pic_end_index]);
-//        auto image = QImage(QString(path(index) + records[index].pics[pic_end_index]).chopped(3) + "jpg");
+        if (image.isNull()) image = QImage(QString(path(index) + records[index].pics[pic_end_index]).chopped(3) + "jpg");
         ui->image->setPixmap(scaled(image));
     }
     disconnect(ui->text, &QTextEdit::textChanged, this, &MainWindow::set_edited);

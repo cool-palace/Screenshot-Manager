@@ -21,7 +21,6 @@ RecordItem::RecordItem(const Record& record, int index, const QString& path) :
     index(index)
 {
     QtConcurrent::run(this, &RecordItem::load_thumbmnail, path + record.pics[0]);
-//    QtConcurrent::run(this, &RecordItem::load_thumbmnail, (path + record.pics[0]).chopped(3) + "jpg");
     update_text(record.quote);
     text.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     text.setMaximumHeight(120);
@@ -95,5 +94,6 @@ void RecordItem::update_text(const QString& caption) {
 
 void RecordItem::load_thumbmnail(const QString& picture) {
     auto pic = QImage(picture);
+    if (pic.isNull()) pic = QImage(picture.chopped(3) + "jpg");
     image.setPixmap(QPixmap::fromImage(pic.scaled(QSize(160, 120), Qt::KeepAspectRatio)));
 }
