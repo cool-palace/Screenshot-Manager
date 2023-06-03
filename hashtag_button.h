@@ -26,7 +26,7 @@ private:
     QString text;
     int count = 0;
     QMap<QChar, QSet<int>> record_indices;
-    static QSet<int> all_records;
+    static int records_size;
 };
 
 #endif // HASHTAGBUTTON_H

@@ -68,8 +68,12 @@ QSet<int> HashtagButton::indices(const QChar& sign, bool include) const {
     auto set = sign == ' '
              ? record_indices['#'] + record_indices['&']
              : record_indices[sign];
-    auto all = all_records;
-    return include ? set : all.subtract(set);
+    if (include) return set;
+    QSet<int> result;
+    for (int i = 0; i < records_size; ++i) {
+        if (!set.contains(i)) result.insert(i);
+    }
+    return result;
 }
 
 void HashtagButton::highlight(const QChar& sign, bool enable) {
@@ -102,11 +106,8 @@ void HashtagButton::highlight_unregistered() {
     disconnect(SIGNAL(hashtagEvent(const QChar&, const QString&)));
 }
 
-QSet<int> HashtagButton::all_records;
+int HashtagButton::records_size = 0;
 
 void HashtagButton::update_on_records(int size) {
-    all_records.clear();
-    for (int i = 0; i < size; ++i) {
-        all_records.insert(i);
-    }
+    records_size = size;
 }

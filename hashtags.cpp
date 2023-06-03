@@ -227,7 +227,7 @@ QString MainWindow::preprocessed(const QString& text) const {
         QSet<QString> exceptions({"#обман", "#глупость", "#игнор"});
         if (i.hasNext()) {
             auto match = i.peekNext();
-            auto reactive_tags = match.captured(2).split(' ', QString::SkipEmptyParts);
+            auto reactive_tags = match.captured(2).split(' ', Qt::SkipEmptyParts);
             for (auto& tag : reactive_tags) {
                 if (tag[0] == '#' && !exceptions.contains(tag)) {
                     tag.replace(0, 1, "&");
