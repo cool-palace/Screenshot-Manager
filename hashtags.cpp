@@ -371,7 +371,8 @@ void MainWindow::exit_filtering() {
 void MainWindow::filter(const QSet<int>& second) {
     if (filtration_results.isEmpty()) return;
     QMap<int, RecordItem*> result;
-    auto keys = QSet<int>::fromList(filtration_results.keys()).intersect(second);
+    auto current_results = filtration_results.keys();
+    auto keys = QSet<int>(current_results.begin(), current_results.end()).intersect(second);
     for (const auto& key : keys) {
         result.insert(key,record_items[key]);
     }

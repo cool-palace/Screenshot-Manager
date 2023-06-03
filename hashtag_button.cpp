@@ -22,9 +22,9 @@ void HashtagButton::mousePressEvent(QMouseEvent * e) {
         break;
     case Qt::RightButton:
         if (e->modifiers() & Qt::ShiftModifier) {
-            emit filterEvent('#', text, true);
+            emit filterEvent('&', text, true);
         } else if (e->modifiers() & Qt::AltModifier) {
-            emit filterEvent('#', text, false);
+            emit filterEvent('&', text, false);
         } else {
             emit hashtagEvent('&', text);
         }
@@ -68,7 +68,8 @@ QSet<int> HashtagButton::indices(const QChar& sign, bool include) const {
     auto set = sign == ' '
              ? record_indices['#'] + record_indices['&']
              : record_indices[sign];
-    return include ? set : all_records.subtract(set);
+    auto all = all_records;
+    return include ? set : all.subtract(set);
 }
 
 void HashtagButton::highlight(const QChar& sign, bool enable) {
