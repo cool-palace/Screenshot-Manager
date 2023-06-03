@@ -294,8 +294,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>754</width>
-             <height>455</height>
+             <width>59</width>
+             <height>24</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -368,6 +368,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="text_reading"/>
     <addaction name="config_creation"/>
     <addaction name="config_reading"/>
+    <addaction name="config_reading_all"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -441,7 +442,7 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Работа оффлайн</string>
@@ -548,6 +549,11 @@ p, li { white-space: pre-wrap; }
   <action name="export_text">
    <property name="text">
     <string>Экспорт в текст</string>
+   </property>
+  </action>
+  <action name="config_reading_all">
+   <property name="text">
+    <string>Общее редактирование</string>
    </property>
   </action>
  </widget>

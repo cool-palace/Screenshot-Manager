@@ -70,11 +70,21 @@ void MainWindow::update_record() {
     update_hashtag_info();
 }
 
-bool MainWindow::open_title_config() {
+bool MainWindow::open_title_config(bool all) {
     clear_all();
-    auto filepaths = QFileDialog::getOpenFileNames(nullptr, "Открыть конфигурационный файл",
-                                                   configs_location,
-                                                   "Файлы (*.json)");
+    QStringList filepaths;
+    if (!all) {
+        filepaths = QFileDialog::getOpenFileNames(nullptr, "Открыть конфигурационный файл",
+                                                           configs_location,
+                                                           "Файлы (*.json)");
+    } else {
+        QDir dir = QDir(configs_location);
+        dir.setNameFilters(QStringList("*.json"));
+        filepaths= dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+        for (QString& path : filepaths) {
+            path = configs_location + path;
+        }
+    }
     if (filepaths.isEmpty()) return false;
     for (const auto& filepath : filepaths) {
         auto json_file = json_object(filepath);

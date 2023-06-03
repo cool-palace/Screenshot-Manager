@@ -140,7 +140,7 @@ private:
     bool update_quote_file(int, int);
     void register_record();
     void update_record();
-    bool open_title_config();
+    bool open_title_config(bool all = false);
     void read_title_config(const QJsonObject&);
     void save_title_config(const QString&);
     void save_title_config(int, int);
