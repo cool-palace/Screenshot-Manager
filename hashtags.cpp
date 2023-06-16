@@ -240,25 +240,8 @@ QString MainWindow::preprocessed(const QString& text) const {
     return result;
 }
 
-void MainWindow::filter_event(const QString& text) {
-//    if (filters.contains(text) && (sign != filters[text].sign || include != filters[text].include)) {
-//        QChar c = filters[text].sign;
-//        QString tip = c == '#' ? "левую кнопку" : c == '&' ? "правую кнопку" : "колесико";
-//        ui->statusBar->showMessage("Уже активен фильтр \"" + QString(c + text).simplified() + "\". "
-//                                   "Нажмите " + tip + " мыши, чтобы снять действующий фильтр.");
-//        return;
-//    }
-    filtration_results.clear();
-    if (text.size() < 2) {
-        exit_filtering();
-        return;
-    }
-    // Disabling all buttons
-    for (auto button : hashtags) {
-        button->setDisabled(true);
-    }
-    ui->text->setDisabled(true);
-    ui->slider->setDisabled(true);
+QSet<int> MainWindow::word_search(const QString& text) {
+    QSet<int> result;
     for (int i = 0; i < records.size(); ++i) {
         QString quote;
         QRegularExpression regex("(.*?)?([#&])(.*)?$");
@@ -268,8 +251,28 @@ void MainWindow::filter_event(const QString& text) {
             quote = match.captured(1);
         } else quote = records[i].quote;
         if (quote.contains(text, Qt::CaseInsensitive)) {
-            filtration_results.insert(i, record_items[i]);
+//            filtration_results.insert(i, record_items[i]);
+            result.insert(i);
         }
+    }
+    return result;
+}
+
+void MainWindow::filter_event(const QString& text) {
+    for (auto i = filters.begin(); i != filters.end(); i++) {
+        if (i.value().sign == 't') {
+            filters.erase(i);
+            apply_filters();
+        }
+    }
+    if (text.size() < 2) {
+        exit_filtering();
+        return;
+    }
+    update_filters('t', text, true);
+    // Disabling all buttons
+    for (auto button : hashtags) {
+        button->setDisabled(true);
     }
     qDebug() << filtration_results;
     // Handling the filter not used in the config
@@ -312,31 +315,45 @@ void MainWindow::update_filters(const QChar& sign, const QString& text, bool inc
         ui->text->setDisabled(true);
         ui->slider->setDisabled(true);
         filters.insert(text, FilterSpecs(sign, include));
-        hashtags[text]->highlight(include, true);
+        if (sign != 't') hashtags[text]->highlight(include, true);
         apply_first_filter();
     } else if (!filters.contains(text)) {
         filters.insert(text, FilterSpecs(sign, include));
-        filter(hashtags[text]->indices(sign, include));
-        hashtags[text]->highlight(include, true);
+        if (sign != 't') {
+            filter(hashtags[text]->indices(sign, include));
+            hashtags[text]->highlight(include, true);
+        } else filter(word_search(text));
     } else {
         hashtags[text]->highlight(include, false);
-        filters.remove(text);
-        filtration_results.clear();
         hashtags[text]->setEnabled(true);
-        for (auto i = filters.begin(); i != filters.end(); ++i) {
-            if (i == filters.begin()) {
-                apply_first_filter();
-            } else {
-                filter(hashtags[i.key()]->indices(i.value().sign, i.value().include));
-            }
-        }
+        filters.remove(text);
+        apply_filters();
     }
 }
 
 void MainWindow::apply_first_filter() {
+    filtration_results.clear();
     auto i = filters.begin();
-    for (int index : hashtags[i.key()]->indices(i.value().sign, i.value().include)) {
-        filtration_results.insert(index, record_items[index]);
+    if (i.value().sign != 't') {
+        // First hashtag search
+        for (int index : hashtags[i.key()]->indices(i.value().sign, i.value().include)) {
+            filtration_results.insert(index, record_items[index]);
+        }
+    } else {
+        // Full-text search
+        for (int index : word_search(i.key())) {
+            filtration_results.insert(index, record_items[index]);
+        }
+    }
+}
+
+void MainWindow::apply_filters() {
+    for (auto i = filters.begin(); i != filters.end(); ++i) {
+        if (i == filters.begin()) {
+            apply_first_filter();
+        } else {
+            filter(hashtags[i.key()]->indices(i.value().sign, i.value().include));
+        }
     }
 }
 
@@ -344,7 +361,7 @@ void MainWindow::show_filtering_results() {
     ui->slider->setValue(filtration_results.begin().key());
     ui->ok->setEnabled(filtration_results.size() > 1);
     ui->back->setDisabled(true);
-    if (!ui->search_bar->text().isEmpty()) return;
+//    if (!ui->search_bar->text().isEmpty()) return;
     // Enabling buttons for possible non-zero result filters
     for (int index : filtration_results.keys()) {
         for (const auto& tag : hashtags_by_index[index]) {
@@ -354,11 +371,14 @@ void MainWindow::show_filtering_results() {
     }
     // Making sure the excluding filter buttons stay enabled
     for (const auto& hashtag : filters.keys()) {
-        hashtags[hashtag]->highlight(filters[hashtag].include, true);
+        if (filters[hashtag].sign != 't') {
+            hashtags[hashtag]->highlight(filters[hashtag].include, true);
+        }
     }
 }
 
 void MainWindow::exit_filtering() {
+    filtration_results.clear();
     for (auto button : hashtags) {
         button->setEnabled(true);
     }

@@ -91,7 +91,7 @@ private:
     bool record_edited = false;
     bool config_edited = false;
     QSet<QPair<int, int>> edited_ranges;
-    QSet<QChar> sign_set = {'#', '&', ' '};
+    QSet<QChar> sign_set = {'#', '&', ' ', 't'};
     QSet<int> all_records;
     QStringList subs;
 
@@ -116,7 +116,7 @@ private:
     QPair<int, int> title_range(int);
     void public_filter(bool checked, bool show_public);
 
-    // Hashtag management
+    // Hashtag management and filtering
     void get_hashtags();
     void create_hashtag_button(const QString&);
     void update_hashtag_grid();
@@ -130,8 +130,10 @@ private:
     void filter(const QSet<int>&);
     void update_filters(const QChar&, const QString&, bool);
     void apply_first_filter();
+    void apply_filters();
     void show_filtering_results();
     void exit_filtering();
+    QSet<int> word_search(const QString&);
 
     // Screenshot management
     bool load_albums(const QJsonObject&);
