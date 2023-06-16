@@ -379,6 +379,9 @@ p, li { white-space: pre-wrap; }
     <addaction name="export_text"/>
     <addaction name="separator"/>
     <addaction name="add_hashtag"/>
+    <addaction name="separator"/>
+    <addaction name="show_public"/>
+    <addaction name="show_private"/>
    </widget>
    <widget class="QMenu" name="view_menu">
     <property name="title">
@@ -442,7 +445,7 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>Работа оффлайн</string>
@@ -554,6 +557,22 @@ p, li { white-space: pre-wrap; }
   <action name="config_reading_all">
    <property name="text">
     <string>Общее редактирование</string>
+   </property>
+  </action>
+  <action name="show_public">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Только публичные</string>
+   </property>
+  </action>
+  <action name="show_private">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Только скрытые</string>
    </property>
   </action>
  </widget>

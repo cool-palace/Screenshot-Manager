@@ -114,6 +114,7 @@ private:
     QString path(int index);
     QString title_name(int);
     QPair<int, int> title_range(int);
+    void public_filter(bool checked, bool show_public);
 
     // Hashtag management
     void get_hashtags();

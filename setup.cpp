@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
     connect(manager, &VK_Manager::albums_ready, [this](const QMap<QString, int>& ids) {
         album_ids = ids;
+        qDebug() << ids;
         if (album_ids.empty()) {
             ui->offline->setChecked(true);
             ui->statusBar->showMessage("Не удалось загрузить альбомы. Попробуйте авторизироваться вручную или продолжите работу оффлайн.");
@@ -88,6 +89,21 @@ MainWindow::MainWindow(QWidget *parent)
             create_hashtag_button(text);
             update_hashtag_grid();
         }
+    });
+
+    connect(ui->show_public, &QAction::triggered, [this](bool checked) {
+        if (checked && ui->show_private->isChecked()) {
+            ui->show_private->setChecked(false);
+            filtration_results.clear();
+        }
+        public_filter(checked, true);
+    });
+    connect(ui->show_private, &QAction::triggered, [this](bool checked) {
+        if (checked && ui->show_public->isChecked()) {
+            ui->show_public->setChecked(false);
+            filtration_results.clear();
+        }
+        public_filter(checked, false);
     });
 
     connect(ui->slider, &QAbstractSlider::valueChanged, [this](int value) {
@@ -532,6 +548,27 @@ void MainWindow::set_view(View view) {
     ui->main_view->setChecked(current_view == MAIN);
     ui->list_view->setChecked(current_view == LIST);
     ui->gallery_view->setChecked(current_view == GALLERY);
+}
+
+void MainWindow::public_filter(bool checked, bool show_public) {
+    ui->text->setDisabled(checked);
+    ui->slider->setDisabled(checked);
+    if (checked) {
+        for (int i = 0; i < records.size(); ++i) {
+            if (show_public == records[i].is_public) {
+                filtration_results.insert(i, record_items[i]);
+            }
+        }
+    } else {
+        filters.clear();
+        filtration_results.clear();
+    }
+    if (filtration_results.isEmpty()) {
+        ui->back->setDisabled(true);
+        ui->ok->setDisabled(true);
+    } else show_filtering_results();
+    show_status();
+    lay_previews();
 }
 
 void MainWindow::lay_previews(int page) {
