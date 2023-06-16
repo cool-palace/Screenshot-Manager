@@ -251,11 +251,42 @@ QSet<int> MainWindow::word_search(const QString& text) {
             quote = match.captured(1);
         } else quote = records[i].quote;
         if (quote.contains(text, Qt::CaseInsensitive)) {
-//            filtration_results.insert(i, record_items[i]);
             result.insert(i);
         }
     }
     return result;
+}
+
+QSet<int> MainWindow::records_by_public(bool publ) {
+    QSet<int> result;
+    for (int i = 0; i < records.size(); ++i) {
+        if (records[i].is_public == publ) {
+            result.insert(i);
+        }
+    }
+    return result;
+}
+
+void MainWindow::filter_event(bool publ) {
+    if (filters.contains("public") && filters["public"].include != publ) {
+        filters.remove("public");
+        apply_filters();
+    }
+    update_filters('p', "public", publ);
+    if (filters.empty()) {
+        exit_filtering();
+        return;
+    }
+    // Disabling all buttons
+    for (auto button : hashtags) {
+        button->setDisabled(true);
+    }
+    // Handling the filter not used in the config
+    if (filtration_results.isEmpty()) {
+        ui->back->setDisabled(true);
+        ui->ok->setDisabled(true);
+    } else show_filtering_results();
+    show_status();
 }
 
 void MainWindow::filter_event(const QString& text) {
@@ -274,7 +305,6 @@ void MainWindow::filter_event(const QString& text) {
     for (auto button : hashtags) {
         button->setDisabled(true);
     }
-    qDebug() << filtration_results;
     // Handling the filter not used in the config
     if (filtration_results.isEmpty()) {
         ui->back->setDisabled(true);
@@ -315,17 +345,23 @@ void MainWindow::update_filters(const QChar& sign, const QString& text, bool inc
         ui->text->setDisabled(true);
         ui->slider->setDisabled(true);
         filters.insert(text, FilterSpecs(sign, include));
-        if (sign != 't') hashtags[text]->highlight(include, true);
+        if (!sign.isLetter()) hashtags[text]->highlight(include, true);
         apply_first_filter();
     } else if (!filters.contains(text)) {
         filters.insert(text, FilterSpecs(sign, include));
-        if (sign != 't') {
+        if (!sign.isLetter()) {
             filter(hashtags[text]->indices(sign, include));
             hashtags[text]->highlight(include, true);
-        } else filter(word_search(text));
+        } else if (sign == 't') {
+            filter(word_search(text));
+        } else {
+            filter(records_by_public(include));
+        }
     } else {
-        hashtags[text]->highlight(include, false);
-        hashtags[text]->setEnabled(true);
+        if (!filters[text].sign.isLetter()) {
+            hashtags[text]->highlight(include, false);
+            hashtags[text]->setEnabled(true);
+        }
         filters.remove(text);
         apply_filters();
     }
@@ -334,20 +370,26 @@ void MainWindow::update_filters(const QChar& sign, const QString& text, bool inc
 void MainWindow::apply_first_filter() {
     filtration_results.clear();
     auto i = filters.begin();
-    if (i.value().sign != 't') {
+    if (!i.value().sign.isLetter()) {
         // First hashtag search
         for (int index : hashtags[i.key()]->indices(i.value().sign, i.value().include)) {
             filtration_results.insert(index, record_items[index]);
         }
-    } else {
+    } else if (i.value().sign == 't') {
         // Full-text search
         for (int index : word_search(i.key())) {
+            filtration_results.insert(index, record_items[index]);
+        }
+    } else {
+        // Public filter
+        for (int index : records_by_public(i.value().include)) {
             filtration_results.insert(index, record_items[index]);
         }
     }
 }
 
 void MainWindow::apply_filters() {
+    qDebug() << filters.keys();
     for (auto i = filters.begin(); i != filters.end(); ++i) {
         if (i == filters.begin()) {
             apply_first_filter();
@@ -361,7 +403,6 @@ void MainWindow::show_filtering_results() {
     ui->slider->setValue(filtration_results.begin().key());
     ui->ok->setEnabled(filtration_results.size() > 1);
     ui->back->setDisabled(true);
-//    if (!ui->search_bar->text().isEmpty()) return;
     // Enabling buttons for possible non-zero result filters
     for (int index : filtration_results.keys()) {
         for (const auto& tag : hashtags_by_index[index]) {
@@ -371,7 +412,7 @@ void MainWindow::show_filtering_results() {
     }
     // Making sure the excluding filter buttons stay enabled
     for (const auto& hashtag : filters.keys()) {
-        if (filters[hashtag].sign != 't') {
+        if (!filters[hashtag].sign.isLetter()) {
             hashtags[hashtag]->highlight(filters[hashtag].include, true);
         }
     }

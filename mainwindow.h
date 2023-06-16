@@ -52,6 +52,7 @@ protected:
 
 public slots:
     void hashtag_event(const QChar&, const QString&);
+    void filter_event(bool);
     void filter_event(const QString&);
     void filter_event(const QChar&, const QString&, bool);
     void lay_previews(int page = 1);
@@ -83,7 +84,6 @@ private:
     QMap<int, RecordItem*> filtration_results;
     QMap<QString, FilterSpecs> filters;
     QVector<Record> records;
-//    RecordItem* record_items_array;
     QList<RecordItem*> record_items;
     int pic_index;
     int quote_index;
@@ -91,7 +91,7 @@ private:
     bool record_edited = false;
     bool config_edited = false;
     QSet<QPair<int, int>> edited_ranges;
-    QSet<QChar> sign_set = {'#', '&', ' ', 't'};
+    QSet<QChar> sign_set = {'#', '&', ' ', 't', 'p'};
     QSet<int> all_records;
     QStringList subs;
 
@@ -114,7 +114,6 @@ private:
     QString path(int index);
     QString title_name(int);
     QPair<int, int> title_range(int);
-    void public_filter(bool checked, bool show_public);
 
     // Hashtag management and filtering
     void get_hashtags();
@@ -134,6 +133,7 @@ private:
     void show_filtering_results();
     void exit_filtering();
     QSet<int> word_search(const QString&);
+    QSet<int> records_by_public(bool);
 
     // Screenshot management
     bool load_albums(const QJsonObject&);
