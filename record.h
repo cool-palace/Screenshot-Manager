@@ -35,6 +35,7 @@ private:
     int index;
     QLabel image;
     QLabel text;
+    QLabel number;
     QCheckBox box;
     QGridLayout layout;
     void load_thumbmnail(const QString&);

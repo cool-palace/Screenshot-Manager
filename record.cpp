@@ -29,6 +29,11 @@ RecordItem::RecordItem(const Record& record, int index, const QString& path) :
     font.setPointSize(12);
     text.setFont(font);
     text.hide();
+    number.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    number.setMinimumWidth(20);
+    number.setFont(font);
+    number.setText(QString().setNum(index + 1));
+    number.hide();
     box.setText("Кадров: " + QString().setNum(record.pics.size()));
     box.setMinimumHeight(15);
     box.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -36,9 +41,10 @@ RecordItem::RecordItem(const Record& record, int index, const QString& path) :
     box.setEnabled(false);
     box.hide();
     layout.setContentsMargins(0,0,0,0);
-    layout.addWidget(&image,0,0);
-    layout.addWidget(&text,0,1);
-    layout.addWidget(&box,1,0);
+    layout.addWidget(&number,0,0);
+    layout.addWidget(&image,0,1);
+    layout.addWidget(&text,0,2);
+    layout.addWidget(&box,1,1);
     setLayout(&layout);
 }
 
@@ -73,11 +79,13 @@ void RecordItem::mouseDoubleClickEvent(QMouseEvent* e) {
 
 void RecordItem::set_gallery_view() {
     text.hide();
+    number.hide();
     box.show();
     show();
 }
 void RecordItem::set_list_view() {
     box.hide();
+    number.show();
     text.show();
     show();
 }
@@ -95,5 +103,5 @@ void RecordItem::update_text(const QString& caption) {
 void RecordItem::load_thumbmnail(const QString& picture) {
     auto pic = QImage(picture);
     if (pic.isNull()) pic = QImage(picture.chopped(3) + "jpg");
-    image.setPixmap(QPixmap::fromImage(pic.scaled(QSize(160, 120), Qt::KeepAspectRatio)));
+    image.setPixmap(QPixmap::fromImage(pic.scaled(QSize(160, 90), Qt::KeepAspectRatio)));
 }
