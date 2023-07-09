@@ -425,19 +425,67 @@ p, li { white-space: pre-wrap; }
    <addaction name="menu_4"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="config_creation"/>
+   <addaction name="text_reading"/>
+   <addaction name="config_reading"/>
+   <addaction name="separator"/>
+   <addaction name="save"/>
+  </widget>
   <action name="config_creation">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-add-file-80.png</normaloff>:/images/icons8-add-file-80.png</iconset>
+   </property>
    <property name="text">
-    <string>Создание конф. файла</string>
+    <string>Новый файл</string>
+   </property>
+   <property name="iconText">
+    <string>Создание нового журнала</string>
+   </property>
+   <property name="toolTip">
+    <string>Создание нового журнала</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
   <action name="open_doc">
    <property name="text">
-    <string>Открыть документ</string>
+    <string>Открыть файл</string>
+   </property>
+   <property name="iconText">
+    <string>Открыть журнал скриншотов</string>
+   </property>
+   <property name="toolTip">
+    <string>Открыть журнал скриншотов</string>
    </property>
   </action>
   <action name="config_reading">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-edit-file-80.png</normaloff>:/images/icons8-edit-file-80.png</iconset>
+   </property>
    <property name="text">
-    <string>Чтение конф. файла</string>
+    <string>Открыть файл</string>
+   </property>
+   <property name="iconText">
+    <string>Открыть журнал скриншотов</string>
+   </property>
+   <property name="toolTip">
+    <string>Открыть журнал скриншотов</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="offline">
@@ -545,8 +593,21 @@ p, li { white-space: pre-wrap; }
    </property>
   </action>
   <action name="text_reading">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-document-80.png</normaloff>:/images/icons8-document-80.png</iconset>
+   </property>
    <property name="text">
     <string>Чтение субтитров</string>
+   </property>
+   <property name="iconText">
+    <string>Создание списка цитат из субтитров</string>
+   </property>
+   <property name="toolTip">
+    <string>Создание списка цитат из субтитров</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
    </property>
   </action>
   <action name="export_text">
@@ -557,6 +618,9 @@ p, li { white-space: pre-wrap; }
   <action name="config_reading_all">
    <property name="text">
     <string>Общее редактирование</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
    </property>
   </action>
   <action name="show_public">
@@ -575,8 +639,31 @@ p, li { white-space: pre-wrap; }
     <string>Только скрытые</string>
    </property>
   </action>
+  <action name="save">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-save-80.png</normaloff>:/images/icons8-save-80.png</iconset>
+   </property>
+   <property name="text">
+    <string>Сохранить файл</string>
+   </property>
+   <property name="iconText">
+    <string>Сохранить изменения</string>
+   </property>
+   <property name="toolTip">
+    <string>Сохранить изменения</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

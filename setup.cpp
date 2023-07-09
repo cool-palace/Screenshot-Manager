@@ -78,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
+    connect(ui->save, &QAction::triggered, this, &MainWindow::save_changes);
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
     connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
     connect(ui->add_hashtag, &QAction::triggered, [this]() {
@@ -194,15 +195,7 @@ MainWindow::MainWindow(QWidget *parent)
             break;
         case CONFIG_READING:
             // Saving button
-            for (auto pair : edited_ranges) {
-                int start = pair.first;
-                int end = pair.second;
-                update_quote_file(start, end);
-                save_title_config(start, end);
-                edited_ranges.remove(pair);
-                record_edited = false;
-                ui->skip->setEnabled(false);
-            }
+                save_changes();
             break;
         case TEXT_READING:
             if (quote_index > 0) {
@@ -322,7 +315,7 @@ MainWindow::MainWindow(QWidget *parent)
                 update_record();
                 if (pic_index + 1 == records.size()) {
                     ui->ok->setEnabled(false);
-                    ui->skip->setEnabled(true);
+                    ui->save->setEnabled(true);
                     break;
                 }
             }
@@ -621,6 +614,18 @@ QPair<int, int> MainWindow::title_range(int index) {
         end = it.key() - 1;
     } else end = records.size() - 1;
     return qMakePair(start, end);
+}
+
+void MainWindow::save_changes() {
+    for (auto pair : edited_ranges) {
+        int start = pair.first;
+        int end = pair.second;
+        update_quote_file(start, end);
+        save_title_config(start, end);
+        edited_ranges.remove(pair);
+        record_edited = false;
+        ui->save->setEnabled(false);
+    }
 }
 
 QString MainWindow::path(int index) {
