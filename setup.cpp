@@ -152,36 +152,34 @@ MainWindow::MainWindow(QWidget *parent)
         update_hashtag_grid();
     });
 
-    connect(ui->make_private, &QPushButton::clicked, [this] () {
-        switch (current_mode) {
-        case CONFIG_READING:
-//            set_edited();
-            break;
-        case TEXT_READING:
-            if (get_subs_for_pic()) {
-                ui->add->setEnabled(true);
-                ui->skip->setEnabled(true);
-                quote_index = subs.indexOf(ui->text->toPlainText());
-                ui->slider->setEnabled(true);
-                ui->slider->setMaximum(subs.size() - 1);
-                ui->slider->setValue(quote_index);
-                ui->page_index->setMaximum(subs.size() / pics_per_page + 1);
-                QMap<QString, int> lines;
-                for (int i = 0; i < subs.size(); ++i) {
-                    lines.insert(subs[i], i);
-                }
-                for (const auto& line : lines.keys()) {
-                    record_items.push_back(new RecordItem(line, lines[line]));
-                    connect(record_items.back(), &RecordItem::selected, [this](int index){
-                        ui->slider->setValue(index);
-                        set_view(MAIN);
-                    });
-                    ui->view_grid->addWidget(record_items.back());
-                }
+    connect(ui->private_switch, &QAction::triggered, [this] () {
+        if (current_mode == CONFIG_READING)
+            set_edited();
+    });
+
+    connect(ui->load_subs, &QAction::triggered, [this] () {
+        ui->load_subs->setDisabled(true);
+        if (get_subs_for_pic()) {
+            ui->add->setEnabled(true);
+            ui->skip->setEnabled(true);
+            quote_index = subs.indexOf(ui->text->toPlainText());
+            ui->slider->setEnabled(true);
+            ui->slider->setMaximum(subs.size() - 1);
+            ui->slider->setValue(quote_index);
+            ui->page_index->setMaximum(subs.size() / pics_per_page + 1);
+            QMap<QString, int> lines;
+            for (int i = 0; i < subs.size(); ++i) {
+                lines.insert(subs[i], i);
             }
-            break;
-        default:
-            break;
+            for (const auto& line : lines.keys()) {
+                record_items.push_back(new RecordItem(line, lines[line]));
+                connect(record_items.back(), &RecordItem::selected, [this](int index){
+                    ui->slider->setValue(index);
+                    set_view(MAIN);
+                });
+                ui->view_grid->addWidget(record_items.back());
+            }
+//            lay_previews();
         }
     });
 
@@ -280,6 +278,7 @@ MainWindow::MainWindow(QWidget *parent)
                 delete item;
             }
             record_items.clear();
+            ui->load_subs->setEnabled(true);
             draw(--pic_index);
             show_text(pic_index);
             ui->slider->setEnabled(false);
@@ -299,7 +298,7 @@ MainWindow::MainWindow(QWidget *parent)
             register_record();
             pic_index = qMax(pic_index, pic_end_index) + 1;
             pic_end_index = 0;
-            ui->make_private->setChecked(false);
+            ui->private_switch->setChecked(false);
             if (pic_index < pics.size()) {
                 draw(pic_index);
                 ui->slider->setValue(pic_index);
@@ -336,7 +335,7 @@ MainWindow::MainWindow(QWidget *parent)
                     delete item;
                 }
                 record_items.clear();
-                ui->make_private->setChecked(false);
+                ui->load_subs->setEnabled(true);
                 ui->slider->setEnabled(false);
             }
             ++pic_index;
@@ -472,7 +471,6 @@ void MainWindow::clear_all() {
     }
     for (auto item : record_items) {
         delete item;
-//        item->~RecordItem();
     }
     record_items.clear();
 }
@@ -485,7 +483,6 @@ void MainWindow::set_mode(Mode mode) {
         ui->ok->setText("Готово");
         ui->add->setText("Добавить");
         ui->skip->setText("Пропустить");
-        ui->make_private->setText("Скрыть");
         ui->slider->setMaximum(pics.size() - 1);
         draw(0);
         break;
@@ -493,7 +490,6 @@ void MainWindow::set_mode(Mode mode) {
         ui->ok->setText("Далее");
         ui->add->setText("Листать");
         ui->skip->setText("Сохранить");
-        ui->make_private->setText("Скрыто");
         ui->slider->setMaximum(records.size() - 1);
         ui->page_index->setMaximum(records.size() / pics_per_page + 1);
         display(0);
@@ -509,7 +505,6 @@ void MainWindow::set_mode(Mode mode) {
         ui->ok->setText("Готово");
         ui->skip->setText("Предыдущий");
         ui->add->setText("Следующий");
-        ui->make_private->setText("Субтитры");
 //        ui->slider->setMaximum(pics.size() - 1);
         draw(0);
         show_text(0);
@@ -576,7 +571,8 @@ void MainWindow::set_enabled(bool enable) {
             || (current_mode == CONFIG_READING && records[0].pics.size() > 1);
     ui->add->setEnabled(enable && listing_enabled);
     ui->text->setEnabled(enable && current_mode != TEXT_READING);
-    ui->make_private->setEnabled(enable);
+    ui->private_switch->setEnabled(current_mode == CONFIG_CREATION || current_mode == CONFIG_READING);
+    ui->load_subs->setEnabled(current_mode == TEXT_READING);
     ui->slider->setEnabled(current_mode == CONFIG_READING);
     ui->slider->setValue(0);
 }

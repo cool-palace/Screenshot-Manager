@@ -7,5 +7,8 @@
         <file>images/icons8-document-80.png</file>
         <file>images/icons8-edit-file-80.png</file>
         <file>images/icons8-save-80.png</file>
+        <file>images/icons8-approval-80.png</file>
+        <file>images/icons8-private-80.png</file>
+        <file>images/icons8-source-code-80.png</file>
     </qresource>
 </RCC>

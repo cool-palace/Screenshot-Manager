@@ -57,14 +57,14 @@ void MainWindow::register_record() {
         record.links.push_back(links[i]);
     }
     record.quote = ui->text->toPlainText();
-    record.is_public = !ui->make_private->isChecked();
+    record.is_public = !ui->private_switch->isChecked();
     records.push_back(record);
 }
 
 void MainWindow::update_record() {
     auto text = ui->text->toPlainText();
     records[pic_index].quote = text;
-    records[pic_index].is_public = !ui->make_private->isChecked();
+    records[pic_index].is_public = !ui->private_switch->isChecked();
     record_items[pic_index]->update_text(text);
     record_edited = false;
     update_hashtag_info();
@@ -361,10 +361,10 @@ void MainWindow::display(int index) {
     connect(ui->text, &QTextEdit::textChanged, this, &MainWindow::set_edited);
     bool reached_end = index + 1 >= records.size();
     bool listing_on = pic_end_index + 1 < records[index].pics.size();
-    ui->skip->setEnabled(!edited_ranges.empty());
-    disconnect(ui->make_private, &QPushButton::toggled, this, &MainWindow::set_edited);
-    ui->make_private->setChecked(!records[index].is_public);
-    connect(ui->make_private, &QPushButton::toggled, this, &MainWindow::set_edited);
+    ui->save->setEnabled(!edited_ranges.empty());
+    disconnect(ui->private_switch, &QAction::triggered, this, &MainWindow::set_edited);
+    ui->private_switch->setChecked(!records[index].is_public);
+    connect(ui->private_switch, &QAction::triggered, this, &MainWindow::set_edited);
     ui->add->setEnabled(listing_on);
     ui->ok->setEnabled(!reached_end);
     ui->back->setEnabled(index > 0);
