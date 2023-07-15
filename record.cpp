@@ -60,11 +60,17 @@ RecordItem::RecordItem(const QString& quote, int index) :
     font.setPointSize(12);
     text.setFont(font);
     text.hide();
+    number.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    number.setMinimumWidth(20);
+    number.setFont(font);
+    number.setText(QString().setNum(index + 1));
+    number.hide();
     box.setMinimumHeight(15);
     box.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     box.setEnabled(false);
     box.hide();
     layout.setContentsMargins(0,0,0,0);
+    layout.addWidget(&number,0,0);
     layout.addWidget(&image,0,0);
     layout.addWidget(&text,0,1);
     layout.addWidget(&box,1,0);
