@@ -112,9 +112,44 @@ void RecordItem::load_thumbmnail(const QString& picture) {
     image.setPixmap(QPixmap::fromImage(pic.scaled(QSize(160, 90), Qt::KeepAspectRatio)));
 }
 
+VK_Manager* RecordFrame::manager;
+
+RecordFrame::RecordFrame(const QString& link) {
+    auto response = manager->get_url(link);
+    connect(response, &QNetworkReply::finished, [this, response](){
+        response->deleteLater();
+        if (response->error() != QNetworkReply::NoError) return;
+        QImageReader reader(response);
+        QImage loaded_image = reader.read();
+        setPixmap(QPixmap::fromImage(loaded_image.scaled(QSize(160, 90), Qt::KeepAspectRatio)));
+    });
+
+}
+
+void RecordFrame::load_image(QNetworkReply* response) {
+    response->deleteLater();
+    if (response->error() != QNetworkReply::NoError) return;
+    QImageReader reader(response);
+    QImage loaded_image = reader.read();
+    setPixmap(QPixmap::fromImage(loaded_image.scaled(QSize(160, 90), Qt::KeepAspectRatio)));
+}
+
 RecordPreview::RecordPreview(const Record& record, int index) :
     RecordItem(record, index, ""),
     record(record)
 {
-//    set_list_view();
+    QLayoutItem* child;
+    while ((child = layout.takeAt(0))) {
+        // Clearing items from the grid
+        child->widget()->hide();
+    }
+    layout.addWidget(&number,0,0);
+    for (int i = 1; i <= record.links.size(); ++i) {
+        images.push_back(new RecordFrame(record.links[i-1]));
+        layout.addWidget(images.back(),0,i);
+    }
+
+//    connect(reply, &QNetworkReply::finished, images[0], setP);
+    layout.addWidget(&text,0,record.links.size() + 1);
+
 }

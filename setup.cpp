@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
 //    , record_items_array(reinterpret_cast<RecordItem*>(new char[250 * sizeof(RecordItem)]))
 {
     ui->setupUi(this);
+    RecordFrame::manager = manager;
     if (initialize()) {
         get_hashtags();
     }

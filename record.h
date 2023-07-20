@@ -27,28 +27,30 @@ public:
     RecordItem(const QString&, int);
     ~RecordItem() override {}
     void set_gallery_view();
-    void set_list_view();
+    virtual void set_list_view();
     void mouseDoubleClickEvent(QMouseEvent*) override;
     void update_text(const QString&);
 signals:
     void selected(int);
 private:
     int index;
+    QCheckBox box;
+    void load_thumbmnail(const QString&);
+protected:
     QLabel image;
     QLabel text;
     QLabel number;
-    QCheckBox box;
     QGridLayout layout;
-    void load_thumbmnail(const QString&);
 };
 
 class RecordFrame : public QLabel
 {
     Q_OBJECT
 public:
-
-private:
+    RecordFrame(const QString&);
     static VK_Manager* manager;
+public slots:
+    void load_image(QNetworkReply*);
 };
 
 
@@ -58,9 +60,12 @@ class RecordPreview : public RecordItem
 public:
     RecordPreview(const Record&, int);
     ~RecordPreview() override {}
+//    void set_list_view() override;
+    static VK_Manager* manager;
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
 private:
     Record record;
+    QList<RecordFrame*> images;
 };
 
 #endif // RECORD_ITEMS_H

@@ -20,7 +20,7 @@ signals:
     void image_ready(const QImage&);
 
 public slots:
-    void get_url(const QString& url);
+    QNetworkReply* get_url(const QString& url);
     void get_albums();
     void get_photo_ids(int album_id, const QString& photo_ids = "");
     void get_image(const QString& url);

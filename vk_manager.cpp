@@ -39,8 +39,8 @@ QImage VK_Manager::image(QNetworkReply *response) {
     return loaded_image;
 }
 
-void VK_Manager::get_url(const QString& url) {
-    get(QNetworkRequest(QUrl(url)));
+QNetworkReply* VK_Manager::get_url(const QString& url) {
+    return get(QNetworkRequest(QUrl(url)));
 }
 
 void VK_Manager::get_photo_ids(int album_id, const QString& photo_ids) {
@@ -126,4 +126,3 @@ void VK_Manager::got_image(QNetworkReply *response) {
     disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_image);
     emit image_ready(image(response));
 }
-
