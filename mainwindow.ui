@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="page_4">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -294,8 +294,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>59</width>
-             <height>24</height>
+             <width>754</width>
+             <height>416</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -345,6 +345,32 @@ p, li { white-space: pre-wrap; }
            </widget>
           </item>
          </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="page_3">
+       <layout class="QGridLayout" name="gridLayout_5">
+        <item row="0" column="0">
+         <widget class="QScrollArea" name="scrollArea_2">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_3">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>754</width>
+             <height>465</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_7">
+            <item row="0" column="0">
+             <layout class="QVBoxLayout" name="preview_grid"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -438,6 +464,7 @@ p, li { white-space: pre-wrap; }
    <addaction name="config_creation"/>
    <addaction name="text_reading"/>
    <addaction name="config_reading"/>
+   <addaction name="release_preparation"/>
    <addaction name="separator"/>
    <addaction name="save"/>
    <addaction name="private_switch"/>
@@ -691,6 +718,18 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="toolTip">
     <string>Подгрузка субтитров</string>
+   </property>
+  </action>
+  <action name="release_preparation">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-cloud-80.png</normaloff>:/images/icons8-cloud-80.png</iconset>
+   </property>
+   <property name="text">
+    <string>Подготовка к публикации</string>
+   </property>
+   <property name="toolTip">
+    <string>Подготовка к публикации</string>
    </property>
   </action>
  </widget>

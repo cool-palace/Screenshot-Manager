@@ -97,6 +97,35 @@ bool MainWindow::open_title_config(bool all) {
     return !records.empty();
 }
 
+bool MainWindow::open_public_config() {
+    auto json_file = json_object(configs_location + "result\\public_records.json");
+    if (!json_file.contains("records")) {
+        ui->statusBar->showMessage("Неверный формат файла public_records.json" );
+        return false;
+    }
+    auto records_array = json_file.value("records").toArray();
+    for (QJsonValueRef r : records_array) {
+        Record record;
+        auto object = r.toObject();
+        record.quote = object["caption"].toString(); // -preprocessed
+        record.is_public = object["public"].toBool();
+        auto filename_array = object["filenames"].toArray();
+        for (QJsonValueRef name : filename_array) {
+            record.pics.push_back(name.toString());
+        }
+        auto id_array = object["photo_ids"].toArray();
+        for (QJsonValueRef id : id_array) {
+            record.ids.push_back(id.toInt());
+        }
+        auto link_array = object["links"].toArray();
+        for (QJsonValueRef link : link_array) {
+            record.links.push_back(link.toString());
+        }
+        records.push_back(record);
+    }
+    return !records.empty();
+}
+
 void MainWindow::read_title_config(const QJsonObject& json_file) {
     auto title = json_file.value("title").toString();
     dir = QDir(screenshots_location + title);

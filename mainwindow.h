@@ -29,7 +29,8 @@ class MainWindow : public QMainWindow
         IDLE,
         CONFIG_CREATION,
         CONFIG_READING,
-        TEXT_READING
+        TEXT_READING,
+        RELEASE_PREPARATION
     };
     enum View {
         MAIN,
@@ -61,7 +62,7 @@ private:
     Ui::MainWindow *ui;
     VK_Manager* manager;
     const QString group_id = "42265360";
-    const int pics_per_page = 5;
+    const int pics_per_page = 70;
     int client_id;
     Mode current_mode = IDLE;
     View current_view = MAIN;
@@ -82,6 +83,7 @@ private:
     QStringList current_hashtags;
     QMap<int, QStringList> hashtags_by_index;
     QMap<int, RecordItem*> filtration_results;
+    QList<RecordItem*> selected_records;
     QMap<QString, FilterSpecs> filters;
     QVector<Record> records;
     QList<RecordItem*> record_items;
@@ -145,6 +147,7 @@ private:
     void register_record();
     void update_record();
     bool open_title_config(bool all = false);
+    bool open_public_config();
     void read_title_config(const QJsonObject&);
     void save_title_config(const QString&);
     void save_title_config(int, int);

@@ -111,3 +111,10 @@ void RecordItem::load_thumbmnail(const QString& picture) {
     if (pic.isNull()) pic = QImage(picture.chopped(3) + "jpg");
     image.setPixmap(QPixmap::fromImage(pic.scaled(QSize(160, 90), Qt::KeepAspectRatio)));
 }
+
+RecordPreview::RecordPreview(const Record& record, int index) :
+    RecordItem(record, index, ""),
+    record(record)
+{
+//    set_list_view();
+}

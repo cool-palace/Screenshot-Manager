@@ -7,6 +7,7 @@
 #include <QCheckBox>
 #include <QMouseEvent>
 #include <QtConcurrent>
+#include "vk_manager.h"
 
 struct Record {
     Record(const QString& quote = QString()) : quote(quote) {}
@@ -39,6 +40,27 @@ private:
     QCheckBox box;
     QGridLayout layout;
     void load_thumbmnail(const QString&);
+};
+
+class RecordFrame : public QLabel
+{
+    Q_OBJECT
+public:
+
+private:
+    static VK_Manager* manager;
+};
+
+
+class RecordPreview : public RecordItem
+{
+    Q_OBJECT
+public:
+    RecordPreview(const Record&, int);
+    ~RecordPreview() override {}
+//    void mouseDoubleClickEvent(QMouseEvent*) override;
+private:
+    Record record;
 };
 
 #endif // RECORD_ITEMS_H

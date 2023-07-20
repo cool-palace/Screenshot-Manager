@@ -78,6 +78,16 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
+    connect(ui->release_preparation, &QAction::triggered, [this]() {
+        clear_all();
+        if (!open_public_config()) {
+            set_mode(IDLE);
+            ui->statusBar->showMessage("Конфигурационный файл не открыт.");
+            return;
+        }
+        set_mode(RELEASE_PREPARATION);
+    });
+
     connect(ui->save, &QAction::triggered, this, &MainWindow::save_changes);
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
     connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
@@ -510,6 +520,24 @@ void MainWindow::set_mode(Mode mode) {
         show_text(0);
 //        for (auto record : record_items) {
 //            ui->view_grid->addWidget(record);
+//        }
+        break;
+    case RELEASE_PREPARATION:
+//        set_view(LIST);
+        ui->stacked_view->setCurrentIndex(2);
+        for (int i = 0; i < 7; ++i) {
+            int random_index = QRandomGenerator::global()->bounded(records.size());
+            selected_records.push_back(new RecordPreview(records[random_index], random_index));
+            ui->preview_grid->addWidget(selected_records.back());
+            selected_records.back()->set_list_view();
+        }
+
+//        for (int i = records.size() - records_array.size(); i < records.size(); ++i) {
+//            record_items.push_back(new RecordItem(records[i], i, path(i)));
+//            connect(record_items[i], &RecordItem::selected, [this](int index){
+//                ui->slider->setValue(index);
+//                set_view(MAIN);
+//            });
 //        }
         break;
     default:
