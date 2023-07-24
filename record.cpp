@@ -107,14 +107,14 @@ VK_Manager* RecordFrame::manager;
 QVector<Record>* RecordPreview::records;
 QMap<int, int>* RecordPreview::logs;
 
-RecordFrame::RecordFrame(const QString& link) {
+RecordFrame::RecordFrame(const QString& link, qreal k) {
     auto response = manager->get_url(link);
-    connect(response, &QNetworkReply::finished, [this, response](){
+    connect(response, &QNetworkReply::finished, [this, response, k](){
         response->deleteLater();
         if (response->error() != QNetworkReply::NoError) return;
         QImageReader reader(response);
         QImage loaded_image = reader.read();
-        setPixmap(QPixmap::fromImage(loaded_image.scaled(QSize(400, 220), Qt::KeepAspectRatio)));
+        setPixmap(QPixmap::fromImage(loaded_image.scaled(QSize(400, 220)/k, Qt::KeepAspectRatio)));
     });
 }
 
@@ -122,16 +122,14 @@ RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& t
     RecordBase(record, index), time(time)
 {
     log_info.setFont(text.font());
-    layout.addWidget(&number,0,0);
-    for (int i = 0; i < record.links.size(); ++i) {
-        images.push_back(new RecordFrame(record.links[i]));
-        layout.addWidget(images.back(),0,i+1);
-    }
+    update_images(record.links);
     update_log_info(record.ids.first());
-    layout.addWidget(&text,0,record.links.size() + 1);
-    layout.addWidget(&log_info,1,record.links.size() + 1);
-    layout.addWidget(reroll_button,0,record.links.size() + 2);
-    layout.addWidget(number_button,0,record.links.size() + 3);
+    layout.addWidget(&number,0,0);
+    layout.addLayout(&images_layout,0,1);
+    layout.addWidget(&text,0,2);
+    layout.addWidget(&log_info,1,2);
+    layout.addWidget(reroll_button,0,3);
+    layout.addWidget(number_button,0,4);
     connect(reroll_button, &QPushButton::clicked, this, &RecordPreview::reroll);
     connect(number_button, &QPushButton::clicked, this, &RecordPreview::input_number);
     reroll_button->setIconSize(QSize(30,30));
@@ -147,7 +145,7 @@ void RecordPreview::reroll() {
 void RecordPreview::input_number() {
     int max = RecordPreview::records->size();
     bool ok;
-    index = QInputDialog::getInt(this, tr("Ручной ввод номера записи"),
+    index = QInputDialog::getInt(this, tr("Номер записи"),
                                  tr("Введите номер записи от 1 до %1").arg(max), index+1, 1, max, 1, &ok) - 1;
     if (!ok) return;
     clear();
@@ -155,7 +153,7 @@ void RecordPreview::input_number() {
 }
 
 void RecordPreview::clear() {
-    while (layout.takeAt(0) != nullptr) {
+    while (images_layout.takeAt(0) != nullptr) {
         // Clearing items from the grid
     }
     for (auto frame : images) {
@@ -166,18 +164,10 @@ void RecordPreview::clear() {
 
 void RecordPreview::set_index(int index) {
     number.setText(QString().setNum(index + 1));
-    layout.addWidget(&number,0,0);
     auto record = RecordPreview::records->at(index);
     update_text(record.quote);
-    for (int i = 0; i < record.links.size(); ++i) {
-        images.push_back(new RecordFrame(record.links[i]));
-        layout.addWidget(images.back(),0,i+1);
-    }
+    update_images(record.links);
     update_log_info(record.ids.first());
-    layout.addWidget(&text,0,record.links.size() + 1);
-    layout.addWidget(&log_info,1,record.links.size() + 1);
-    layout.addWidget(reroll_button,0,record.links.size() + 2);
-    layout.addWidget(number_button,0,record.links.size() + 3);
 }
 
 void RecordPreview::update_log_info(int id) {
@@ -193,4 +183,12 @@ void RecordPreview::update_log_info(int id) {
         font.setItalic(true);
     }
     log_info.setFont(font);
+}
+
+void RecordPreview::update_images(const QStringList& links) {
+    qreal k = links.size() == 1 ? 1 : links.size() == 2 ? 1.2 : 1.5;
+    for (int i = 0; i < links.size(); ++i) {
+        images.push_back(new RecordFrame(links[i], k));
+        images_layout.addWidget(images.back(),i/3,i%3);
+    }
 }

@@ -65,7 +65,7 @@ class RecordFrame : public QLabel
 {
     Q_OBJECT
 public:
-    RecordFrame(const QString&);
+    RecordFrame(const QString&, qreal k = 1);
     ~RecordFrame() override {};
     static VK_Manager* manager;
 };
@@ -90,11 +90,13 @@ private:
     QList<RecordFrame*> images;
     QLabel log_info;
     QDateTime time;
+    QGridLayout images_layout;
     QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
     QPushButton* number_button = new QPushButton(QIcon(":/images/icons8-12-80.png"), "");
     void clear();
     void set_index(int);
     void update_log_info(int);
+    void update_images(const QStringList&);
 };
 
 #endif // RECORD_ITEMS_H
