@@ -16,11 +16,10 @@ QJsonObject Record::to_json() const {
     return current_record;
 }
 
-RecordItem::RecordItem(const Record& record, int index, const QString& path) :
+RecordBase::RecordBase(const Record& record, int index) :
     QWidget(),
     index(index)
 {
-    QtConcurrent::run(this, &RecordItem::load_thumbmnail, path + record.pics[0]);
     update_text(record.quote);
     text.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     text.setMaximumHeight(120);
@@ -34,50 +33,34 @@ RecordItem::RecordItem(const Record& record, int index, const QString& path) :
     number.setFont(font);
     number.setText(QString().setNum(index + 1));
     number.hide();
+    layout.setContentsMargins(0,0,0,0);
+    setLayout(&layout);
+}
+
+RecordItem::RecordItem(const Record& record, int index, const QString& path) :
+    RecordBase(record, index)
+{
+    QtConcurrent::run(this, &RecordItem::load_thumbmnail, path + record.pics[0]);
     box.setText("Кадров: " + QString().setNum(record.pics.size()));
     box.setMinimumHeight(15);
     box.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     box.setChecked(record.is_public);
     box.setEnabled(false);
     box.hide();
-    layout.setContentsMargins(0,0,0,0);
     layout.addWidget(&number,0,0);
     layout.addWidget(&image,0,1);
     layout.addWidget(&text,0,2);
     layout.addWidget(&box,1,1);
-    setLayout(&layout);
 }
 
 RecordItem::RecordItem(const QString& quote, int index) :
-    QWidget(),
-    index(index)
+    RecordBase(Record(quote), index)
 {
-    text.setText(quote);
-    text.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    text.setMaximumHeight(120);
-    text.setWordWrap(true);
-    auto font = text.font();
-    font.setPointSize(12);
-    text.setFont(font);
-    text.hide();
-    number.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    number.setMinimumWidth(20);
-    number.setFont(font);
-    number.setText(QString().setNum(index + 1));
-    number.hide();
-    box.setMinimumHeight(15);
-    box.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    box.setEnabled(false);
-    box.hide();
-    layout.setContentsMargins(0,0,0,0);
     layout.addWidget(&number,0,0);
-    layout.addWidget(&image,0,0);
     layout.addWidget(&text,0,1);
-    layout.addWidget(&box,1,0);
-    setLayout(&layout);
 }
 
-void RecordItem::mouseDoubleClickEvent(QMouseEvent* e) {
+void RecordBase::mouseDoubleClickEvent(QMouseEvent* e) {
     if (e->button() == Qt::LeftButton ) {
         emit selected(index);
     }
@@ -89,6 +72,7 @@ void RecordItem::set_gallery_view() {
     box.show();
     show();
 }
+
 void RecordItem::set_list_view() {
     box.hide();
     number.show();
@@ -96,7 +80,13 @@ void RecordItem::set_list_view() {
     show();
 }
 
-void RecordItem::update_text(const QString& caption) {
+void RecordPreview::set_list_view() {
+    number.show();
+    text.show();
+    show();
+}
+
+void RecordBase::update_text(const QString& caption) {
     QRegularExpression regex("(.*?)?([#&])(.*)?$");
     auto i = regex.globalMatch(caption);
     if (i.hasNext()) {
@@ -113,6 +103,7 @@ void RecordItem::load_thumbmnail(const QString& picture) {
 }
 
 VK_Manager* RecordFrame::manager;
+QVector<Record>* RecordPreview::records;
 
 RecordFrame::RecordFrame(const QString& link) {
     auto response = manager->get_url(link);
@@ -121,35 +112,40 @@ RecordFrame::RecordFrame(const QString& link) {
         if (response->error() != QNetworkReply::NoError) return;
         QImageReader reader(response);
         QImage loaded_image = reader.read();
-        setPixmap(QPixmap::fromImage(loaded_image.scaled(QSize(160, 90), Qt::KeepAspectRatio)));
+        setPixmap(QPixmap::fromImage(loaded_image.scaled(QSize(400, 220), Qt::KeepAspectRatio)));
     });
-
-}
-
-void RecordFrame::load_image(QNetworkReply* response) {
-    response->deleteLater();
-    if (response->error() != QNetworkReply::NoError) return;
-    QImageReader reader(response);
-    QImage loaded_image = reader.read();
-    setPixmap(QPixmap::fromImage(loaded_image.scaled(QSize(160, 90), Qt::KeepAspectRatio)));
 }
 
 RecordPreview::RecordPreview(const Record& record, int index) :
-    RecordItem(record, index, ""),
-    record(record)
+    RecordBase(record, index)
 {
-    QLayoutItem* child;
-    while ((child = layout.takeAt(0))) {
-        // Clearing items from the grid
-        child->widget()->hide();
-    }
     layout.addWidget(&number,0,0);
-    for (int i = 1; i <= record.links.size(); ++i) {
-        images.push_back(new RecordFrame(record.links[i-1]));
-        layout.addWidget(images.back(),0,i);
+    for (int i = 0; i < record.links.size(); ++i) {
+        images.push_back(new RecordFrame(record.links[i]));
+        layout.addWidget(images.back(),0,i+1);
     }
-
-//    connect(reply, &QNetworkReply::finished, images[0], setP);
     layout.addWidget(&text,0,record.links.size() + 1);
+    layout.addWidget(reroll_button,0,record.links.size() + 2);
+    connect(reroll_button, &QPushButton::clicked, this, &RecordPreview::reroll);
+}
 
+void RecordPreview::reroll() {
+    while (layout.takeAt(0) != nullptr) {
+        // Clearing items from the grid
+    }
+    for (auto frame : images) {
+        delete frame;
+    }
+    images.clear();
+    index = QRandomGenerator::global()->bounded(RecordPreview::records->size());
+    number.setText(QString().setNum(index + 1));
+    layout.addWidget(&number,0,0);
+    auto record = RecordPreview::records->at(index);
+    update_text(record.quote);
+    for (int i = 0; i < record.links.size(); ++i) {
+        images.push_back(new RecordFrame(record.links[i]));
+        layout.addWidget(images.back(),0,i+1);
+    }
+    layout.addWidget(&text,0,record.links.size() + 1);
+    layout.addWidget(reroll_button,0,record.links.size() + 2);
 }

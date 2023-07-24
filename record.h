@@ -7,6 +7,7 @@
 #include <QCheckBox>
 #include <QMouseEvent>
 #include <QtConcurrent>
+#include <QPushButton>
 #include "vk_manager.h"
 
 struct Record {
@@ -19,28 +20,44 @@ struct Record {
     QJsonObject to_json() const;
 };
 
-class RecordItem : public QWidget
+class RecordBase : public QWidget
+{
+    Q_OBJECT
+public:
+    RecordBase(const Record&, int);
+    ~RecordBase() override {}
+    void mouseDoubleClickEvent(QMouseEvent*) override;
+    void update_text(const QString&);
+    virtual void set_gallery_view() = 0;
+    virtual void set_list_view() = 0;
+signals:
+    void selected(int);
+protected:
+    int index;
+    QString pic;
+    QLabel image;
+    QLabel text;
+    QLabel number;
+    QGridLayout layout;
+};
+
+class RecordItem : public RecordBase
 {
     Q_OBJECT
 public:
     RecordItem(const Record&, int, const QString&);
     RecordItem(const QString&, int);
     ~RecordItem() override {}
-    void set_gallery_view();
-    virtual void set_list_view();
-    void mouseDoubleClickEvent(QMouseEvent*) override;
-    void update_text(const QString&);
-signals:
-    void selected(int);
+    void set_gallery_view() override;
+    void set_list_view() override;
+//    void mouseDoubleClickEvent(QMouseEvent*) override;
+//    void update_text(const QString&);
+//signals:
+//    void selected(int);
 private:
     int index;
     QCheckBox box;
     void load_thumbmnail(const QString&);
-protected:
-    QLabel image;
-    QLabel text;
-    QLabel number;
-    QGridLayout layout;
 };
 
 class RecordFrame : public QLabel
@@ -48,24 +65,27 @@ class RecordFrame : public QLabel
     Q_OBJECT
 public:
     RecordFrame(const QString&);
+    ~RecordFrame() override {};
     static VK_Manager* manager;
-public slots:
-    void load_image(QNetworkReply*);
 };
 
 
-class RecordPreview : public RecordItem
+class RecordPreview : public RecordBase
 {
     Q_OBJECT
 public:
     RecordPreview(const Record&, int);
     ~RecordPreview() override {}
-//    void set_list_view() override;
-    static VK_Manager* manager;
+    void set_gallery_view() override {};
+    void set_list_view() override;
+//    static VK_Manager* manager;
+    static QVector<Record>* records;
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
+    void reroll();
 private:
     Record record;
     QList<RecordFrame*> images;
+    QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
 };
 
 #endif // RECORD_ITEMS_H

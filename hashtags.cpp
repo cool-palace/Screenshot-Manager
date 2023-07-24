@@ -290,6 +290,9 @@ void MainWindow::filter_event(bool publ) {
 }
 
 void MainWindow::filter_event(const QString& text) {
+    if (filters.contains(text) && filters.find(text).value().sign == 't') {
+        return;
+    }
     for (auto i = filters.begin(); i != filters.end(); i++) {
         if (i.value().sign == 't') {
             filters.erase(i);
@@ -394,7 +397,15 @@ void MainWindow::apply_filters() {
         if (i == filters.begin()) {
             apply_first_filter();
         } else {
-            filter(hashtags[i.key()]->indices(i.value().sign, i.value().include));
+            if (!i.value().sign.isLetter()) {
+               filter(hashtags[i.key()]->indices(i.value().sign, i.value().include));
+            } else if (i.value().sign == 't') {
+                // Full-text search
+                filter(word_search(i.key()));
+            } else if (i.value().sign == 'p') {
+                // Public filter
+                filter(records_by_public(i.value().include));
+            }
         }
     }
 }
@@ -431,7 +442,7 @@ void MainWindow::exit_filtering() {
 
 void MainWindow::filter(const QSet<int>& second) {
     if (filtration_results.isEmpty()) return;
-    QMap<int, RecordItem*> result;
+    QMap<int, RecordBase*> result;
     auto current_results = filtration_results.keys();
     auto keys = QSet<int>(current_results.begin(), current_results.end()).intersect(second);
     for (const auto& key : keys) {

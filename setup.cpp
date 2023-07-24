@@ -6,7 +6,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , manager(new VK_Manager())
-//    , record_items_array(reinterpret_cast<RecordItem*>(new char[250 * sizeof(RecordItem)]))
 {
     ui->setupUi(this);
     RecordFrame::manager = manager;
@@ -526,12 +525,17 @@ void MainWindow::set_mode(Mode mode) {
     case RELEASE_PREPARATION:
 //        set_view(LIST);
         ui->stacked_view->setCurrentIndex(2);
+        RecordPreview::records = &records;
         for (int i = 0; i < 7; ++i) {
             int random_index = QRandomGenerator::global()->bounded(records.size());
             selected_records.push_back(new RecordPreview(records[random_index], random_index));
             ui->preview_grid->addWidget(selected_records.back());
             selected_records.back()->set_list_view();
         }
+//        for (auto record : selected_records) {
+
+//            ui->preview_grid->addWidget(new QPushButton)
+//        }
 
 //        for (int i = records.size() - records_array.size(); i < records.size(); ++i) {
 //            record_items.push_back(new RecordItem(records[i], i, path(i)));

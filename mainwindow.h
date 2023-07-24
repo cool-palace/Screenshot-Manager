@@ -82,11 +82,11 @@ private:
     QList<QStringList> ranked_hashtags;
     QStringList current_hashtags;
     QMap<int, QStringList> hashtags_by_index;
-    QMap<int, RecordItem*> filtration_results;
-    QList<RecordItem*> selected_records;
+    QMap<int, RecordBase*> filtration_results;
+    QList<RecordBase*> selected_records;
     QMap<QString, FilterSpecs> filters;
     QVector<Record> records;
-    QList<RecordItem*> record_items;
+    QList<RecordBase*> record_items;
     int pic_index;
     int quote_index;
     int pic_end_index = 0;

@@ -11,5 +11,6 @@
         <file>images/icons8-private-80.png</file>
         <file>images/icons8-source-code-80.png</file>
         <file>images/icons8-cloud-80.png</file>
+        <file>images/icons8-available-updates-80.png</file>
     </qresource>
 </RCC>
