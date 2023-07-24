@@ -126,10 +126,28 @@ RecordPreview::RecordPreview(const Record& record, int index) :
     }
     layout.addWidget(&text,0,record.links.size() + 1);
     layout.addWidget(reroll_button,0,record.links.size() + 2);
+    layout.addWidget(number_button,0,record.links.size() + 3);
     connect(reroll_button, &QPushButton::clicked, this, &RecordPreview::reroll);
+    connect(number_button, &QPushButton::clicked, this, &RecordPreview::input_number);
 }
 
 void RecordPreview::reroll() {
+    clear();
+    index = QRandomGenerator::global()->bounded(RecordPreview::records->size());
+    set_index(index);
+}
+
+void RecordPreview::input_number() {
+    int max = RecordPreview::records->size();
+    bool ok;
+    index = QInputDialog::getInt(this, tr("Ручной ввод номера записи"),
+                                 tr("Введите номер записи от 1 до %1").arg(max), index+1, 1, max, 1, &ok) - 1;
+    if (!ok) return;
+    clear();
+    set_index(index);
+}
+
+void RecordPreview::clear() {
     while (layout.takeAt(0) != nullptr) {
         // Clearing items from the grid
     }
@@ -137,7 +155,9 @@ void RecordPreview::reroll() {
         delete frame;
     }
     images.clear();
-    index = QRandomGenerator::global()->bounded(RecordPreview::records->size());
+}
+
+void RecordPreview::set_index(int index) {
     number.setText(QString().setNum(index + 1));
     layout.addWidget(&number,0,0);
     auto record = RecordPreview::records->at(index);
@@ -148,4 +168,5 @@ void RecordPreview::reroll() {
     }
     layout.addWidget(&text,0,record.links.size() + 1);
     layout.addWidget(reroll_button,0,record.links.size() + 2);
+    layout.addWidget(number_button,0,record.links.size() + 3);
 }

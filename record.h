@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 #include <QtConcurrent>
 #include <QPushButton>
+#include <QInputDialog>
 #include "vk_manager.h"
 
 struct Record {
@@ -82,10 +83,14 @@ public:
     static QVector<Record>* records;
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
     void reroll();
+    void input_number();
 private:
     Record record;
     QList<RecordFrame*> images;
     QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
+    QPushButton* number_button = new QPushButton(QIcon(":/images/icons8-12-80.png"), "");
+    void clear();
+    void set_index(int);
 };
 
 #endif // RECORD_ITEMS_H
