@@ -193,6 +193,24 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
+    connect(ui->generate, &QPushButton::clicked, [this]() {
+        QLayoutItem* child;
+        while ((child = ui->preview_grid->takeAt(0))) {
+            // Clearing items from the grid
+            child->widget()->hide();
+        }
+        for (auto record : selected_records) {
+            delete record;
+        }
+        selected_records.clear();
+        for (int i = 0; i < ui->quantity->value(); ++i) {
+            int random_index = QRandomGenerator::global()->bounded(records.size());
+            selected_records.push_back(new RecordPreview(records[random_index], random_index));
+            ui->preview_grid->addWidget(selected_records.back());
+            selected_records.back()->set_list_view();
+        }
+    });
+
     connect(ui->skip, &QPushButton::clicked, [this]() {
         switch (current_mode) {
         case CONFIG_CREATION:
@@ -523,27 +541,17 @@ void MainWindow::set_mode(Mode mode) {
 //        }
         break;
     case RELEASE_PREPARATION:
-//        set_view(LIST);
         ui->stacked_view->setCurrentIndex(2);
+        ui->date->setDate(QTime::currentTime() < QTime(3,0)
+                              ? QDate::currentDate()
+                              : QDate::currentDate().addDays(1));
+    {
+        bool weekend = ui->date->date().dayOfWeek() > 5;
+        ui->time->setTime(weekend ? QTime(8,0) : QTime(10,0));
+        if (weekend) ui->quantity->setValue(6);
+    }
         RecordPreview::records = &records;
-        for (int i = 0; i < 7; ++i) {
-            int random_index = QRandomGenerator::global()->bounded(records.size());
-            selected_records.push_back(new RecordPreview(records[random_index], random_index));
-            ui->preview_grid->addWidget(selected_records.back());
-            selected_records.back()->set_list_view();
-        }
-//        for (auto record : selected_records) {
-
-//            ui->preview_grid->addWidget(new QPushButton)
-//        }
-
-//        for (int i = records.size() - records_array.size(); i < records.size(); ++i) {
-//            record_items.push_back(new RecordItem(records[i], i, path(i)));
-//            connect(record_items[i], &RecordItem::selected, [this](int index){
-//                ui->slider->setValue(index);
-//                set_view(MAIN);
-//            });
-//        }
+        ui->generate->click();
         break;
     default:
         break;
