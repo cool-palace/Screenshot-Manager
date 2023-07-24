@@ -83,6 +83,7 @@ void RecordItem::set_list_view() {
 void RecordPreview::set_list_view() {
     number.show();
     text.show();
+    log_info.show();
     show();
 }
 
@@ -104,6 +105,7 @@ void RecordItem::load_thumbmnail(const QString& picture) {
 
 VK_Manager* RecordFrame::manager;
 QVector<Record>* RecordPreview::records;
+QMap<int, int>* RecordPreview::logs;
 
 RecordFrame::RecordFrame(const QString& link) {
     auto response = manager->get_url(link);
@@ -116,19 +118,24 @@ RecordFrame::RecordFrame(const QString& link) {
     });
 }
 
-RecordPreview::RecordPreview(const Record& record, int index) :
-    RecordBase(record, index)
+RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& time) :
+    RecordBase(record, index), time(time)
 {
+    log_info.setFont(text.font());
     layout.addWidget(&number,0,0);
     for (int i = 0; i < record.links.size(); ++i) {
         images.push_back(new RecordFrame(record.links[i]));
         layout.addWidget(images.back(),0,i+1);
     }
+    update_log_info(record.ids.first());
     layout.addWidget(&text,0,record.links.size() + 1);
+    layout.addWidget(&log_info,1,record.links.size() + 1);
     layout.addWidget(reroll_button,0,record.links.size() + 2);
     layout.addWidget(number_button,0,record.links.size() + 3);
     connect(reroll_button, &QPushButton::clicked, this, &RecordPreview::reroll);
     connect(number_button, &QPushButton::clicked, this, &RecordPreview::input_number);
+    reroll_button->setIconSize(QSize(30,30));
+    number_button->setIconSize(QSize(30,30));
 }
 
 void RecordPreview::reroll() {
@@ -166,7 +173,24 @@ void RecordPreview::set_index(int index) {
         images.push_back(new RecordFrame(record.links[i]));
         layout.addWidget(images.back(),0,i+1);
     }
+    update_log_info(record.ids.first());
     layout.addWidget(&text,0,record.links.size() + 1);
+    layout.addWidget(&log_info,1,record.links.size() + 1);
     layout.addWidget(reroll_button,0,record.links.size() + 2);
     layout.addWidget(number_button,0,record.links.size() + 3);
+}
+
+void RecordPreview::update_log_info(int id) {
+    auto font = log_info.font();
+    if (logs->contains(id)) {
+        QDateTime last = QDateTime::fromSecsSinceEpoch(logs->value(id), Qt::LocalTime);
+        log_info.setText(QString("Публиковалось %1 дней назад").arg(last.daysTo((time))));
+        font.setBold(true);
+        font.setItalic(false);
+    } else {
+        log_info.setText(QString("Раньше не публиковалось"));
+        font.setBold(false);
+        font.setItalic(true);
+    }
+    log_info.setFont(font);
 }

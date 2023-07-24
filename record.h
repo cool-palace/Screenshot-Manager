@@ -75,22 +75,26 @@ class RecordPreview : public RecordBase
 {
     Q_OBJECT
 public:
-    RecordPreview(const Record&, int);
+    RecordPreview(const Record&, int, const QDateTime&);
     ~RecordPreview() override {}
     void set_gallery_view() override {};
     void set_list_view() override;
 //    static VK_Manager* manager;
     static QVector<Record>* records;
+    static QMap<int, int>* logs;
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
     void reroll();
     void input_number();
 private:
-    Record record;
+//    Record record;
     QList<RecordFrame*> images;
+    QLabel log_info;
+    QDateTime time;
     QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
     QPushButton* number_button = new QPushButton(QIcon(":/images/icons8-12-80.png"), "");
     void clear();
     void set_index(int);
+    void update_log_info(int);
 };
 
 #endif // RECORD_ITEMS_H

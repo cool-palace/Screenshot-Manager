@@ -70,6 +70,7 @@ private:
     QString quotes_location;
     QString configs_location;
     QString subs_location;
+    QString logs_location;
     QString access_token;
     QMap<QString, int> album_ids;
     QDir dir;
@@ -87,6 +88,7 @@ private:
     QMap<QString, FilterSpecs> filters;
     QVector<Record> records;
     QList<RecordBase*> record_items;
+    QMap<int, int> logs;
     int pic_index;
     int quote_index;
     int pic_end_index = 0;

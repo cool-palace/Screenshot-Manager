@@ -203,9 +203,11 @@ MainWindow::MainWindow(QWidget *parent)
             delete record;
         }
         selected_records.clear();
+        QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
         for (int i = 0; i < ui->quantity->value(); ++i) {
             int random_index = QRandomGenerator::global()->bounded(records.size());
-            selected_records.push_back(new RecordPreview(records[random_index], random_index));
+            selected_records.push_back(new RecordPreview(records[random_index], random_index, time));
+            time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
             ui->preview_grid->addWidget(selected_records.back());
             selected_records.back()->set_list_view();
         }
@@ -471,6 +473,7 @@ bool MainWindow::initialize() {
     quotes_location = json_file.value("docs").toString();
     subs_location = json_file.value("subs").toString();
     configs_location = json_file.value("configs").toString();
+    logs_location = json_file.value("logs").toString();
     access_token = json_file.value("access_token").toString();
     client_id = json_file.value("client").toInt();
     manager->set_access_token(access_token);
@@ -542,6 +545,14 @@ void MainWindow::set_mode(Mode mode) {
         break;
     case RELEASE_PREPARATION:
         ui->stacked_view->setCurrentIndex(2);
+    {
+        auto log = json_object(logs_location);
+        for (auto key : log.keys()) {
+            logs[key.toInt()] = log.value(key).toInt();
+        }
+        RecordPreview::logs = &logs;
+        qDebug() << logs.first();
+    }
         ui->date->setDate(QTime::currentTime() < QTime(3,0)
                               ? QDate::currentDate()
                               : QDate::currentDate().addDays(1));
