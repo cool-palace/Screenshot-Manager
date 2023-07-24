@@ -186,9 +186,10 @@ void RecordPreview::update_log_info(int id) {
 }
 
 void RecordPreview::update_images(const QStringList& links) {
-    qreal k = links.size() == 1 ? 1 : links.size() == 2 ? 1.2 : 1.5;
+    qreal k = links.size() == 1 ? 1 : links.size() == 2 || links.size() == 4 ? 1.2 : 1.5;
+    int grid_size = links.size() == 4 ? 2 : 3;
     for (int i = 0; i < links.size(); ++i) {
         images.push_back(new RecordFrame(links[i], k));
-        images_layout.addWidget(images.back(),i/3,i%3);
+        images_layout.addWidget(images.back(),i/grid_size,i%grid_size);
     }
 }
