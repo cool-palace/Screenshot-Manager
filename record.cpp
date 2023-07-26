@@ -106,6 +106,7 @@ void RecordItem::load_thumbmnail(const QString& picture) {
 VK_Manager* RecordFrame::manager;
 QVector<Record>* RecordPreview::records;
 QMap<int, int>* RecordPreview::logs;
+QList<RecordBase*>* RecordPreview::selected_records;
 
 RecordFrame::RecordFrame(const QString& link, qreal k) {
     auto response = manager->get_url(link);

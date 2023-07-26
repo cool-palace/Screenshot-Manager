@@ -417,3 +417,12 @@ void MainWindow::show_text(int index) {
     bool subtitles_on = !subs.empty();
     ui->text->setText(subtitles_on ? subs[index] : quotes[index]);
 }
+
+QString MainWindow::attachments(int index) const {
+    QString result;
+    for (const auto& photo_id : records[index].ids) {
+        if (!result.isEmpty()) result += ",";
+        result += prefix + QString().setNum(photo_id);
+    }
+    return result;
+}

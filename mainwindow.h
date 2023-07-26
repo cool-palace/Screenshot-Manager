@@ -72,6 +72,7 @@ private:
     QString subs_location;
     QString logs_location;
     QString access_token;
+    QString prefix;
     QMap<QString, int> album_ids;
     QDir dir;
     QMap<int, QString> title_map;
@@ -164,6 +165,7 @@ private:
     void display(int);
     void draw(int);
     void show_text(int);
+    QString attachments(int) const;
 };
 
 #endif // MAINWINDOW_H

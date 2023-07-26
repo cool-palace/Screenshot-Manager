@@ -31,10 +31,12 @@ public:
     void update_text(const QString&);
     virtual void set_gallery_view() = 0;
     virtual void set_list_view() = 0;
+    int get_index() const { return index; };
 signals:
     void selected(int);
 protected:
     int index;
+    Record record;
     QString pic;
     QLabel image;
     QLabel text;
@@ -82,9 +84,12 @@ public:
 //    static VK_Manager* manager;
     static QVector<Record>* records;
     static QMap<int, int>* logs;
+    static QList<RecordBase*>* selected_records;
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
     void reroll();
     void input_number();
+    int timestamp() { return time.toSecsSinceEpoch(); }
+    QDateTime datetime() { return time; }
 private:
 //    Record record;
     QList<RecordFrame*> images;

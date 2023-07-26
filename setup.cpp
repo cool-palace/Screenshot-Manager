@@ -211,6 +211,14 @@ MainWindow::MainWindow(QWidget *parent)
             ui->preview_grid->addWidget(selected_records.back());
             selected_records.back()->set_list_view();
         }
+        RecordPreview::selected_records = &selected_records;
+    });
+
+    connect(ui->post, &QPushButton::clicked, [this]() {
+        for (auto r : selected_records) {
+            auto record = dynamic_cast<RecordPreview*>(r);
+            qDebug() << record->get_index() << attachments(record->get_index()) << record->timestamp();
+        }
     });
 
     connect(ui->skip, &QPushButton::clicked, [this]() {
@@ -476,6 +484,7 @@ bool MainWindow::initialize() {
     logs_location = json_file.value("logs").toString();
     access_token = json_file.value("access_token").toString();
     client_id = json_file.value("client").toInt();
+    prefix = json_file.value("prefix").toString();
     manager->set_access_token(access_token);
     manager->get_albums();
     if (!QDir(screenshots_location).exists() || !QDir(configs_location).exists()) {
@@ -553,12 +562,13 @@ void MainWindow::set_mode(Mode mode) {
         RecordPreview::logs = &logs;
         qDebug() << logs.first();
     }
+        ui->date->setMinimumDate(QDate::currentDate());
         ui->date->setDate(QTime::currentTime() < QTime(3,0)
                               ? QDate::currentDate()
                               : QDate::currentDate().addDays(1));
     {
         bool weekend = ui->date->date().dayOfWeek() > 5;
-        ui->time->setTime(weekend ? QTime(8,0) : QTime(10,0));
+        ui->time->setTime(weekend ? QTime(10,0) : QTime(8,0));
         if (weekend) ui->quantity->setValue(6);
     }
         RecordPreview::records = &records;
