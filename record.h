@@ -84,12 +84,11 @@ public:
 //    static VK_Manager* manager;
     static QVector<Record>* records;
     static QMap<int, int>* logs;
-    static QList<RecordBase*>* selected_records;
-//    void mouseDoubleClickEvent(QMouseEvent*) override;
-    void reroll();
-    void input_number();
+    static QList<RecordPreview*>* selected_records;
     int timestamp() { return time.toSecsSinceEpoch(); }
-    QDateTime datetime() { return time; }
+    void set_index(int);
+signals:
+    void search_start(int);
 private:
 //    Record record;
     QList<RecordFrame*> images;
@@ -98,8 +97,13 @@ private:
     QGridLayout images_layout;
     QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
     QPushButton* number_button = new QPushButton(QIcon(":/images/icons8-12-80.png"), "");
+    QPushButton* search_button = new QPushButton(QIcon(":/images/icons8-search-80.png"), "");
+    QPushButton* switch_button = new QPushButton(QIcon(":/images/icons8-sort-down-80.png"), "");
+    void reroll();
+    void input_number();
+    void switch_with_next();
+    void search();
     void clear();
-    void set_index(int);
     void update_log_info(int);
     void update_images(const QStringList&);
 };

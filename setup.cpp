@@ -85,6 +85,7 @@ MainWindow::MainWindow(QWidget *parent)
             ui->statusBar->showMessage("Конфигурационный файл не открыт.");
             return;
         }
+        set_view(PREVIEW);
         set_mode(RELEASE_PREPARATION);
     });
 
@@ -207,6 +208,10 @@ MainWindow::MainWindow(QWidget *parent)
         for (int i = 0; i < ui->quantity->value(); ++i) {
             int random_index = QRandomGenerator::global()->bounded(records.size());
             selected_records.push_back(new RecordPreview(records[random_index], random_index, time));
+            connect(selected_records.back(), &RecordPreview::search_start, [this](int index){
+                pic_index = index;
+                set_view(LIST);
+            });
             time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
             ui->preview_grid->addWidget(selected_records.back());
             selected_records.back()->set_list_view();
@@ -215,8 +220,7 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(ui->post, &QPushButton::clicked, [this]() {
-        for (auto r : selected_records) {
-            auto record = dynamic_cast<RecordPreview*>(r);
+        for (auto record : selected_records) {
             qDebug() << record->get_index() << attachments(record->get_index()) << record->timestamp();
         }
     });
@@ -553,14 +557,12 @@ void MainWindow::set_mode(Mode mode) {
 //        }
         break;
     case RELEASE_PREPARATION:
-        ui->stacked_view->setCurrentIndex(2);
     {
         auto log = json_object(logs_location);
         for (auto key : log.keys()) {
             logs[key.toInt()] = log.value(key).toInt();
         }
         RecordPreview::logs = &logs;
-        qDebug() << logs.first();
     }
         ui->date->setMinimumDate(QDate::currentDate());
         ui->date->setDate(QTime::currentTime() < QTime(3,0)
@@ -591,6 +593,9 @@ void MainWindow::set_view(View view) {
     case LIST: case GALLERY:
         ui->stacked_view->setCurrentIndex(1);
         lay_previews();
+        break;
+    case PREVIEW:
+        ui->stacked_view->setCurrentIndex(2);
         break;
     }
     ui->main_view->setChecked(current_view == MAIN);

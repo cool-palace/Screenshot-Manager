@@ -80,7 +80,10 @@ bool MainWindow::open_title_config(bool all) {
     } else {
         QDir dir = QDir(configs_location);
         dir.setNameFilters(QStringList("*.json"));
-        filepaths= dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+        filepaths = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+        if (filepaths.contains(".test.json")) {
+            filepaths.removeAt(filepaths.indexOf(".test.json"));
+        }
         for (QString& path : filepaths) {
             path = configs_location + path;
         }
@@ -122,6 +125,18 @@ bool MainWindow::open_public_config() {
             record.links.push_back(link.toString());
         }
         records.push_back(record);
+    }
+    auto titles = json_file.value("title_map").toObject();
+    for (auto index : titles.keys()) {
+        title_map[index.toInt()] = titles[index].toString();
+    }
+    for (int i = records.size() - records_array.size(); i < records.size(); ++i) {
+        record_items.push_back(new RecordItem(records[i], i, path(i)));
+        ui->view_grid->addWidget(record_items.back());
+        connect(record_items[i], &RecordItem::selected, [this](int index){
+            selected_records[pic_index]->set_index(index);
+            set_view(PREVIEW);
+        });
     }
     return !records.empty();
 }
@@ -304,24 +319,27 @@ bool MainWindow::get_subs_for_pic() {
 void MainWindow::compile_configs() {
     QDir dir = QDir(configs_location);
     auto configs = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+    if (configs.contains(".test.json")) {
+        configs.removeAt(configs.indexOf(".test.json"));
+    }
     QJsonArray resulting_array;
     QJsonArray hidden_array;
+    QJsonObject title_map;
     for (const auto& config : configs) {
         auto object = json_object(configs_location + config);
-//        auto title = object["title"].toString();
-//        auto album_id = object["album_id"].toString();
+        auto title = object["title"].toString();
+        title_map[QString().setNum(resulting_array.size())] = title;
         auto array = object["screens"].toArray();
         for (QJsonValueRef item : array) {
             auto record = item.toObject();
-//                record["title"] = title;
-//                record["album_id"] = album_id;
-            record["index"] = (record["public"].toBool() ? resulting_array : hidden_array).size() ;
+            record["index"] = (record["public"].toBool() ? resulting_array : hidden_array).size();
             (record["public"].toBool() ? resulting_array : hidden_array).push_back(record);
         }
     }
     QJsonObject result, hidden_result;
     result["records"] = resulting_array;
     result["reverse_index"] = reverse_index(resulting_array);
+    result["title_map"] = title_map;
     hidden_result["records"] = hidden_array;
     hidden_result["reverse_index"] = reverse_index(hidden_array);
     QFile file(configs_location + "result\\public_records.json");

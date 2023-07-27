@@ -14,5 +14,8 @@
         <file>images/icons8-available-updates-80.png</file>
         <file>images/icons8-12-80.png</file>
         <file>images/icons8-sent-80.png</file>
+        <file>images/icons8-search-80.png</file>
+        <file>images/icons8-drop-down-80.png</file>
+        <file>images/icons8-sort-down-80.png</file>
     </qresource>
 </RCC>

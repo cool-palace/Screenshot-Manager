@@ -35,7 +35,8 @@ class MainWindow : public QMainWindow
     enum View {
         MAIN,
         LIST,
-        GALLERY
+        GALLERY,
+        PREVIEW
     };
     struct FilterSpecs {
         QChar sign;
@@ -85,7 +86,7 @@ private:
     QStringList current_hashtags;
     QMap<int, QStringList> hashtags_by_index;
     QMap<int, RecordBase*> filtration_results;
-    QList<RecordBase*> selected_records;
+    QList<RecordPreview*> selected_records;
     QMap<QString, FilterSpecs> filters;
     QVector<Record> records;
     QList<RecordBase*> record_items;
