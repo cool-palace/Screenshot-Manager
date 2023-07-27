@@ -126,12 +126,20 @@ bool MainWindow::open_public_config() {
         }
         records.push_back(record);
     }
+    auto log = json_object(logs_location);
+    for (auto key : log.keys()) {
+        logs[key.toInt()] = log.value(key).toInt();
+    }
     auto titles = json_file.value("title_map").toObject();
     for (auto index : titles.keys()) {
         title_map[index.toInt()] = titles[index].toString();
     }
     for (int i = records.size() - records_array.size(); i < records.size(); ++i) {
         record_items.push_back(new RecordItem(records[i], i, path(i)));
+        if (logs.contains(records[i].ids[0])) {
+            dynamic_cast<RecordItem*>(record_items.back())->include_log_info(logs.value(records[i].ids[0]));
+        }
+
         ui->view_grid->addWidget(record_items.back());
         connect(record_items[i], &RecordItem::selected, [this](int index){
             selected_records[pic_index]->set_index(index);

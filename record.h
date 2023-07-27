@@ -53,6 +53,7 @@ public:
     ~RecordItem() override {}
     void set_gallery_view() override;
     void set_list_view() override;
+    void include_log_info(int);
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
 //    void update_text(const QString&);
 //signals:

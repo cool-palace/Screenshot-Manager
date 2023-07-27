@@ -558,10 +558,10 @@ void MainWindow::set_mode(Mode mode) {
         break;
     case RELEASE_PREPARATION:
     {
-        auto log = json_object(logs_location);
-        for (auto key : log.keys()) {
-            logs[key.toInt()] = log.value(key).toInt();
-        }
+//        auto log = json_object(logs_location);
+//        for (auto key : log.keys()) {
+//            logs[key.toInt()] = log.value(key).toInt();
+//        }
         RecordPreview::logs = &logs;
     }
         ui->date->setMinimumDate(QDate::currentDate());

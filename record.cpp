@@ -53,6 +53,13 @@ RecordItem::RecordItem(const Record& record, int index, const QString& path) :
     layout.addWidget(&box,1,1);
 }
 
+void RecordItem::include_log_info(int timestamp) {
+    QDateTime last = QDateTime::fromSecsSinceEpoch(timestamp, Qt::LocalTime);
+    auto num = number.text();
+    number.setText(num + QString("\n(%1)").arg(last.daysTo(QDateTime::currentDateTime())));
+}
+
+
 RecordItem::RecordItem(const QString& quote, int index) :
     RecordBase(Record(quote), index)
 {
@@ -194,7 +201,7 @@ void RecordPreview::update_log_info(int id) {
     auto font = log_info.font();
     if (logs->contains(id)) {
         QDateTime last = QDateTime::fromSecsSinceEpoch(logs->value(id), Qt::LocalTime);
-        log_info.setText(QString("Публиковалось %1 дней назад").arg(last.daysTo((time))));
+        log_info.setText(QString("Публиковалось %1 дней назад").arg(last.daysTo(time)));
         font.setBold(true);
         font.setItalic(false);
     } else {
