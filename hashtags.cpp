@@ -35,7 +35,7 @@ void MainWindow::create_hashtag_button(const QString& text) {
 }
 
 void MainWindow::hashtag_event(const QChar& c, const QString& text) {
-    if (current_mode == IDLE) return;
+    if (current_mode == IDLE || current_mode == RELEASE_PREPARATION) return;
     if (!filters.isEmpty()) {
         filter_event(c, text, true);
         return;
