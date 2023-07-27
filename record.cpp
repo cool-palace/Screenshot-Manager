@@ -144,7 +144,6 @@ RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& t
 }
 
 void RecordPreview::reroll() {
-    clear();
     set_index(QRandomGenerator::global()->bounded(RecordPreview::records->size()));
 }
 
@@ -154,7 +153,6 @@ void RecordPreview::input_number() {
     int random_index = QInputDialog::getInt(this, tr("Номер записи"),
                                  tr("Введите номер записи от 1 до %1").arg(max), index+1, 1, max, 1, &ok) - 1;
     if (!ok) return;
-    clear();
     set_index(random_index);
 }
 
@@ -164,8 +162,6 @@ void RecordPreview::switch_with_next() {
     RecordPreview* next = selected_records->operator[](pos+1);
     int this_index = index;
     int next_index = next->get_index();
-    clear();
-    next->clear();
     next->set_index(this_index);
     set_index(next_index);
 }
@@ -185,6 +181,7 @@ void RecordPreview::clear() {
 }
 
 void RecordPreview::set_index(int i) {
+    clear();
     index = i;
     number.setText(QString().setNum(index + 1));
     auto record = RecordPreview::records->at(index);
