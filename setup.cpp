@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
             return;
         }
         set_mode(CONFIG_READING);
+        if (current_view == PREVIEW) set_view(MAIN);
     });
 
     connect(ui->config_reading_all, &QAction::triggered, [this]() {
@@ -60,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
             return;
         }
         set_mode(CONFIG_READING);
+        if (current_view == PREVIEW) set_view(MAIN);
     });
 
     connect(ui->text_reading, &QAction::triggered, [this]() {
@@ -412,6 +414,8 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
             ui->stackedWidget->setCurrentIndex(1);
         } else if (current_mode == CONFIG_CREATION) {
             ui->back->setText("Отмена");
+        } else if (current_mode == RELEASE_PREPARATION && current_view != PREVIEW) {
+            set_view(MAIN);
         }
     }
 }
@@ -423,6 +427,8 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event) {
             ui->stackedWidget->setCurrentIndex(0);
         } else if (current_mode == CONFIG_CREATION) {
             ui->back->setText("Назад");
+        } else if (current_mode == RELEASE_PREPARATION && current_view != PREVIEW) {
+            set_view(LIST);
         }
         break;
     case Qt::Key_PageDown:
@@ -564,6 +570,7 @@ void MainWindow::set_mode(Mode mode) {
 //        }
         RecordPreview::logs = &logs;
     }
+        load_hashtag_info();
         ui->date->setMinimumDate(QDate::currentDate());
         ui->date->setDate(QTime::currentTime() < QTime(3,0)
                               ? QDate::currentDate()
@@ -589,6 +596,9 @@ void MainWindow::set_view(View view) {
     switch (view) {
     case MAIN:
         ui->stacked_view->setCurrentIndex(0);
+        if (current_mode == RELEASE_PREPARATION) {
+            ui->stackedWidget->setCurrentIndex(1);
+        }
         break;
     case LIST: case GALLERY:
         ui->stacked_view->setCurrentIndex(1);
@@ -631,13 +641,13 @@ void MainWindow::lay_previews(int page) {
 }
 
 void MainWindow::set_enabled(bool enable) {
-    ui->back->setEnabled(enable && pic_index > 0);
-    ui->ok->setEnabled(enable);
+    ui->back->setEnabled(enable && pic_index > 0 && current_mode != RELEASE_PREPARATION);
+    ui->ok->setEnabled(enable && current_mode != RELEASE_PREPARATION);
     ui->skip->setEnabled(enable && current_mode == CONFIG_CREATION);
     bool listing_enabled = (current_mode == CONFIG_CREATION && pics.size() > 1)
             || (current_mode == CONFIG_READING && records[0].pics.size() > 1);
     ui->add->setEnabled(enable && listing_enabled);
-    ui->text->setEnabled(enable && current_mode != TEXT_READING);
+    ui->text->setEnabled(enable && current_mode != TEXT_READING && current_mode != RELEASE_PREPARATION);
     ui->private_switch->setEnabled(current_mode == CONFIG_CREATION || current_mode == CONFIG_READING);
     ui->load_subs->setEnabled(current_mode == TEXT_READING);
     ui->slider->setEnabled(current_mode == CONFIG_READING);
