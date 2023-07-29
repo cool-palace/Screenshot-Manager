@@ -72,7 +72,6 @@ private:
     QString configs_location;
     QString subs_location;
     QString logs_location;
-    QString access_token;
     QString prefix;
     QMap<QString, int> album_ids;
     QDir dir;
@@ -100,6 +99,8 @@ private:
     QSet<QChar> sign_set = {'#', '&', ' ', 't', 'p'};
     QSet<int> all_records;
     QStringList subs;
+    QMutex status_mutex;
+    int post_counter = 0;
 
     // Setup functions
     bool initialize();
@@ -167,6 +168,8 @@ private:
     void draw(int);
     void show_text(int);
     QString attachments(int) const;
+    void read_logs();
+    void update_logs();
 };
 
 #endif // MAINWINDOW_H

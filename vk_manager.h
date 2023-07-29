@@ -12,19 +12,21 @@ class VK_Manager : public QNetworkAccessManager
 {
     Q_OBJECT
 public:
-    VK_Manager();
+    VK_Manager(const QString&, const QString&, const QString&);
 
 signals:
     void albums_ready(const QMap<QString, int>&);
     void photo_ids_ready(const QVector<int>&, const QStringList&);
     void image_ready(const QImage&);
+    void posted_successfully(int, int);
+    void post_failed(int, const QString&);
 
 public slots:
     QNetworkReply* get_url(const QString& url);
     void get_albums();
     void get_photo_ids(int album_id, const QString& photo_ids = "");
     void get_image(const QString& url);
-    void set_access_token(const QString&);
+    void post(int, const QString&, int);
 //    void get_access_token(int client_id);
 //    QString current_token() const { return access_token; }
 
@@ -38,8 +40,9 @@ private slots:
 //    void access_token_ready(QNetworkReply *);
 
 private:
-    QString access_token;
-    const QString group_id = "42265360";
+    const QString access_token;
+    const QString group_id;
+    const QString public_id;
 };
 
 #endif // VK_MANAGER_H

@@ -1,8 +1,11 @@
 #include "vk_manager.h"
 #include <QRegularExpression>
 
-VK_Manager::VK_Manager() :
-    QNetworkAccessManager() { }
+VK_Manager::VK_Manager(const QString& access_token, const QString& group_id, const QString& public_id)
+    : QNetworkAccessManager()
+    , access_token(access_token)
+    , group_id(group_id)
+    , public_id(public_id) {}
 
 QJsonObject VK_Manager::reply_json(QNetworkReply *response) {
     response->deleteLater();
@@ -67,6 +70,26 @@ void VK_Manager::get_albums() {
     connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_albums);
 }
 
+void VK_Manager::post(int index, const QString& attachments, int date) {
+    QString url = "https://api.vk.com/method/wall.post?v=5.131&from_group=1&signed=0"
+                  "&access_token=" + access_token
+                + "&owner_id=-" + public_id
+                + "&attachments=" + attachments
+                + "&publish_date=" + QString().setNum(date);
+    auto response = get_url(url);
+    connect(response, &QNetworkReply::finished, [this, response, index, date](){
+        auto reply = reply_json(response);
+        response->deleteLater();
+        if (reply.contains("error")) {
+            qDebug() << reply;
+            emit post_failed(index, QJsonDocument(reply).toJson(QJsonDocument::Compact));
+            return;
+        }
+//        auto post_id = reply["response"].toObject()["post_id"].toInt();
+        emit posted_successfully(index, date);
+    });
+}
+
 //void VK_Manager::get_access_token(int client_id) {
 //    QString url = "https://oauth.vk.com/authorize"
 //                  "?client_id=" + QString().setNum(client_id) +
@@ -87,10 +110,6 @@ void VK_Manager::get_albums() {
 //        access_token = match.captured(1);
 //    }
 //}
-
-void VK_Manager::set_access_token(const QString& token) {
-    access_token = token;
-}
 
 void VK_Manager::got_albums(QNetworkReply *response) {
     disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_albums);

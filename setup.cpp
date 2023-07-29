@@ -5,10 +5,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , manager(new VK_Manager())
 {
     ui->setupUi(this);
-    RecordFrame::manager = manager;
     if (initialize()) {
         get_hashtags();
     }
@@ -29,6 +27,34 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(manager, &VK_Manager::image_ready, [this](const QImage& image) {
         ui->image->setPixmap(scaled(image));
+    });
+
+    connect(manager, &VK_Manager::posted_successfully, [this](int index, int date) {
+        status_mutex.lock();
+        auto current_status = ui->statusBar->currentMessage();
+        if (current_status.startsWith("Опубликованы записи")) {
+            current_status.append(QString(", %1").arg(index+1));
+            ui->statusBar->showMessage(current_status);
+        } else {
+            ui->statusBar->showMessage(QString("Опубликованы записи: %1").arg(index+1));
+        }
+        for (const int photo_id : records[index].ids) {
+            logs[photo_id] = date;
+        }
+        if (--post_counter == 0) {
+            update_logs();
+        }
+        status_mutex.unlock();
+    });
+
+    connect(manager, &VK_Manager::post_failed, [this](int index, const QString& reply) {
+        if (post_counter < selected_records.size()) {
+            update_logs();
+            post_counter = 0;
+        }
+        ui->statusBar->showMessage(QString("Не удалось опубликовать запись %1").arg(index+1));
+        QMessageBox msgBox(QMessageBox::Critical, "Ошибка", reply);
+        msgBox.exec();
     });
 
     connect(ui->config_creation, &QAction::triggered, [this]() {
@@ -222,8 +248,10 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(ui->post, &QPushButton::clicked, [this]() {
+        post_counter = selected_records.size();
         for (auto record : selected_records) {
-            qDebug() << record->get_index() << attachments(record->get_index()) << record->timestamp();
+            int index = record->get_index();
+            manager->post(index, attachments(index), record->timestamp());
         }
     });
 
@@ -492,10 +520,13 @@ bool MainWindow::initialize() {
     subs_location = json_file.value("subs").toString();
     configs_location = json_file.value("configs").toString();
     logs_location = json_file.value("logs").toString();
-    access_token = json_file.value("access_token").toString();
+    QString access_token = json_file.value("access_token").toString();
+    QString group_id = json_file.value("group_id").toString();
+    QString public_id = json_file.value("public_id").toString();
+    manager = new VK_Manager(access_token, group_id, public_id);
+    RecordFrame::manager = manager;
     client_id = json_file.value("client").toInt();
     prefix = json_file.value("prefix").toString();
-    manager->set_access_token(access_token);
     manager->get_albums();
     if (!QDir(screenshots_location).exists() || !QDir(configs_location).exists()) {
         ui->statusBar->showMessage("Указаны несуществующие директории. Перепроверьте конфигурационный файл.");
@@ -568,7 +599,6 @@ void MainWindow::set_mode(Mode mode) {
 //        for (auto key : log.keys()) {
 //            logs[key.toInt()] = log.value(key).toInt();
 //        }
-        RecordPreview::logs = &logs;
     }
         load_hashtag_info();
         ui->date->setMinimumDate(QDate::currentDate());

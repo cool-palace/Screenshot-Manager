@@ -126,10 +126,7 @@ bool MainWindow::open_public_config() {
         }
         records.push_back(record);
     }
-    auto log = json_object(logs_location);
-    for (auto key : log.keys()) {
-        logs[key.toInt()] = log.value(key).toInt();
-    }
+    read_logs();
     auto titles = json_file.value("title_map").toObject();
     for (auto index : titles.keys()) {
         title_map[index.toInt()] = titles[index].toString();
@@ -451,4 +448,25 @@ QString MainWindow::attachments(int index) const {
         result += prefix + QString().setNum(photo_id);
     }
     return result;
+}
+
+void MainWindow::read_logs() {
+    auto log = json_object(logs_location);
+    for (auto key : log.keys()) {
+        logs[key.toInt()] = log.value(key).toInt();
+    }
+    RecordPreview::logs = &logs;
+}
+
+void MainWindow::update_logs() {
+    QFile file(logs_location);
+    QJsonObject object;
+    for (auto key : logs.keys()) {
+        object[QString().setNum(key)] = logs[key];
+    }
+    auto message = save_json(object, file)
+            ? "Логи публикаций обновлены."
+            : "Не удалось обновить логи.";
+    auto current_message = ui->statusBar->currentMessage();
+    ui->statusBar->showMessage(current_message + ". " + message);
 }
