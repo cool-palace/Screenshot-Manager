@@ -445,7 +445,7 @@ QString MainWindow::attachments(int index) const {
     QString result;
     for (const auto& photo_id : records[index].ids) {
         if (!result.isEmpty()) result += ",";
-        result += prefix + QString().setNum(photo_id);
+        result += manager->prefix() + QString().setNum(photo_id);
     }
     return result;
 }

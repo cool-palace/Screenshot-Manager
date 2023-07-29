@@ -13,6 +13,7 @@ class VK_Manager : public QNetworkAccessManager
     Q_OBJECT
 public:
     VK_Manager(const QString&, const QString&, const QString&);
+    QString prefix() const { return QString("photo-%1_").arg(group_id); };
 
 signals:
     void albums_ready(const QMap<QString, int>&);
@@ -27,8 +28,6 @@ public slots:
     void get_photo_ids(int album_id, const QString& photo_ids = "");
     void get_image(const QString& url);
     void post(int, const QString&, int);
-//    void get_access_token(int client_id);
-//    QString current_token() const { return access_token; }
 
 private slots:
     QJsonObject reply_json(QNetworkReply *response);
@@ -37,7 +36,6 @@ private slots:
     void got_albums(QNetworkReply *);
     void got_photo_ids(QNetworkReply *);
     void got_image(QNetworkReply *);
-//    void access_token_ready(QNetworkReply *);
 
 private:
     const QString access_token;

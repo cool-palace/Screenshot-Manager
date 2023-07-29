@@ -70,13 +70,10 @@ public slots:
 private:
     Ui::MainWindow *ui;
     VK_Manager* manager;
-    const QString group_id = "42265360";
     const int pics_per_page = 70;
-    int client_id;
     Mode current_mode = IDLE;
     View current_view = MAIN;
     QMap<Directories, QString> locations;
-    QString prefix;
     QMap<QString, int> album_ids;
     QDir dir;
     QMap<int, QString> title_map;

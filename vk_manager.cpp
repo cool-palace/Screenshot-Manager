@@ -90,26 +90,6 @@ void VK_Manager::post(int index, const QString& attachments, int date) {
     });
 }
 
-//void VK_Manager::get_access_token(int client_id) {
-//    QString url = "https://oauth.vk.com/authorize"
-//                  "?client_id=" + QString().setNum(client_id) +
-//                  "?display=page&scope=groups,photos,offline"
-//                  "&response_type=token&v=5.131&state=1330";
-//    get_url(url);
-//    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::access_token_ready);
-//}
-
-//void VK_Manager::access_token_ready(QNetworkReply* response) {
-//    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::access_token_ready);
-//    response->deleteLater();
-//    if (response->error() != QNetworkReply::NoError) return;
-//    auto url = response->url().url();
-//    QRegularExpression regex("access_token=(.+?)&");
-//    auto match = regex.match(url);
-//    if (match.hasMatch()) {
-//        access_token = match.captured(1);
-//    }
-//}
 
 void VK_Manager::got_albums(QNetworkReply *response) {
     disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_albums);
