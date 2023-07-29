@@ -3,7 +3,7 @@
 #include <QDebug>
 
 void MainWindow::get_hashtags() {
-    QFile file(configs_location + "hashtags.txt");
+    QFile file(locations[CONFIGS] + "hashtags.txt");
     if (!file.open(QIODevice::ReadOnly)) {
         ui->statusBar->showMessage("Не удалось открыть файл с хэштегами.");
     }

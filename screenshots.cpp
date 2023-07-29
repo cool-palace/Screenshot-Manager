@@ -20,7 +20,7 @@ bool MainWindow::read_quote_file(QFile& file) {
 }
 
 bool MainWindow::update_quote_file(const QString& title) {
-    QFile file(quotes_location + title + ".txt");
+    QFile file(locations[QUOTES] + title + ".txt");
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         ui->statusBar->showMessage("Не удалось открыть файл с цитатами.");
         return false;
@@ -35,7 +35,7 @@ bool MainWindow::update_quote_file(const QString& title) {
 }
 
 bool MainWindow::update_quote_file(int start, int end) {
-    QFile file(quotes_location + title_map.value(start) + ".txt");
+    QFile file(locations[QUOTES] + title_map.value(start) + ".txt");
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         ui->statusBar->showMessage("Не удалось открыть файл с цитатами.");
         return false;
@@ -75,17 +75,17 @@ bool MainWindow::open_title_config(bool all) {
     QStringList filepaths;
     if (!all) {
         filepaths = QFileDialog::getOpenFileNames(nullptr, "Открыть конфигурационный файл",
-                                                           configs_location,
+                                                           locations[CONFIGS],
                                                            "Файлы (*.json)");
     } else {
-        QDir dir = QDir(configs_location);
+        QDir dir = QDir(locations[CONFIGS]);
         dir.setNameFilters(QStringList("*.json"));
         filepaths = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
         if (filepaths.contains(".test.json")) {
             filepaths.removeAt(filepaths.indexOf(".test.json"));
         }
         for (QString& path : filepaths) {
-            path = configs_location + path;
+            path = locations[CONFIGS] + path;
         }
     }
     if (filepaths.isEmpty()) return false;
@@ -101,7 +101,7 @@ bool MainWindow::open_title_config(bool all) {
 }
 
 bool MainWindow::open_public_config() {
-    auto json_file = json_object(configs_location + "result\\public_records.json");
+    auto json_file = json_object(locations[CONFIGS] + "result\\public_records.json");
     if (!json_file.contains("records")) {
         ui->statusBar->showMessage("Неверный формат файла public_records.json" );
         return false;
@@ -148,7 +148,7 @@ bool MainWindow::open_public_config() {
 
 void MainWindow::read_title_config(const QJsonObject& json_file) {
     auto title = json_file.value("title").toString();
-    dir = QDir(screenshots_location + title);
+    dir = QDir(locations[SCREENSHOTS] + title);
     title_map[records.size()] = title;
     auto records_array = json_file.value("screens").toArray();
     for (QJsonValueRef r : records_array) {
@@ -184,7 +184,7 @@ void MainWindow::save_title_config(const QString& title) {
     for (const auto& record : records) {
         record_array.push_back(record.to_json());
     }
-    QFile file(configs_location + title + ".json");
+    QFile file(locations[CONFIGS] + title + ".json");
     QJsonObject object;
     object["title"] = title;
     object["album_id"] = album_ids[title];
@@ -201,7 +201,7 @@ void MainWindow::save_title_config(int start, int end) {
         record_array.push_back(records[i].to_json());
     }
     auto title = title_map.value(start);
-    QFile file(configs_location + title + ".json");
+    QFile file(locations[CONFIGS] + title + ".json");
     QJsonObject object;
     object["title"] = title;
     object["album_id"] = album_ids[title];
@@ -214,7 +214,7 @@ void MainWindow::save_title_config(int start, int end) {
 
 void MainWindow::read_text_from_subs() {
     dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
-                                                           screenshots_location));
+                                                           locations[SCREENSHOTS]));
     pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
     auto timestamps_for_filenames = timestamps_multimap();
     if (timestamps_for_filenames.isEmpty()) return;
@@ -253,7 +253,7 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
 //    }
 //    auto filenames = first + second;
     for (const auto& filename : timestamps_for_filenames.uniqueKeys()) {
-        auto path = QDir::toNativeSeparators(subs_location) + QDir::separator() + dir.dirName() + QDir::separator() + filename + ".ass";
+        auto path = QDir::toNativeSeparators(locations[SUBS]) + QDir::separator() + dir.dirName() + QDir::separator() + filename + ".ass";
         QFile file(path);
         if (!file.open(QIODevice::ReadOnly)) {
             QString message = "Ошибка при чтении субтитров: не удалось открыть файл " + file.fileName();
@@ -300,7 +300,7 @@ bool MainWindow::get_subs_for_pic() {
             filename = match.captured(1);
         } else return false;
     }
-    auto path = QDir::toNativeSeparators(subs_location) + QDir::separator() + dir.dirName() + QDir::separator() + filename + ".ass";
+    auto path = QDir::toNativeSeparators(locations[SUBS]) + QDir::separator() + dir.dirName() + QDir::separator() + filename + ".ass";
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
         QString message = "Ошибка при чтении субтитров: не удалось открыть файл " + file.fileName();
@@ -322,7 +322,7 @@ bool MainWindow::get_subs_for_pic() {
 }
 
 void MainWindow::compile_configs() {
-    QDir dir = QDir(configs_location);
+    QDir dir = QDir(locations[CONFIGS]);
     auto configs = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
     if (configs.contains(".test.json")) {
         configs.removeAt(configs.indexOf(".test.json"));
@@ -331,7 +331,7 @@ void MainWindow::compile_configs() {
     QJsonArray hidden_array;
     QJsonObject title_map;
     for (const auto& config : configs) {
-        auto object = json_object(configs_location + config);
+        auto object = json_object(locations[CONFIGS] + config);
         auto title = object["title"].toString();
         title_map[QString().setNum(resulting_array.size())] = title;
         auto array = object["screens"].toArray();
@@ -347,8 +347,8 @@ void MainWindow::compile_configs() {
     result["title_map"] = title_map;
     hidden_result["records"] = hidden_array;
     hidden_result["reverse_index"] = reverse_index(hidden_array);
-    QFile file(configs_location + "result\\public_records.json");
-    QFile hidden_file(configs_location + "result\\hidden_records.json");
+    QFile file(locations[CONFIGS] + "result\\public_records.json");
+    QFile hidden_file(locations[CONFIGS] + "result\\hidden_records.json");
     save_json(hidden_result, hidden_file);
     auto message = save_json(result, file)
             ? "Обработано конфигов: " + QString().setNum(configs.size()) + ", "
@@ -367,11 +367,11 @@ void MainWindow::export_text() {
     QRegularExpression regex("(.*?)\\s[#&].*$");
     QTextStream out(&file);
     out.setCodec("UTF-8");
-    QDir dir = QDir(configs_location);
+    QDir dir = QDir(locations[CONFIGS]);
     auto configs = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
     for (const auto& config : configs) {
 //        if (config.startsWith("Kono")) break;
-        auto object = json_object(configs_location + config);
+        auto object = json_object(locations[CONFIGS] + config);
         auto array = object["screens"].toArray();
         for (QJsonValueRef item : array) {
             auto record = item.toObject();
@@ -451,7 +451,7 @@ QString MainWindow::attachments(int index) const {
 }
 
 void MainWindow::read_logs() {
-    auto log = json_object(logs_location);
+    auto log = json_object(locations[LOGS]);
     for (auto key : log.keys()) {
         logs[key.toInt()] = log.value(key).toInt();
     }
@@ -459,10 +459,13 @@ void MainWindow::read_logs() {
 }
 
 void MainWindow::update_logs() {
-    QFile file(logs_location);
+    QFile file(locations[LOGS]);
     QJsonObject object;
     for (auto key : logs.keys()) {
         object[QString().setNum(key)] = logs[key];
+    }
+    for (auto record : selected_records) {
+        record->update_log_info(records[record->get_index()].ids.first());
     }
     auto message = save_json(object, file)
             ? "Логи публикаций обновлены."

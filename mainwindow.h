@@ -14,6 +14,7 @@
 #include <QInputDialog>
 #include <QRegularExpression>
 #include <QMessageBox>
+#include <QProgressDialog>
 #include "vk_manager.h"
 #include "hashtag_button.h"
 #include "record.h"
@@ -37,6 +38,13 @@ class MainWindow : public QMainWindow
         LIST,
         GALLERY,
         PREVIEW
+    };
+    enum Directories {
+        CONFIGS,
+        SCREENSHOTS,
+        QUOTES,
+        SUBS,
+        LOGS
     };
     struct FilterSpecs {
         QChar sign;
@@ -67,11 +75,7 @@ private:
     int client_id;
     Mode current_mode = IDLE;
     View current_view = MAIN;
-    QString screenshots_location;
-    QString quotes_location;
-    QString configs_location;
-    QString subs_location;
-    QString logs_location;
+    QMap<Directories, QString> locations;
     QString prefix;
     QMap<QString, int> album_ids;
     QDir dir;

@@ -88,6 +88,7 @@ public:
     static QList<RecordPreview*>* selected_records;
     int timestamp() { return time.toSecsSinceEpoch(); }
     void set_index(int);
+    void update_log_info(int);
 signals:
     void search_start(int);
 private:
@@ -105,7 +106,6 @@ private:
     void switch_with_next();
     void search();
     void clear();
-    void update_log_info(int);
     void update_images(const QStringList&);
 };
 

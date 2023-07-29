@@ -60,9 +60,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->config_creation, &QAction::triggered, [this]() {
         clear_all();
         dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
-                                                     screenshots_location));
+                                                     locations[SCREENSHOTS]));
         pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
-        QFile file(quotes_location + dir.dirName() + ".txt");
+        QFile file(locations[QUOTES] + dir.dirName() + ".txt");
         if (!read_quote_file(file)) {
             clear_all();
             return;
@@ -93,7 +93,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->text_reading, &QAction::triggered, [this]() {
         clear_all();
         dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
-                                                     screenshots_location));
+                                                     locations[SCREENSHOTS]));
         pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
         auto timestamps_for_filenames = timestamps_multimap();
         if (timestamps_for_filenames.isEmpty()) {
@@ -515,11 +515,11 @@ bool MainWindow::initialize() {
         ui->statusBar->showMessage("Неверный формат конфигурационного файла.");
         return false;
     }
-    screenshots_location = json_file.value("screenshots").toString();
-    quotes_location = json_file.value("docs").toString();
-    subs_location = json_file.value("subs").toString();
-    configs_location = json_file.value("configs").toString();
-    logs_location = json_file.value("logs").toString();
+    locations[SCREENSHOTS] = json_file.value("screenshots").toString();
+    locations[QUOTES] = json_file.value("docs").toString();
+    locations[SUBS] = json_file.value("subs").toString();
+    locations[CONFIGS] = json_file.value("configs").toString();
+    locations[LOGS] = json_file.value("logs").toString();
     QString access_token = json_file.value("access_token").toString();
     QString group_id = json_file.value("group_id").toString();
     QString public_id = json_file.value("public_id").toString();
@@ -528,7 +528,7 @@ bool MainWindow::initialize() {
     client_id = json_file.value("client").toInt();
     prefix = json_file.value("prefix").toString();
     manager->get_albums();
-    if (!QDir(screenshots_location).exists() || !QDir(configs_location).exists()) {
+    if (!QDir(locations[SCREENSHOTS]).exists() || !QDir(locations[CONFIGS]).exists()) {
         ui->statusBar->showMessage("Указаны несуществующие директории. Перепроверьте конфигурационный файл.");
         return false;
     }
@@ -594,12 +594,6 @@ void MainWindow::set_mode(Mode mode) {
 //        }
         break;
     case RELEASE_PREPARATION:
-    {
-//        auto log = json_object(logs_location);
-//        for (auto key : log.keys()) {
-//            logs[key.toInt()] = log.value(key).toInt();
-//        }
-    }
         load_hashtag_info();
         ui->date->setMinimumDate(QDate::currentDate());
         ui->date->setDate(QTime::currentTime() < QTime(3,0)
@@ -732,7 +726,7 @@ void MainWindow::save_changes() {
 }
 
 QString MainWindow::path(int index) {
-    return screenshots_location + title_name(index) + QDir::separator();
+    return locations[SCREENSHOTS] + title_name(index) + QDir::separator();
 }
 
 QPixmap MainWindow::scaled(const QImage& source) const {
