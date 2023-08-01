@@ -17,5 +17,9 @@
         <file>images/icons8-search-80.png</file>
         <file>images/icons8-drop-down-80.png</file>
         <file>images/icons8-sort-down-80.png</file>
+        <file>images/icons8-content-80.png</file>
+        <file>images/icons8-full-image-80.png</file>
+        <file>images/icons8-medium-icons-80.png</file>
+        <file>images/icons8-tiles-80.png</file>
     </qresource>
 </RCC>

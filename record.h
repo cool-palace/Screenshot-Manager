@@ -91,6 +91,7 @@ public:
     void update_log_info(int);
 signals:
     void search_start(int);
+    void reroll_request(int);
 private:
 //    Record record;
     QList<RecordFrame*> images;

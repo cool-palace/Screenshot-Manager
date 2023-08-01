@@ -172,6 +172,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->main_view, &QAction::triggered, [this]() { set_view(MAIN); });
     connect(ui->list_view, &QAction::triggered, [this]() { set_view(LIST); });
     connect(ui->gallery_view, &QAction::triggered, [this]() { set_view(GALLERY); });
+    connect(ui->preview_view, &QAction::triggered, [this]() { set_view(PREVIEW); });
 
     connect(ui->alphabet_order, &QAction::triggered, [this]() {
         ui->addition_order->setChecked(!ui->alphabet_order->isChecked());
@@ -234,11 +235,16 @@ MainWindow::MainWindow(QWidget *parent)
         selected_records.clear();
         QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
         for (int i = 0; i < ui->quantity->value(); ++i) {
-            int random_index = QRandomGenerator::global()->bounded(records.size());
-            selected_records.push_back(new RecordPreview(records[random_index], random_index, time));
+            int r_index = random_index();
+            selected_records.push_back(new RecordPreview(records[r_index], r_index, time));
             connect(selected_records.back(), &RecordPreview::search_start, [this](int index){
                 pic_index = index;
                 set_view(LIST);
+            });
+            connect(selected_records.back(), &RecordPreview::reroll_request, [this](int selected_index){
+                connect(this, &MainWindow::reroll_response, selected_records[selected_index], &RecordPreview::set_index);
+                emit reroll_response(random_index());
+                disconnect(this, &MainWindow::reroll_response, selected_records[selected_index], &RecordPreview::set_index);
             });
             time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
             ui->preview_grid->addWidget(selected_records.back());
@@ -627,12 +633,15 @@ void MainWindow::set_view(View view) {
         lay_previews();
         break;
     case PREVIEW:
-        ui->stacked_view->setCurrentIndex(2);
+        if (current_mode == RELEASE_PREPARATION) {
+            ui->stacked_view->setCurrentIndex(2);
+        }
         break;
     }
     ui->main_view->setChecked(current_view == MAIN);
     ui->list_view->setChecked(current_view == LIST);
     ui->gallery_view->setChecked(current_view == GALLERY);
+    ui->preview_view->setChecked(current_view == PREVIEW);
 }
 
 void MainWindow::lay_previews(int page) {
@@ -674,6 +683,7 @@ void MainWindow::set_enabled(bool enable) {
     ui->load_subs->setEnabled(current_mode == TEXT_READING);
     ui->slider->setEnabled(current_mode == CONFIG_READING);
     ui->slider->setValue(0);
+    ui->preview_view->setEnabled(current_mode == RELEASE_PREPARATION);
 }
 
 void MainWindow::set_edited() {
@@ -721,6 +731,17 @@ void MainWindow::save_changes() {
         record_edited = false;
         ui->save->setEnabled(false);
     }
+}
+
+int MainWindow::random_index() const {
+    if (filtration_results.empty()) {
+        // Getting random index from records
+        return QRandomGenerator::global()->bounded(records.size());
+    }
+    // Getting random index from filtered records only
+    auto filtered_indices = filtration_results.keys();
+    int random_pre_index = QRandomGenerator::global()->bounded(filtered_indices.size());
+    return filtered_indices[random_pre_index];
 }
 
 QString MainWindow::path(int index) {

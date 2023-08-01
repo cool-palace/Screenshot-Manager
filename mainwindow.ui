@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -665,6 +668,11 @@ p, li { white-space: pre-wrap; }
    <addaction name="save"/>
    <addaction name="private_switch"/>
    <addaction name="load_subs"/>
+   <addaction name="separator"/>
+   <addaction name="main_view"/>
+   <addaction name="list_view"/>
+   <addaction name="gallery_view"/>
+   <addaction name="preview_view"/>
   </widget>
   <action name="config_creation">
    <property name="icon">
@@ -746,6 +754,10 @@ p, li { white-space: pre-wrap; }
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-full-image-80.png</normaloff>:/images/icons8-full-image-80.png</iconset>
+   </property>
    <property name="text">
     <string>Основной</string>
    </property>
@@ -754,6 +766,10 @@ p, li { white-space: pre-wrap; }
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-medium-icons-80.png</normaloff>:/images/icons8-medium-icons-80.png</iconset>
+   </property>
    <property name="text">
     <string>Галерея</string>
    </property>
@@ -761,6 +777,10 @@ p, li { white-space: pre-wrap; }
   <action name="list_view">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-content-80.png</normaloff>:/images/icons8-content-80.png</iconset>
    </property>
    <property name="text">
     <string>Список</string>
@@ -926,6 +946,18 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="toolTip">
     <string>Подготовка к публикации</string>
+   </property>
+  </action>
+  <action name="preview_view">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-tiles-80.png</normaloff>:/images/icons8-tiles-80.png</iconset>
+   </property>
+   <property name="text">
+    <string>preview_view</string>
    </property>
   </action>
  </widget>

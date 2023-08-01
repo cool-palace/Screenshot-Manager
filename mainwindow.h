@@ -67,6 +67,9 @@ public slots:
     void filter_event(const QChar&, const QString&, bool);
     void lay_previews(int page = 1);
 
+signals:
+    void reroll_response(int);
+
 private:
     Ui::MainWindow *ui;
     VK_Manager* manager;
@@ -123,6 +126,7 @@ private:
     QString title_name(int);
     QPair<int, int> title_range(int);
     void save_changes();
+    int random_index() const;
 
     // Hashtag management and filtering
     void get_hashtags();
