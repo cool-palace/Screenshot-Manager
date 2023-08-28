@@ -113,8 +113,8 @@ MainWindow::MainWindow(QWidget *parent)
             ui->statusBar->showMessage("Конфигурационный файл не открыт.");
             return;
         }
-        set_view(PREVIEW);
         set_mode(RELEASE_PREPARATION);
+        set_view(PREVIEW);
     });
 
     connect(ui->save, &QAction::triggered, this, &MainWindow::save_changes);
@@ -722,15 +722,17 @@ QPair<int, int> MainWindow::title_range(int index) {
 }
 
 void MainWindow::save_changes() {
-    for (auto pair : edited_ranges) {
+    qDebug() << edited_ranges << records.size();
+    for (const auto& pair : edited_ranges) {
+        qDebug() << pair;
         int start = pair.first;
         int end = pair.second;
         update_quote_file(start, end);
         save_title_config(start, end);
-        edited_ranges.remove(pair);
         record_edited = false;
         ui->save->setEnabled(false);
     }
+    edited_ranges.clear();
 }
 
 int MainWindow::random_index() const {

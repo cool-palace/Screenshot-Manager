@@ -36,10 +36,10 @@ void MainWindow::create_hashtag_button(const QString& text) {
 
 void MainWindow::hashtag_event(const QChar& c, const QString& text) {
     if (current_mode == IDLE || current_mode == RELEASE_PREPARATION) return;
-    if (!filters.isEmpty()) {
-        filter_event(c, text, true);
-        return;
-    }
+//    if (!filters.isEmpty()) {
+//        filter_event(c, text, true);
+//        return;
+//    }
     QRegularExpression regex(QString("(.*)?") + c + text + "(\\s.*)?$");
     auto i = regex.globalMatch(ui->text->toPlainText());
     bool hashtag_is_in_text = i.hasNext();
@@ -63,7 +63,7 @@ void MainWindow::update_hashtag_grid() {
         if (ui->hashtags_full->isChecked()) {
             // Displaying all buttons in alphabet order
             for (auto button : hashtags) {
-                ui->tag_grid->addWidget(button, i / 11, i % 11);
+                ui->tag_grid->addWidget(button, i / 12, i % 12);
                 button->show();
                 ++i;
             }
@@ -83,7 +83,7 @@ void MainWindow::update_hashtag_grid() {
         }
     } else if (ui->addition_order->isChecked()) {
         // Displaying buttons in addition order
-        int columns_count = ui->hashtags_full->isChecked() ? 11 : 10;
+        int columns_count = ui->hashtags_full->isChecked() ? 12 : 10;
         for (int index = ui->hashtags_full->isChecked() ? 0 : 1; index < ranked_hashtags.size(); ++index) {
             for (const auto& text : ranked_hashtags[index]) {
                 ui->tag_grid->addWidget(hashtags[text], i / columns_count, i % columns_count);
@@ -297,6 +297,7 @@ void MainWindow::filter_event(const QString& text) {
         if (i.value().sign == 't') {
             filters.erase(i);
             apply_filters();
+            break;
         }
     }
     if (text.size() < 2) {
@@ -392,7 +393,6 @@ void MainWindow::apply_first_filter() {
 }
 
 void MainWindow::apply_filters() {
-    qDebug() << filters.keys();
     for (auto i = filters.begin(); i != filters.end(); ++i) {
         if (i == filters.begin()) {
             apply_first_filter();
