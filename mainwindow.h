@@ -80,6 +80,7 @@ private:
     QMap<QString, int> album_ids;
     QDir dir;
     QMap<int, QString> title_map;
+    QMap<QString, QString> special_titles;
     QStringList pics;
     QStringList quotes;
     QVector<int> photo_ids;
@@ -105,6 +106,7 @@ private:
     QStringList subs;
     QMutex status_mutex;
     int post_counter = 0;
+    QMap<int, QString> captions_for_ids;
 
     // Setup functions
     bool initialize();
@@ -127,6 +129,8 @@ private:
     QPair<int, int> title_range(int);
     void save_changes();
     int random_index() const;
+    void load_special_titles();
+    void add_caption(const QString& captcha_sid = "", const QString& captcha_key = "");
 
     // Hashtag management and filtering
     void get_hashtags();

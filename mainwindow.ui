@@ -578,6 +578,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="separator"/>
     <addaction name="show_public"/>
     <addaction name="show_private"/>
+    <addaction name="add_caption"/>
    </widget>
    <widget class="QMenu" name="view_menu">
     <property name="title">
@@ -929,6 +930,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>preview_view</string>
+   </property>
+  </action>
+  <action name="add_caption">
+   <property name="text">
+    <string>Добавить описания в альбом</string>
    </property>
   </action>
  </widget>

@@ -131,6 +131,37 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
+    connect(ui->add_caption, &QAction::triggered, [this]() {
+        add_caption();
+    });
+
+    connect(manager, &VK_Manager::caption_passed, [this]() {
+        captions_for_ids.remove(captions_for_ids.firstKey());
+        if (!captions_for_ids.empty()) {
+            QThread::msleep(350);
+            add_caption();
+        } else {
+            ui->statusBar->showMessage("Добавление подписей прошло успешно.");
+        }
+    });
+
+    connect(manager, &VK_Manager::captcha_error, [this](const QString& captcha_id) {
+        ui->statusBar->showMessage(QString("Осталось подписать %1 фотографий").arg(captions_for_ids.size()));
+        bool ok;
+        QString text = QInputDialog::getText(this, tr("Капча"),
+                                                   tr("Введите капчу:"), QLineEdit::Normal,
+                                                   "", &ok);
+        if (ok && !text.isEmpty()) {
+            add_caption(captcha_id, text);
+        }
+        for (int i = 0; i < records.size(); ++i) {
+            if (records[i].ids.contains(captions_for_ids.firstKey())) {
+                display(i);
+                break;
+            }
+        }
+    });
+
     connect(ui->show_public, &QAction::triggered, [this](bool checked) {
         if (checked && ui->show_private->isChecked()) {
             ui->show_private->setChecked(false);
@@ -532,6 +563,7 @@ bool MainWindow::initialize() {
     manager = new VK_Manager(access_token, group_id, public_id);
     RecordFrame::manager = manager;
     manager->get_albums();
+    load_special_titles();
     if (!QDir(locations[SCREENSHOTS]).exists() || !QDir(locations[CONFIGS]).exists()) {
         ui->statusBar->showMessage("Указаны несуществующие директории. Перепроверьте конфигурационный файл.");
         return false;
@@ -775,6 +807,17 @@ bool MainWindow::save_json(const QJsonObject& object, QFile& file) const {
     out << QJsonDocument(object).toJson();
     file.close();
     return true;
+}
+
+void MainWindow::load_special_titles() {
+    auto json_file = json_object(locations[CONFIGS] + "\\result\\titles.json");
+    for (auto key : json_file.keys()) {
+        special_titles[key] = json_file.value(key).toString();
+    }
+}
+
+void MainWindow::add_caption(const QString& captcha_sid, const QString& captcha_key) {
+    manager->edit_photo_caption(captions_for_ids.firstKey(), captions_for_ids.first(), captcha_sid, captcha_key);
 }
 
 bool MainWindow::data_ready() {

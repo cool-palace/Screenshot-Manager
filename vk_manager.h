@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QImageReader>
+#include <QThread>
 
 class VK_Manager : public QNetworkAccessManager
 {
@@ -21,6 +22,8 @@ signals:
     void image_ready(const QImage&);
     void posted_successfully(int, int);
     void post_failed(int, const QString&);
+    void caption_passed();
+    void captcha_error(const QString&);
 
 public slots:
     QNetworkReply* get_url(const QString& url);
@@ -28,6 +31,7 @@ public slots:
     void get_photo_ids(int album_id, const QString& photo_ids = "");
     void get_image(const QString& url);
     void post(int, const QString&, int);
+    void edit_photo_caption(int, const QString&, const QString& captcha_sid = "", const QString& captcha_key = "");
 
 private slots:
     QJsonObject reply_json(QNetworkReply *response);

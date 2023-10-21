@@ -97,6 +97,15 @@ bool MainWindow::open_title_config(bool all) {
         }
         read_title_config(json_file);
     }
+    for (int i = 0; i < records.size(); ++i) {
+        QString title = title_name(i);
+        if (special_titles.contains(title)) {
+            title = special_titles[title];
+        }
+        for (int id : records[i].ids) {
+            captions_for_ids[id] = title;
+        }
+    }
     return !records.empty();
 }
 

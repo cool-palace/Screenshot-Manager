@@ -90,6 +90,29 @@ void VK_Manager::post(int index, const QString& attachments, int date) {
     });
 }
 
+void VK_Manager::edit_photo_caption(int photo_id, const QString& caption, const QString& captcha_sid, const QString& captcha_key) {
+    QString url = "https://api.vk.com/method/photos.edit?v=5.131"
+                  "&access_token=" + access_token
+                + "&owner_id=-" + group_id
+                + "&photo_id=" + QString().setNum(photo_id)
+                + "&caption=" + caption;
+    if (!captcha_sid.isEmpty()) {
+        url += "&captcha_sid=" + captcha_sid + "&captcha_key=" + captcha_key;
+    }
+    auto response = get_url(url);
+    connect(response, &QNetworkReply::finished, [this, response](){
+        auto reply = reply_json(response);
+        response->deleteLater();
+        if (reply.contains("error")) {
+            auto error = reply["error"].toObject();
+            qDebug() << error;
+            get_image(error["captcha_img"].toString());
+            emit captcha_error(error["captcha_sid"].toString());
+        } else {
+            emit caption_passed();
+        }
+    });
+}
 
 void VK_Manager::got_albums(QNetworkReply *response) {
     disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_albums);
