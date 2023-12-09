@@ -5,7 +5,14 @@ VK_Manager::VK_Manager(const QString& access_token, const QString& group_id, con
     : QNetworkAccessManager()
     , access_token(access_token)
     , group_id(group_id)
-    , public_id(public_id) {}
+    , public_id(public_id) {
+
+    QString url = "https://api.vk.com/method/photos.get?v=5.131"
+                  "&access_token=" + access_token
+                + "&owner_id=-" + group_id
+                + "&query=#обязательно_посмотрите_опрос"
+                + "&count=100";
+}
 
 QJsonObject VK_Manager::reply_json(QNetworkReply *response) {
     response->deleteLater();

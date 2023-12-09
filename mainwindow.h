@@ -151,6 +151,7 @@ private:
     void exit_filtering();
     QSet<int> word_search(const QString&);
     QSet<int> records_by_public(bool);
+    void convert_hashtags();
 
     // Screenshot management
     bool load_albums(const QJsonObject&);

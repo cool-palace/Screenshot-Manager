@@ -262,7 +262,7 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
 //    }
 //    auto filenames = first + second;
     for (const auto& filename : timestamps_for_filenames.uniqueKeys()) {
-        auto path = QDir::toNativeSeparators(locations[SUBS]) + QDir::separator() + dir.dirName() + QDir::separator() + filename + ".ass";
+        auto path = QDir::toNativeSeparators(locations[SUBS]) + dir.dirName() + QDir::separator() + filename + ".ass";
         QFile file(path);
         if (!file.open(QIODevice::ReadOnly)) {
             QString message = "Ошибка при чтении субтитров: не удалось открыть файл " + file.fileName();

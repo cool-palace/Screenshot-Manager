@@ -26,6 +26,25 @@ void MainWindow::get_hashtags() {
     }
     file.close();
     update_hashtag_grid();
+
+//    QJsonObject object;
+//    for (int i = 0; i < ranked_hashtags.size(); ++i) {
+//        for (const auto& tag : ranked_hashtags[i]) {
+//            QJsonObject tag_object;
+////            tag_object["name"] = tag;
+//            tag_object["rank"] = i;
+//            tag_object["last_poll"] = 0;
+//            tag_object["last_won"] = 0;
+//            tag_object["emoji"] = "";
+//            tag_object["description"] = "";
+//            object[tag] = tag_object;
+//        }
+//    }
+//    QFile file1(locations[CONFIGS] + "hashtags.json");
+//    auto message = save_json(object, file1)
+//            ? "Файл хэштегов сохранён."
+//            : "Не удалось сохранить файл.";
+//    ui->statusBar->showMessage(message);
 }
 
 void MainWindow::create_hashtag_button(const QString& text) {
