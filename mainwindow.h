@@ -89,6 +89,8 @@ private:
     QList<QStringList> ranked_hashtags;
     QStringList current_hashtags;
     QMap<int, QStringList> hashtags_by_index;
+    QList<Hashtag> full_hashtags;
+    QMap<QString, HashtagPreview*> selected_hashtags;
     QMap<int, RecordBase*> filtration_results;
     QList<RecordPreview*> selected_records;
     QMap<QString, FilterSpecs> filters;
@@ -107,6 +109,8 @@ private:
     QMutex status_mutex;
     int post_counter = 0;
     QMap<int, QString> captions_for_ids;
+    QJsonObject hashtags_json;
+//    QList<QLabel*> hashtags_labels;
 
     // Setup functions
     bool initialize();

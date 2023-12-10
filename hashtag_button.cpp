@@ -1,5 +1,44 @@
 #include "hashtag_button.h"
 
+Hashtag::Hashtag(const QString& name, const QJsonObject& object) : name(name) {
+    rank = object["rank"].toInt();
+    poll = QDateTime::fromSecsSinceEpoch(object["last_poll"].toInt(), Qt::LocalTime);
+    won = QDateTime::fromSecsSinceEpoch(object["last_won"].toInt(), Qt::LocalTime);
+    description = object["description"].toString();
+    emoji = object["emoji"].toString();
+}
+
+QString Hashtag::text() const {
+    QString tag = name;
+    return tag.replace(0, 1, name[0].toUpper()) + " — " + description;
+}
+
+QString Hashtag::option() const {
+    return emoji + " " + name;
+}
+
+HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget(), index(total++), hashtag(tag) {
+    text.setText(hashtag.text());
+    text.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    text.setMaximumHeight(120);
+    text.setWordWrap(true);
+    auto font = text.font();
+    font.setPointSize(12);
+    text.setFont(font);
+//    text.hide();
+    number.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    number.setMinimumWidth(20);
+    number.setFont(font);
+    number.setText(QString().setNum(index));
+//    number.hide();
+    layout.setContentsMargins(0,0,0,0);
+    setLayout(&layout);
+    layout.addWidget(&number,0,0);
+    layout.addWidget(&text,0,1);
+}
+
+int HashtagPreview::total = 0;
+
 HashtagButton::HashtagButton(const QString& text) :
     QPushButton(text),
     text(text)

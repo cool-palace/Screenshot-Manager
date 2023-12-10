@@ -21,7 +21,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="page_4">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -40,7 +40,7 @@
         <item>
          <widget class="QStackedWidget" name="stackedWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="page">
            <layout class="QGridLayout" name="gridLayout">
@@ -268,8 +268,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>59</width>
-             <height>24</height>
+             <width>754</width>
+             <height>410</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -334,11 +334,57 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>420</width>
-             <height>266</height>
+             <width>754</width>
+             <height>459</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
+            <item row="2" column="0">
+             <widget class="QPushButton" name="post">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>30</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>70</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>70</height>
+               </size>
+              </property>
+              <property name="baseSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>12</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Отправить</string>
+              </property>
+              <property name="icon">
+               <iconset resource="icons.qrc">
+                <normaloff>:/images/icons8-sent-80.png</normaloff>:/images/icons8-sent-80.png</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>40</width>
+                <height>40</height>
+               </size>
+              </property>
+             </widget>
+            </item>
             <item row="1" column="0">
              <layout class="QVBoxLayout" name="preview_grid"/>
             </item>
@@ -492,53 +538,28 @@ p, li { white-space: pre-wrap; }
               </item>
              </layout>
             </item>
-            <item row="2" column="0">
-             <widget class="QPushButton" name="post">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>30</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>70</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>70</height>
-               </size>
-              </property>
-              <property name="baseSize">
-               <size>
-                <width>0</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Отправить</string>
-              </property>
-              <property name="icon">
-               <iconset resource="icons.qrc">
-                <normaloff>:/images/icons8-sent-80.png</normaloff>:/images/icons8-sent-80.png</iconset>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>40</width>
-                <height>40</height>
-               </size>
-              </property>
-             </widget>
-            </item>
            </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="page_6">
+       <layout class="QGridLayout" name="gridLayout_9">
+        <item row="0" column="0">
+         <widget class="QScrollArea" name="scrollArea_3">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_2">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>754</width>
+             <height>459</height>
+            </rect>
+           </property>
           </widget>
          </widget>
         </item>
@@ -636,6 +657,7 @@ p, li { white-space: pre-wrap; }
    <addaction name="text_reading"/>
    <addaction name="config_reading"/>
    <addaction name="release_preparation"/>
+   <addaction name="poll_preparation"/>
    <addaction name="separator"/>
    <addaction name="save"/>
    <addaction name="private_switch"/>
@@ -935,6 +957,21 @@ p, li { white-space: pre-wrap; }
   <action name="add_caption">
    <property name="text">
     <string>Добавить описания в альбом</string>
+   </property>
+  </action>
+  <action name="poll_preparation">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-poll-80.png</normaloff>:/images/icons8-poll-80.png</iconset>
+   </property>
+   <property name="text">
+    <string>Подготовка опроса</string>
    </property>
   </action>
  </widget>

@@ -117,6 +117,26 @@ MainWindow::MainWindow(QWidget *parent)
         set_view(PREVIEW);
     });
 
+    connect(ui->poll_preparation, &QAction::triggered, [this]() {
+        bool poll_mode = ui->poll_preparation->isChecked();
+        QLayoutItem* child;
+        while ((child = ui->preview_grid->takeAt(0))) {
+            // Clearing items from the grid
+            child->widget()->hide();
+        }
+        if (poll_mode) for (auto tag : selected_hashtags) {
+                ui->preview_grid->addWidget(tag);
+                tag->show();
+        } else for (auto record : selected_records) {
+            ui->preview_grid->addWidget(record);
+            record->show();
+        }
+        ui->time->setTime(poll_mode ? QTime(12,5) : QTime(8,0));
+        ui->quantity->setValue(poll_mode ? 6 : 7);
+        ui->interval->setDisabled(poll_mode);
+
+    });
+
     connect(ui->save, &QAction::triggered, this, &MainWindow::save_changes);
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
     connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
@@ -255,33 +275,55 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(ui->generate, &QPushButton::clicked, [this]() {
-        QLayoutItem* child;
-        while ((child = ui->preview_grid->takeAt(0))) {
-            // Clearing items from the grid
-            child->widget()->hide();
+        if (!ui->poll_preparation->isChecked()) {
+            QLayoutItem* child;
+            while ((child = ui->preview_grid->takeAt(0))) {
+                // Clearing items from the grid
+                child->widget()->hide();
+            }
+            for (auto record : selected_records) {
+                delete record;
+            }
+            selected_records.clear();
+            QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
+            for (int i = 0; i < ui->quantity->value(); ++i) {
+                int r_index = random_index();
+                selected_records.push_back(new RecordPreview(records[r_index], r_index, time));
+                connect(selected_records.back(), &RecordPreview::search_start, [this](int index){
+                    pic_index = index;
+                    set_view(LIST);
+                });
+                connect(selected_records.back(), &RecordPreview::reroll_request, [this](int selected_index){
+                    connect(this, &MainWindow::reroll_response, selected_records[selected_index], &RecordPreview::set_index);
+                    emit reroll_response(random_index());
+                    disconnect(this, &MainWindow::reroll_response, selected_records[selected_index], &RecordPreview::set_index);
+                });
+                time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
+                ui->preview_grid->addWidget(selected_records.back());
+                selected_records.back()->set_list_view();
+            }
+            RecordPreview::selected_records = &selected_records;
+        } else {
+            QLayoutItem* child;
+            while ((child = ui->preview_grid->takeAt(0))) {
+                // Clearing items from the grid
+                child->widget()->hide();
+            }
+            for (auto tag : selected_hashtags) {
+                delete tag;
+            }
+            selected_hashtags.clear();
+            QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
+            for (int i = 0; i < ui->quantity->value(); ++i) {
+                int r_index = QRandomGenerator::global()->bounded(full_hashtags.size());
+                auto tag = full_hashtags[r_index];
+                selected_hashtags[tag.tag()] = new HashtagPreview(tag);
+            }
+            for (const auto& tag : selected_hashtags) {
+                ui->preview_grid->addWidget(tag);
+            }
         }
-        for (auto record : selected_records) {
-            delete record;
-        }
-        selected_records.clear();
-        QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
-        for (int i = 0; i < ui->quantity->value(); ++i) {
-            int r_index = random_index();
-            selected_records.push_back(new RecordPreview(records[r_index], r_index, time));
-            connect(selected_records.back(), &RecordPreview::search_start, [this](int index){
-                pic_index = index;
-                set_view(LIST);
-            });
-            connect(selected_records.back(), &RecordPreview::reroll_request, [this](int selected_index){
-                connect(this, &MainWindow::reroll_response, selected_records[selected_index], &RecordPreview::set_index);
-                emit reroll_response(random_index());
-                disconnect(this, &MainWindow::reroll_response, selected_records[selected_index], &RecordPreview::set_index);
-            });
-            time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
-            ui->preview_grid->addWidget(selected_records.back());
-            selected_records.back()->set_list_view();
-        }
-        RecordPreview::selected_records = &selected_records;
+
     });
 
     connect(ui->post, &QPushButton::clicked, [this]() {
@@ -716,6 +758,7 @@ void MainWindow::set_enabled(bool enable) {
     ui->slider->setEnabled(current_mode == CONFIG_READING);
     ui->slider->setValue(0);
     ui->preview_view->setEnabled(current_mode == RELEASE_PREPARATION);
+    ui->poll_preparation->setEnabled(current_mode == RELEASE_PREPARATION);
 }
 
 void MainWindow::set_edited() {

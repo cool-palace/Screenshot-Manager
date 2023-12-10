@@ -2,6 +2,46 @@
 #define HASHTAGBUTTON_H
 #include <QPushButton>
 #include <QMouseEvent>
+#include <QDateTime>
+#include <QJsonObject>
+#include <QGridLayout>
+#include <QLabel>
+
+class Hashtag {
+public:
+    Hashtag(const QString&, const QJsonObject&);
+    Hashtag() {};
+    QString text() const;
+    QString option() const;
+    QString tag() const { return name; };
+private:
+    QString name;
+    int rank;
+    QString emoji;
+    QString description;
+    QDateTime poll;
+    QDateTime won;
+};
+
+class HashtagPreview : public QWidget
+{
+    Q_OBJECT
+public:
+    HashtagPreview(const Hashtag&);
+    ~HashtagPreview() override { --total; };
+    void set_hashtag(const Hashtag&);
+//    void mouseDoubleClickEvent(QMouseEvent*) override;
+signals:
+private:
+    int index;
+    Hashtag hashtag;
+//    QString pic;
+//    QLabel image;
+    QLabel text;
+    QLabel number;
+    QGridLayout layout;
+    static int total;
+};
 
 class HashtagButton : public QPushButton
 {

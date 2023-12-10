@@ -3,28 +3,39 @@
 #include <QDebug>
 
 void MainWindow::get_hashtags() {
-    QFile file(locations[CONFIGS] + "hashtags.txt");
-    if (!file.open(QIODevice::ReadOnly)) {
-        ui->statusBar->showMessage("Не удалось открыть файл с хэштегами.");
-    }
-    QTextStream in(&file);
-    in.setCodec("UTF-8");
-    for (int i = 0; i < 10; ++i) {
+//    QFile file(locations[CONFIGS] + "hashtags.json");
+//    if (!file.open(QIODevice::ReadOnly)) {
+//        ui->statusBar->showMessage("Не удалось открыть файл с хэштегами.");
+//    }
+    for (int i = 0; i < 13; ++i) {
         ranked_hashtags.append(QStringList());
     }
-    while (!in.atEnd()) {
-        auto line = in.readLine().split(' ');
-        int rank = line.size() > 1 ? line[1].toInt() : 0;
-        auto text = line.first();
-        if (rank >= ranked_hashtags.size()) {
-            for (int i = ranked_hashtags.size(); i <= rank; ++i) {
-                ranked_hashtags.append(QStringList());
-            }
-        }
-        ranked_hashtags[rank].append(text);
-        create_hashtag_button(text);
+    hashtags_json = json_object(locations[CONFIGS] + "result\\hashtags.json");
+
+    for (const auto& key : hashtags_json.keys()) {
+//        qDebug() << hashtags_json[key].toObject();
+        full_hashtags.push_back(Hashtag(key, hashtags_json[key].toObject()));
+        ranked_hashtags[hashtags_json[key].toObject()["rank"].toInt()].append(key);
+        create_hashtag_button(key);
     }
-    file.close();
+//    QTextStream in(&file);
+//    in.setCodec("UTF-8");
+//    for (int i = 0; i < 10; ++i) {
+//        ranked_hashtags.append(QStringList());
+//    }
+//    while (!in.atEnd()) {
+//        auto line = in.readLine().split(' ');
+//        int rank = line.size() > 1 ? line[1].toInt() : 0;
+//        auto text = line.first();
+//        if (rank >= ranked_hashtags.size()) {
+//            for (int i = ranked_hashtags.size(); i <= rank; ++i) {
+//                ranked_hashtags.append(QStringList());
+//            }
+//        }
+//        ranked_hashtags[rank].append(text);
+//        create_hashtag_button(text);
+//    }
+//    file.close();
     update_hashtag_grid();
 
 //    QJsonObject object;
