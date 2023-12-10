@@ -36,6 +36,9 @@ HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget(), index(total++), 
     layout.addWidget(&number,0,0);
     layout.addWidget(&text,0,1);
     layout.addWidget(&log_info,1,1);
+    layout.addWidget(reroll_button,0,2);
+    connect(reroll_button, &QPushButton::clicked, this, &HashtagPreview::reroll);
+    reroll_button->setIconSize(QSize(30,30));
 }
 
 int HashtagPreview::total = 0;
@@ -53,6 +56,16 @@ void HashtagPreview::update_log_info() {
         font.setItalic(true);
     }
     log_info.setFont(font);
+}
+
+void HashtagPreview::reroll() {
+    emit reroll_request(hashtag.tag());
+}
+
+void HashtagPreview::set_hashtag(const Hashtag& tag) {
+    hashtag = tag;
+    text.setText(hashtag.text());
+    update_log_info();
 }
 
 HashtagButton::HashtagButton(const QString& text) :

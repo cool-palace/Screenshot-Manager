@@ -37,6 +37,7 @@ public:
     static QMap<QString, HashtagPreview*>* selected_hashtags;
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
 signals:
+    void reroll_request(const QString&);
 private:
     int index;
     Hashtag hashtag;
@@ -46,6 +47,7 @@ private:
     static int total;
     QLabel log_info;
     QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
+    void reroll();
 };
 
 class HashtagButton : public QPushButton

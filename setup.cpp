@@ -328,7 +328,24 @@ MainWindow::MainWindow(QWidget *parent)
             while (selected_hashtags.size() < ui->quantity->value()) {
                 int r_index = QRandomGenerator::global()->bounded(full_hashtags.size());
                 auto tag = full_hashtags[r_index];
-                selected_hashtags[tag.tag()] = new HashtagPreview(tag);
+                if (!selected_hashtags.contains(tag.tag())) {
+                    selected_hashtags[tag.tag()] = new HashtagPreview(tag);
+                    connect(selected_hashtags[tag.tag()], &HashtagPreview::reroll_request, [this](const QString& old_tag){
+                        auto preview = selected_hashtags[old_tag];
+                        selected_hashtags.remove(old_tag);
+                        int index = QRandomGenerator::global()->bounded(full_hashtags.size());
+                        auto tag = full_hashtags[index];
+                        selected_hashtags.insert(tag.tag(), preview);
+                        selected_hashtags[tag.tag()]->set_hashtag(tag);
+                        QLayoutItem* child;
+                        while ((child = ui->preview_grid->takeAt(0))) {
+                            // Clearing items from the grid
+                        }
+                        for (auto item : selected_hashtags) {
+                            ui->preview_grid->addWidget(item);
+                        }
+                    });
+                }
             }
             for (const auto& tag : selected_hashtags) {
                 ui->preview_grid->addWidget(tag);
