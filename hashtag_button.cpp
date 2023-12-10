@@ -14,7 +14,7 @@ QString Hashtag::text() const {
 }
 
 QString Hashtag::option() const {
-    return emoji + " " + name;
+    return QString('\"') + emoji + " " + name + '\"';
 }
 
 HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget(), index(total++), hashtag(tag) {

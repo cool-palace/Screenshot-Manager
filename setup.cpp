@@ -47,6 +47,10 @@ MainWindow::MainWindow(QWidget *parent)
         status_mutex.unlock();
     });
 
+    connect(manager, &VK_Manager::poll_posted_successfully, [this]() {
+        ui->statusBar->showMessage(QString("Опрос опубликован"));
+    });
+
     connect(manager, &VK_Manager::post_failed, [this](int index, const QString& reply) {
         if (post_counter < selected_records.size()) {
             update_logs();
@@ -55,6 +59,17 @@ MainWindow::MainWindow(QWidget *parent)
         ui->statusBar->showMessage(QString("Не удалось опубликовать запись %1").arg(index+1));
         QMessageBox msgBox(QMessageBox::Critical, "Ошибка", reply);
         msgBox.exec();
+    });
+
+    connect(manager, &VK_Manager::poll_post_failed, [this](const QString& reply) {
+        ui->statusBar->showMessage(QString("Не удалось опубликовать опрос"));
+        QMessageBox msgBox(QMessageBox::Critical, "Ошибка", reply);
+        msgBox.exec();
+    });
+
+    connect(manager, &VK_Manager::poll_ready, [this](int id) {
+        int time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime).toSecsSinceEpoch();
+        manager->post(poll_message(), id, time);
     });
 
     connect(ui->config_creation, &QAction::triggered, [this]() {
@@ -133,8 +148,10 @@ MainWindow::MainWindow(QWidget *parent)
         }
         ui->time->setTime(poll_mode ? QTime(12,5) : QTime(8,0));
         ui->quantity->setValue(poll_mode ? 6 : 7);
-        ui->interval->setDisabled(poll_mode);
-
+        int day = ui->date->date().dayOfWeek();
+        int hours = (4 - day) * 24 + 9;      // Set to end on thursday evening
+        // Interval hh : mm are used as days : hours in poll mode
+        ui->interval->setTime(poll_mode && hours > 0 ? QTime(hours/24, hours%24) : QTime(2,0));
     });
 
     connect(ui->save, &QAction::triggered, this, &MainWindow::save_changes);
@@ -275,17 +292,17 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(ui->generate, &QPushButton::clicked, [this]() {
+        QLayoutItem* child;
+        while ((child = ui->preview_grid->takeAt(0))) {
+            // Clearing items from the grid
+            child->widget()->hide();
+        }
+        QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
         if (!ui->poll_preparation->isChecked()) {
-            QLayoutItem* child;
-            while ((child = ui->preview_grid->takeAt(0))) {
-                // Clearing items from the grid
-                child->widget()->hide();
-            }
             for (auto record : selected_records) {
                 delete record;
             }
             selected_records.clear();
-            QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
             for (int i = 0; i < ui->quantity->value(); ++i) {
                 int r_index = random_index();
                 selected_records.push_back(new RecordPreview(records[r_index], r_index, time));
@@ -304,16 +321,10 @@ MainWindow::MainWindow(QWidget *parent)
             }
             RecordPreview::selected_records = &selected_records;
         } else {
-            QLayoutItem* child;
-            while ((child = ui->preview_grid->takeAt(0))) {
-                // Clearing items from the grid
-                child->widget()->hide();
-            }
             for (auto tag : selected_hashtags) {
                 delete tag;
             }
             selected_hashtags.clear();
-            QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
             for (int i = 0; i < ui->quantity->value(); ++i) {
                 int r_index = QRandomGenerator::global()->bounded(full_hashtags.size());
                 auto tag = full_hashtags[r_index];
@@ -323,14 +334,21 @@ MainWindow::MainWindow(QWidget *parent)
                 ui->preview_grid->addWidget(tag);
             }
         }
-
     });
 
     connect(ui->post, &QPushButton::clicked, [this]() {
-        post_counter = selected_records.size();
-        for (auto record : selected_records) {
-            int index = record->get_index();
-            manager->post(index, attachments(index), record->timestamp());
+        if (!ui->poll_preparation->isChecked()) {
+            post_counter = selected_records.size();
+            for (auto record : selected_records) {
+                int index = record->get_index();
+                manager->post(index, attachments(index), record->timestamp());
+            }
+        } else {
+            QDateTime poll_end = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
+            int time_offset = ui->interval->time().hour()*24*3600 + ui->interval->time().minute()*3600 - 300;
+            poll_end = poll_end.addSecs(time_offset);
+            qDebug() << poll_end;
+            manager->get_poll(options(), poll_end.toSecsSinceEpoch());
         }
     });
 

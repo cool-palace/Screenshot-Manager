@@ -182,6 +182,8 @@ private:
     void draw(int);
     void show_text(int);
     QString attachments(int) const;
+    QString options() const;
+    QString poll_message() const;
     void read_logs();
     void update_logs();
 };

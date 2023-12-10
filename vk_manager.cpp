@@ -5,14 +5,7 @@ VK_Manager::VK_Manager(const QString& access_token, const QString& group_id, con
     : QNetworkAccessManager()
     , access_token(access_token)
     , group_id(group_id)
-    , public_id(public_id) {
-
-    QString url = "https://api.vk.com/method/photos.get?v=5.131"
-                  "&access_token=" + access_token
-                + "&owner_id=-" + group_id
-                + "&query=#обязательно_посмотрите_опрос"
-                + "&count=100";
-}
+    , public_id(public_id) {}
 
 QJsonObject VK_Manager::reply_json(QNetworkReply *response) {
     response->deleteLater();
@@ -94,6 +87,46 @@ void VK_Manager::post(int index, const QString& attachments, int date) {
         }
 //        auto post_id = reply["response"].toObject()["post_id"].toInt();
         emit posted_successfully(index, date);
+    });
+}
+
+void VK_Manager::get_poll(const QString& options, int end_date) {
+    QString url = "https://api.vk.com/method/polls.create?v=5.199&from_group=1&signed=0"
+                  "&access_token=" + access_token
+                + "&owner_id=-" + public_id
+                + "&question=" + "Тема пятничных постов"
+                + "&is_anonymous=1&is_multiple=1&background_id=4"
+                + "&add_answers=" + options
+                + "&end_date=" + QString().setNum(end_date);
+    auto response = get_url(url);
+    connect(response, &QNetworkReply::finished, [this, response](){
+        auto reply = reply_json(response);
+        response->deleteLater();
+        if (reply.contains("error")) {
+            emit poll_post_failed(QJsonDocument(reply).toJson(QJsonDocument::Compact));
+            return;
+        }
+        int poll_id = reply["response"].toObject()["id"].toInt();
+        emit poll_ready(poll_id);
+    });
+}
+
+void VK_Manager::post(const QString& message, int poll_id, int date) {
+    QString url = "https://api.vk.com/method/wall.post?v=5.199&from_group=1&signed=0"
+                  "&access_token=" + access_token
+                + "&owner_id=-" + public_id
+                + "&message=" + message
+                + "&attachments=" + poll_attachment(poll_id)
+                + "&publish_date=" + QString().setNum(date);
+    auto response = get_url(url);
+    connect(response, &QNetworkReply::finished, [this, response](){
+        auto reply = reply_json(response);
+        response->deleteLater();
+        if (reply.contains("error")) {
+            emit poll_post_failed(QJsonDocument(reply).toJson(QJsonDocument::Compact));
+            return;
+        }
+        emit poll_posted_successfully();
     });
 }
 

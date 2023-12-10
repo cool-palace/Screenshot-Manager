@@ -30,6 +30,8 @@ public:
     HashtagPreview(const Hashtag&);
     ~HashtagPreview() override { --total; };
     void set_hashtag(const Hashtag&);
+    QString line() const { return hashtag.text() + '\n'; };
+    QString option() const { return hashtag.option(); };
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
 signals:
 private:

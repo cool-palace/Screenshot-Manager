@@ -459,6 +459,27 @@ QString MainWindow::attachments(int index) const {
     return result;
 }
 
+QString MainWindow::options() const {
+    QString result('[');
+    for (const auto& tag : selected_hashtags) {
+        if (result.size() > 1) result += ",";
+        result += tag->option();
+    }
+    result += ']';
+    qDebug() << result;
+    return result;
+}
+
+QString MainWindow::poll_message() const {
+    QString text;
+    int i = 1;
+    for (auto it = selected_hashtags.cbegin(); it != selected_hashtags.cend(); ++it, ++i) {
+        text.append(QString("%1. ").arg(i));
+        text.append(it.value()->line());
+    }
+    return text;
+}
+
 void MainWindow::read_logs() {
     auto log = json_object(locations[LOGS]);
     for (auto key : log.keys()) {
