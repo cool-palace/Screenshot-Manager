@@ -13,7 +13,8 @@ public:
     Hashtag() {};
     QString text() const;
     QString option() const;
-    QString tag() const { return name; };
+    QString tag() const { return name; }
+    QDateTime last_poll() const { return poll; }
 private:
     QString name;
     int rank;
@@ -28,21 +29,23 @@ class HashtagPreview : public QWidget
     Q_OBJECT
 public:
     HashtagPreview(const Hashtag&);
-    ~HashtagPreview() override { --total; };
+    ~HashtagPreview() override { --total; }
     void set_hashtag(const Hashtag&);
-    QString line() const { return hashtag.text() + '\n'; };
-    QString option() const { return hashtag.option(); };
+    QString line() const { return hashtag.text() + '\n'; }
+    QString option() const { return hashtag.option(); }
+    void update_log_info();
+    static QMap<QString, HashtagPreview*>* selected_hashtags;
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
 signals:
 private:
     int index;
     Hashtag hashtag;
-//    QString pic;
-//    QLabel image;
     QLabel text;
     QLabel number;
     QGridLayout layout;
     static int total;
+    QLabel log_info;
+    QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
 };
 
 class HashtagButton : public QPushButton

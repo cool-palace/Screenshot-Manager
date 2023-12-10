@@ -110,7 +110,6 @@ private:
     int post_counter = 0;
     QMap<int, QString> captions_for_ids;
     QJsonObject hashtags_json;
-//    QList<QLabel*> hashtags_labels;
 
     // Setup functions
     bool initialize();

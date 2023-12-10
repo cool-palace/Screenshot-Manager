@@ -25,19 +25,35 @@ HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget(), index(total++), 
     auto font = text.font();
     font.setPointSize(12);
     text.setFont(font);
-//    text.hide();
     number.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     number.setMinimumWidth(20);
     number.setFont(font);
     number.setText(QString().setNum(index));
-//    number.hide();
+    log_info.setFont(text.font());
+    update_log_info();
     layout.setContentsMargins(0,0,0,0);
     setLayout(&layout);
     layout.addWidget(&number,0,0);
     layout.addWidget(&text,0,1);
+    layout.addWidget(&log_info,1,1);
 }
 
 int HashtagPreview::total = 0;
+
+void HashtagPreview::update_log_info() {
+    auto font = log_info.font();
+    QDateTime last = hashtag.last_poll();
+    if (last.toSecsSinceEpoch() > 0) {
+        log_info.setText(QString("Публиковалось %1 дней назад").arg(last.daysTo(QDateTime::currentDateTime())));
+        font.setBold(true);
+        font.setItalic(false);
+    } else {
+        log_info.setText(QString("Раньше не публиковалось"));
+        font.setBold(false);
+        font.setItalic(true);
+    }
+    log_info.setFont(font);
+}
 
 HashtagButton::HashtagButton(const QString& text) :
     QPushButton(text),

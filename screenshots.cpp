@@ -466,7 +466,6 @@ QString MainWindow::options() const {
         result += tag->option();
     }
     result += ']';
-    qDebug() << result;
     return result;
 }
 

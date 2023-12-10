@@ -325,7 +325,7 @@ MainWindow::MainWindow(QWidget *parent)
                 delete tag;
             }
             selected_hashtags.clear();
-            for (int i = 0; i < ui->quantity->value(); ++i) {
+            while (selected_hashtags.size() < ui->quantity->value()) {
                 int r_index = QRandomGenerator::global()->bounded(full_hashtags.size());
                 auto tag = full_hashtags[r_index];
                 selected_hashtags[tag.tag()] = new HashtagPreview(tag);
