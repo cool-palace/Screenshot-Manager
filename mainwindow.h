@@ -44,7 +44,8 @@ class MainWindow : public QMainWindow
         SCREENSHOTS,
         QUOTES,
         SUBS,
-        LOGS
+        LOGS,
+        POLL_LOGS
     };
     struct FilterSpecs {
         QChar sign;
@@ -61,6 +62,40 @@ protected:
     void closeEvent(QCloseEvent*) override;
 
 public slots:
+    // Network slots
+    void set_albums(const QMap<QString, int>&);
+    void set_photo_ids(const QVector<int>&, const QStringList&);
+    void set_loaded_image(const QImage&);
+    void posting_success(int, int);
+    void posting_fail(int, const QString&);
+    void post_poll(int);
+    void poll_posting_success();
+    void poll_posting_fail(const QString&);
+    void caption_success();
+    void captcha_handling(const QString&);
+    // Launching modes
+    void journal_creation();
+    void journal_reading();
+    void journal_reading_all();
+    void text_reading();
+    void release_preparation();
+    void poll_preparation();
+    // UI elements
+    void show_public(bool);
+    void show_private(bool);
+    void slider_change(int);
+    // Control buttons
+    void add_hashtag();
+    void load_subs();
+    void generate_button();
+    void generate_release();
+    void generate_poll();
+    void post_button();
+    void skip_button();
+    void add_button();
+    void back_button();
+    void ok_button();
+
     void hashtag_event(const QChar&, const QString&);
     void filter_event(bool);
     void filter_event(const QString&);
@@ -97,6 +132,7 @@ private:
     QVector<Record> records;
     QList<RecordBase*> record_items;
     QMap<int, int> logs;
+    QMap<QString, int> poll_logs;
     int pic_index;
     int quote_index;
     int pic_end_index = 0;
@@ -155,6 +191,7 @@ private:
     QSet<int> word_search(const QString&);
     QSet<int> records_by_public(bool);
     void convert_hashtags();
+    void update_poll_logs();
 
     // Screenshot management
     bool load_albums(const QJsonObject&);

@@ -31,6 +31,7 @@ SOURCES += \
         record.cpp \
         screenshots.cpp \
         setup.cpp \
+        slots.cpp \
         vk_manager.cpp
 
 HEADERS += \

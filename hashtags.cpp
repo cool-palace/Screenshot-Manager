@@ -15,9 +15,14 @@ void MainWindow::get_hashtags() {
     for (const auto& key : hashtags_json.keys()) {
 //        qDebug() << hashtags_json[key].toObject();
         full_hashtags.push_back(Hashtag(key, hashtags_json[key].toObject()));
+        if (full_hashtags.back().last_poll().toSecsSinceEpoch() > 0) {
+            poll_logs[key] = full_hashtags.back().last_poll().toSecsSinceEpoch();
+        }
         ranked_hashtags[hashtags_json[key].toObject()["rank"].toInt()].append(key);
         create_hashtag_button(key);
     }
+    qDebug() << poll_logs;
+    update_poll_logs();
 //    QTextStream in(&file);
 //    in.setCodec("UTF-8");
 //    for (int i = 0; i < 10; ++i) {
@@ -93,7 +98,7 @@ void MainWindow::update_hashtag_grid() {
         if (ui->hashtags_full->isChecked()) {
             // Displaying all buttons in alphabet order
             for (auto button : hashtags) {
-                ui->tag_grid->addWidget(button, i / 12, i % 12);
+                ui->tag_grid->addWidget(button, i / 13, i % 13);
                 button->show();
                 ++i;
             }
@@ -113,7 +118,7 @@ void MainWindow::update_hashtag_grid() {
         }
     } else if (ui->addition_order->isChecked()) {
         // Displaying buttons in addition order
-        int columns_count = ui->hashtags_full->isChecked() ? 12 : 10;
+        int columns_count = ui->hashtags_full->isChecked() ? 13 : 10;
         for (int index = ui->hashtags_full->isChecked() ? 0 : 1; index < ranked_hashtags.size(); ++index) {
             for (const auto& text : ranked_hashtags[index]) {
                 ui->tag_grid->addWidget(hashtags[text], i / columns_count, i % columns_count);
@@ -479,4 +484,19 @@ void MainWindow::filter(const QSet<int>& second) {
         result.insert(key,record_items[key]);
     }
     filtration_results = result;
+}
+
+void MainWindow::update_poll_logs() {
+    QFile file(locations[POLL_LOGS]);
+    QJsonObject object;
+    for (auto key : poll_logs.keys()) {
+        object[key] = poll_logs[key];
+    }
+    for (auto hashtag : selected_hashtags) {
+//        hashtag->update_log_info();
+    }
+    auto message = save_json(object, file)
+            ? "Логи публикаций опросов обновлены."
+            : "Не удалось обновить логи.";
+    ui->statusBar->showMessage(message);
 }

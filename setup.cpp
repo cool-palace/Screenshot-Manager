@@ -10,227 +10,38 @@ MainWindow::MainWindow(QWidget *parent)
     if (initialize()) {
         get_hashtags();
     }
-    connect(manager, &VK_Manager::albums_ready, [this](const QMap<QString, int>& ids) {
-        album_ids = ids;
-        qDebug() << ids;
-        if (album_ids.empty()) {
-            ui->offline->setChecked(true);
-            ui->statusBar->showMessage("Не удалось загрузить альбомы. Попробуйте авторизироваться вручную или продолжите работу оффлайн.");
-        }
-    });
+    connect(manager, &VK_Manager::albums_ready, this, &MainWindow::set_albums);
+    connect(manager, &VK_Manager::photo_ids_ready, this, &MainWindow::set_photo_ids);
+    connect(manager, &VK_Manager::image_ready, this, &MainWindow::set_loaded_image);
+    connect(manager, &VK_Manager::posted_successfully, this, &MainWindow::posting_success);
+    connect(manager, &VK_Manager::post_failed, this, &MainWindow::posting_fail);
+    connect(manager, &VK_Manager::poll_ready, this, &MainWindow::post_poll);
+    connect(manager, &VK_Manager::poll_posted_successfully, this, &MainWindow::poll_posting_success);
+    connect(manager, &VK_Manager::poll_post_failed, this, &MainWindow::poll_posting_fail);
+    connect(manager, &VK_Manager::caption_passed, this, &MainWindow::caption_success);
+    connect(manager, &VK_Manager::captcha_error, this, &MainWindow::captcha_handling);
 
-    connect(manager, &VK_Manager::photo_ids_ready, [this](const QVector<int>& ids, const QStringList& urls) {
-        photo_ids = ids;
-        links = urls;
-        set_mode(data_ready() ? CONFIG_CREATION : IDLE);
-    });
-
-    connect(manager, &VK_Manager::image_ready, [this](const QImage& image) {
-        ui->image->setPixmap(scaled(image));
-    });
-
-    connect(manager, &VK_Manager::posted_successfully, [this](int index, int date) {
-        status_mutex.lock();
-        auto current_status = ui->statusBar->currentMessage();
-        if (current_status.startsWith("Опубликованы записи")) {
-            current_status.append(QString(", %1").arg(index+1));
-            ui->statusBar->showMessage(current_status);
-        } else {
-            ui->statusBar->showMessage(QString("Опубликованы записи: %1").arg(index+1));
-        }
-        for (const int photo_id : records[index].ids) {
-            logs[photo_id] = date;
-        }
-        if (--post_counter == 0) {
-            update_logs();
-        }
-        status_mutex.unlock();
-    });
-
-    connect(manager, &VK_Manager::poll_posted_successfully, [this]() {
-        ui->statusBar->showMessage(QString("Опрос опубликован"));
-    });
-
-    connect(manager, &VK_Manager::post_failed, [this](int index, const QString& reply) {
-        if (post_counter < selected_records.size()) {
-            update_logs();
-            post_counter = 0;
-        }
-        ui->statusBar->showMessage(QString("Не удалось опубликовать запись %1").arg(index+1));
-        QMessageBox msgBox(QMessageBox::Critical, "Ошибка", reply);
-        msgBox.exec();
-    });
-
-    connect(manager, &VK_Manager::poll_post_failed, [this](const QString& reply) {
-        ui->statusBar->showMessage(QString("Не удалось опубликовать опрос"));
-        QMessageBox msgBox(QMessageBox::Critical, "Ошибка", reply);
-        msgBox.exec();
-    });
-
-    connect(manager, &VK_Manager::poll_ready, [this](int id) {
-        int time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime).toSecsSinceEpoch();
-        manager->post(poll_message(), id, time);
-    });
-
-    connect(ui->config_creation, &QAction::triggered, [this]() {
-        clear_all();
-        dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
-                                                     locations[SCREENSHOTS]));
-        pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
-        QFile file(locations[QUOTES] + dir.dirName() + ".txt");
-        if (!read_quote_file(file)) {
-            clear_all();
-            return;
-        }
-        manager->get_photo_ids(album_ids[dir.dirName()]);
-    });
-
-    connect(ui->config_reading, &QAction::triggered, [this]() {
-        if (!open_title_config()) {
-            set_mode(IDLE);
-            ui->statusBar->showMessage("Конфигурационный файл не открыт.");
-            return;
-        }
-        set_mode(CONFIG_READING);
-        if (current_view == PREVIEW) set_view(MAIN);
-    });
-
-    connect(ui->config_reading_all, &QAction::triggered, [this]() {
-        if (!open_title_config(true)) {
-            set_mode(IDLE);
-            ui->statusBar->showMessage("Конфигурационный файл не открыт.");
-            return;
-        }
-        set_mode(CONFIG_READING);
-        if (current_view == PREVIEW) set_view(MAIN);
-    });
-
-    connect(ui->text_reading, &QAction::triggered, [this]() {
-        clear_all();
-        dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
-                                                     locations[SCREENSHOTS]));
-        pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
-        auto timestamps_for_filenames = timestamps_multimap();
-        if (timestamps_for_filenames.isEmpty()) {
-            set_mode(IDLE);
-            ui->statusBar->showMessage("Не удалось извлечь временные метки из кадров.");
-            return;
-        }
-        if (find_lines_by_timestamps(timestamps_for_filenames)) {
-            set_mode(TEXT_READING);
-        }
-    });
-
-    connect(ui->release_preparation, &QAction::triggered, [this]() {
-        clear_all();
-        if (!open_public_config()) {
-            set_mode(IDLE);
-            ui->statusBar->showMessage("Конфигурационный файл не открыт.");
-            return;
-        }
-        set_mode(RELEASE_PREPARATION);
-        set_view(PREVIEW);
-    });
-
-    connect(ui->poll_preparation, &QAction::triggered, [this]() {
-        bool poll_mode = ui->poll_preparation->isChecked();
-        QLayoutItem* child;
-        while ((child = ui->preview_grid->takeAt(0))) {
-            // Clearing items from the grid
-            child->widget()->hide();
-        }
-        if (poll_mode) for (auto tag : selected_hashtags) {
-                ui->preview_grid->addWidget(tag);
-                tag->show();
-        } else for (auto record : selected_records) {
-            ui->preview_grid->addWidget(record);
-            record->show();
-        }
-        ui->time->setTime(poll_mode ? QTime(12,5) : QTime(8,0));
-        ui->quantity->setValue(poll_mode ? 6 : 7);
-        int day = ui->date->date().dayOfWeek();
-        int hours = (4 - day) * 24 + 9;      // Set to end on thursday evening
-        // Interval hh : mm are used as days : hours in poll mode
-        ui->interval->setTime(poll_mode && hours > 0 ? QTime(hours/24, hours%24) : QTime(2,0));
-    });
+    connect(ui->config_creation, &QAction::triggered, this, &MainWindow::journal_creation);
+    connect(ui->config_reading, &QAction::triggered, this, &MainWindow::journal_reading);
+    connect(ui->config_reading_all, &QAction::triggered, this, &MainWindow::journal_reading_all);
+    connect(ui->text_reading, &QAction::triggered, this, &MainWindow::text_reading);
+    connect(ui->release_preparation, &QAction::triggered, this, &MainWindow::release_preparation);
+    connect(ui->poll_preparation, &QAction::triggered, this, &MainWindow::poll_preparation);
 
     connect(ui->save, &QAction::triggered, this, &MainWindow::save_changes);
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
     connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
-    connect(ui->add_hashtag, &QAction::triggered, [this]() {
-        bool ok;
-        QString text = QInputDialog::getText(this, tr("Добавление хэштега"),
-                                                   tr("Введите новый хэштег:"), QLineEdit::Normal,
-                                                   "", &ok);
-        if (ok && !text.isEmpty() && !hashtags.contains(text)) {
-            create_hashtag_button(text);
-            update_hashtag_grid();
-        }
-    });
+    connect(ui->add_hashtag, &QAction::triggered, this, &MainWindow::add_hashtag);
 
     connect(ui->add_caption, &QAction::triggered, [this]() {
         add_caption();
     });
 
-    connect(manager, &VK_Manager::caption_passed, [this]() {
-        captions_for_ids.remove(captions_for_ids.firstKey());
-        if (!captions_for_ids.empty()) {
-            QThread::msleep(350);
-            add_caption();
-        } else {
-            ui->statusBar->showMessage("Добавление подписей прошло успешно.");
-        }
-    });
+    connect(ui->show_public, &QAction::triggered, this, &MainWindow::show_public);
+    connect(ui->show_private, &QAction::triggered, this, &MainWindow::show_private);
+    connect(ui->slider, &QAbstractSlider::valueChanged, this, &MainWindow::slider_change);
 
-    connect(manager, &VK_Manager::captcha_error, [this](const QString& captcha_id) {
-        ui->statusBar->showMessage(QString("Осталось подписать %1 фотографий").arg(captions_for_ids.size()));
-        bool ok;
-        QString text = QInputDialog::getText(this, tr("Капча"),
-                                                   tr("Введите капчу:"), QLineEdit::Normal,
-                                                   "", &ok);
-        if (ok && !text.isEmpty()) {
-            add_caption(captcha_id, text);
-        }
-        for (int i = 0; i < records.size(); ++i) {
-            if (records[i].ids.contains(captions_for_ids.firstKey())) {
-                display(i);
-                break;
-            }
-        }
-    });
-
-    connect(ui->show_public, &QAction::triggered, [this](bool checked) {
-        if (checked && ui->show_private->isChecked()) {
-            ui->show_private->setChecked(false);
-        }
-        filter_event(true);
-    });
-    connect(ui->show_private, &QAction::triggered, [this](bool checked) {
-        if (checked && ui->show_public->isChecked()) {
-            ui->show_public->setChecked(false);
-        }
-        filter_event(false);
-    });
-
-    connect(ui->slider, &QAbstractSlider::valueChanged, [this](int value) {
-        switch (current_mode) {
-        case CONFIG_READING:
-            pic_end_index = 0;
-            pic_index = value;
-            display(pic_index);
-            update_current_hashtags();
-            break;
-        case TEXT_READING:
-            quote_index = value;
-            show_text(value);
-            break;
-        default:
-            break;
-        }
-        show_status();
-    });
-
-    connect(ui->page_index, SIGNAL(valueChanged(int)), this, SLOT(lay_previews(int)));
+    connect(ui->page_index, QOverload<int>::of(&QSpinBox::valueChanged), this, &MainWindow::lay_previews);
     connect(ui->search_bar, &QLineEdit::editingFinished, [this]() {
         filter_event(ui->search_bar->text());
         lay_previews();
@@ -265,284 +76,13 @@ MainWindow::MainWindow(QWidget *parent)
             set_edited();
     });
 
-    connect(ui->load_subs, &QAction::triggered, [this] () {
-        ui->load_subs->setDisabled(true);
-        if (get_subs_for_pic()) {
-            ui->add->setEnabled(true);
-            ui->skip->setEnabled(true);
-            quote_index = subs.indexOf(ui->text->toPlainText());
-            ui->slider->setEnabled(true);
-            ui->slider->setMaximum(subs.size() - 1);
-            ui->slider->setValue(quote_index);
-            ui->page_index->setMaximum(subs.size() / pics_per_page + 1);
-            QMap<QString, int> lines;
-            for (int i = 0; i < subs.size(); ++i) {
-                lines.insert(subs[i], i);
-            }
-            for (const auto& line : lines.keys()) {
-                record_items.push_back(new RecordItem(line, lines[line]));
-                connect(record_items.back(), &RecordItem::selected, [this](int index){
-                    ui->slider->setValue(index);
-                    set_view(MAIN);
-                });
-                ui->view_grid->addWidget(record_items.back());
-            }
-//            lay_previews();
-        }
-    });
-
-    connect(ui->generate, &QPushButton::clicked, [this]() {
-        QLayoutItem* child;
-        while ((child = ui->preview_grid->takeAt(0))) {
-            // Clearing items from the grid
-            child->widget()->hide();
-        }
-        QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
-        if (!ui->poll_preparation->isChecked()) {
-            for (auto record : selected_records) {
-                delete record;
-            }
-            selected_records.clear();
-            for (int i = 0; i < ui->quantity->value(); ++i) {
-                int r_index = random_index();
-                selected_records.push_back(new RecordPreview(records[r_index], r_index, time));
-                connect(selected_records.back(), &RecordPreview::search_start, [this](int index){
-                    pic_index = index;
-                    set_view(LIST);
-                });
-                connect(selected_records.back(), &RecordPreview::reroll_request, [this](int selected_index){
-                    connect(this, &MainWindow::reroll_response, selected_records[selected_index], &RecordPreview::set_index);
-                    emit reroll_response(random_index());
-                    disconnect(this, &MainWindow::reroll_response, selected_records[selected_index], &RecordPreview::set_index);
-                });
-                time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
-                ui->preview_grid->addWidget(selected_records.back());
-                selected_records.back()->set_list_view();
-            }
-            RecordPreview::selected_records = &selected_records;
-        } else {
-            for (auto tag : selected_hashtags) {
-                delete tag;
-            }
-            selected_hashtags.clear();
-            while (selected_hashtags.size() < ui->quantity->value()) {
-                int r_index = QRandomGenerator::global()->bounded(full_hashtags.size());
-                auto tag = full_hashtags[r_index];
-                if (!selected_hashtags.contains(tag.tag())) {
-                    selected_hashtags[tag.tag()] = new HashtagPreview(tag);
-                    connect(selected_hashtags[tag.tag()], &HashtagPreview::reroll_request, [this](const QString& old_tag){
-                        auto preview = selected_hashtags[old_tag];
-                        selected_hashtags.remove(old_tag);
-                        int index = QRandomGenerator::global()->bounded(full_hashtags.size());
-                        auto tag = full_hashtags[index];
-                        selected_hashtags.insert(tag.tag(), preview);
-                        selected_hashtags[tag.tag()]->set_hashtag(tag);
-                        QLayoutItem* child;
-                        while ((child = ui->preview_grid->takeAt(0))) {
-                            // Clearing items from the grid
-                        }
-                        for (auto item : selected_hashtags) {
-                            ui->preview_grid->addWidget(item);
-                        }
-                    });
-                }
-            }
-            for (const auto& tag : selected_hashtags) {
-                ui->preview_grid->addWidget(tag);
-            }
-        }
-    });
-
-    connect(ui->post, &QPushButton::clicked, [this]() {
-        if (!ui->poll_preparation->isChecked()) {
-            post_counter = selected_records.size();
-            for (auto record : selected_records) {
-                int index = record->get_index();
-                manager->post(index, attachments(index), record->timestamp());
-            }
-        } else {
-            QDateTime poll_end = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
-            int time_offset = ui->interval->time().hour()*24*3600 + ui->interval->time().minute()*3600 - 300;
-            poll_end = poll_end.addSecs(time_offset);
-            qDebug() << poll_end;
-            manager->get_poll(options(), poll_end.toSecsSinceEpoch());
-        }
-    });
-
-    connect(ui->skip, &QPushButton::clicked, [this]() {
-        switch (current_mode) {
-        case CONFIG_CREATION:
-            pic_index = qMax(pic_index, pic_end_index) + 1;
-            draw(pic_index);
-            ui->slider->setValue(pic_index);
-            show_status();
-            break;
-        case CONFIG_READING:
-            // Saving button
-                save_changes();
-            break;
-        case TEXT_READING:
-            if (quote_index > 0) {
-                ui->slider->setValue(--quote_index);
-            }
-            break;
-        default:
-            break;
-        }
-    });
-
-    connect(ui->add, &QPushButton::clicked, [this]() {
-        switch (current_mode) {
-        case CONFIG_CREATION:
-            // Adding one more image to current record
-            pic_end_index = qMax(pic_index, pic_end_index) + 1;
-            draw(pic_end_index);
-            ui->slider->setValue(pic_end_index);
-            break;
-        case CONFIG_READING:
-            // Showing next image in current record
-            ++pic_end_index;
-            display(pic_index);
-            if (!filtration_results.isEmpty() && filtration_results.find(pic_index) == filtration_results.begin()) {
-                ui->back->setDisabled(true);
-            }
-            break;
-        case TEXT_READING:
-            if (quote_index < subs.size() - 1) {
-                ui->slider->setValue(++quote_index);
-            }
-            break;
-        default:
-            break;
-        }
-        show_status();
-    });
-
-    connect(ui->back, &QPushButton::clicked, [this]() {
-        switch (current_mode) {
-        case CONFIG_CREATION:
-            if (ui->back->text() == "Назад") {
-                // Going back in picture list
-                if (pic_index == pic_end_index) {
-                    pic_end_index = 0;
-                }
-            {
-                int& current_index = pic_index > pic_end_index ? pic_index : pic_end_index;
-                if (current_index == 0) break;
-                draw(--current_index);
-                ui->slider->setValue(current_index);
-            }
-            } else { // Cancelling the latest operation
-                if (pic_end_index > 0) {
-                    // Pic was added by mistake
-                    pic_end_index = 0;
-                    draw(pic_index);
-                } else {
-                    // A record was registered by mistake
-                    auto rec = records.takeLast();
-                    pic_index -= rec.pics.size();
-                    draw(pic_index);
-                    ui->slider->setValue(pic_index);
-                    show_text(--quote_index);
-                }
-            }
-            break;
-        case CONFIG_READING:
-            pic_end_index = 0;
-            if (ui->text->isEnabled()) {
-                ui->slider->setValue(pic_index - 1);
-            } else {
-                auto it = --filtration_results.find(pic_index);
-                ui->slider->setValue(it.key());
-                ui->back->setEnabled(it != filtration_results.begin());
-            }
-            break;
-        case TEXT_READING:
-            if (pic_index == 0) break;
-            subs.clear();
-            for (auto item : record_items) {
-                delete item;
-            }
-            record_items.clear();
-            ui->load_subs->setEnabled(true);
-            draw(--pic_index);
-            show_text(pic_index);
-            ui->slider->setEnabled(false);
-//            ui->slider->setValue(pic_index);
-            ui->skip->setEnabled(false);
-            ui->add->setEnabled(false);
-            break;
-        default:
-            break;
-        }
-        show_status();
-    });
-
-    connect(ui->ok, &QPushButton::clicked, [this]() {
-        switch (current_mode) {
-        case CONFIG_CREATION:
-            register_record();
-            pic_index = qMax(pic_index, pic_end_index) + 1;
-            pic_end_index = 0;
-            ui->private_switch->setChecked(false);
-            if (pic_index < pics.size()) {
-                draw(pic_index);
-                ui->slider->setValue(pic_index);
-                show_text(++quote_index);
-            } else {
-                save_title_config(dir.dirName());
-                update_quote_file(dir.dirName());
-                set_mode(IDLE);
-            }
-            break;
-        case CONFIG_READING:
-            if (record_edited) {
-                update_record();
-                if (pic_index + 1 == records.size()) {
-                    ui->ok->setEnabled(false);
-                    ui->save->setEnabled(true);
-                    break;
-                }
-            }
-            pic_end_index = 0;
-            if (ui->text->isEnabled()) {
-                ui->slider->setValue(pic_index + 1);
-            } else {
-                auto it = ++filtration_results.find(pic_index);
-                ui->slider->setValue(it.key());
-                ui->ok->setEnabled(++it != filtration_results.end());
-            }
-            break;
-        case TEXT_READING:
-            if (!subs.isEmpty()) {
-                quotes[pic_index] = ui->text->toPlainText();
-                subs.clear();
-                for (auto item : record_items) {
-                    delete item;
-                }
-                record_items.clear();
-                ui->load_subs->setEnabled(true);
-                ui->slider->setEnabled(false);
-            }
-            ++pic_index;
-            if (pic_index < pics.size()) {
-                draw(pic_index);
-                show_text(pic_index);
-//                ui->slider->setValue(pic_index);
-            } else {
-                for (const auto& quote : quotes) {
-                    records.append(Record(quote));
-                }
-                update_quote_file(dir.dirName());
-                ui->statusBar->showMessage("Цитаты записаны в файл " + dir.dirName() + ".txt");
-                set_mode(IDLE);
-            }
-            break;
-        default:
-            break;
-        }
-        show_status();
-    });
+    connect(ui->load_subs, &QAction::triggered, this, &MainWindow::load_subs);
+    connect(ui->generate, &QPushButton::clicked, this, &MainWindow::generate_button);
+    connect(ui->post, &QPushButton::clicked, this, &MainWindow::post_button);
+    connect(ui->skip, &QPushButton::clicked, this, &MainWindow::skip_button);
+    connect(ui->add, &QPushButton::clicked, this, &MainWindow::add_button);
+    connect(ui->back, &QPushButton::clicked, this, &MainWindow::back_button);
+    connect(ui->ok, &QPushButton::clicked, this, &MainWindow::ok_button);
 }
 
 MainWindow::~MainWindow() {
@@ -634,6 +174,7 @@ bool MainWindow::initialize() {
     locations[SUBS] = json_file.value("subs").toString();
     locations[CONFIGS] = json_file.value("configs").toString();
     locations[LOGS] = json_file.value("logs").toString();
+    locations[POLL_LOGS] = json_file.value("poll_logs").toString();
     QString access_token = json_file.value("access_token").toString();
     QString group_id = json_file.value("group_id").toString();
     QString public_id = json_file.value("public_id").toString();
@@ -678,6 +219,7 @@ void MainWindow::set_mode(Mode mode) {
         ui->add->setText("Добавить");
         ui->skip->setText("Пропустить");
         ui->slider->setMaximum(pics.size() - 1);
+        ui->stackedWidget->setCurrentIndex(0);
         draw(0);
         break;
     case CONFIG_READING:
@@ -699,6 +241,7 @@ void MainWindow::set_mode(Mode mode) {
         ui->ok->setText("Готово");
         ui->skip->setText("Предыдущий");
         ui->add->setText("Следующий");
+        ui->stackedWidget->setCurrentIndex(0);
 //        ui->slider->setMaximum(pics.size() - 1);
         draw(0);
         show_text(0);

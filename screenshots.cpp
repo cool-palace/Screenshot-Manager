@@ -474,7 +474,7 @@ QString MainWindow::poll_message() const {
     int i = 1;
     for (auto it = selected_hashtags.cbegin(); it != selected_hashtags.cend(); ++it, ++i) {
         text.append(QString("%1. ").arg(i));
-        text.append(it.value()->line());
+        text.append(it.value()->line() + it.value()->text_description());
     }
     return text;
 }
