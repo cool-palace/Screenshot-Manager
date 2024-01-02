@@ -14,7 +14,7 @@ void MainWindow::get_hashtags() {
 
     for (const auto& key : hashtags_json.keys()) {
 //        qDebug() << hashtags_json[key].toObject();
-        full_hashtags.push_back(Hashtag(key, hashtags_json[key].toObject()));
+        full_hashtags_map[key] = Hashtag(key, hashtags_json[key].toObject());
 //        if (full_hashtags.back().last_poll().toSecsSinceEpoch() > 0) {
 //            poll_logs[key] = full_hashtags.back().last_poll().toSecsSinceEpoch();
 //        }
@@ -470,14 +470,22 @@ void MainWindow::filter(const QSet<int>& second) {
 
 void MainWindow::update_hashtag_file() {
     QJsonObject object;
-    for (const auto& tag : full_hashtags) {
-        object[tag.tag()] = tag.to_json();
+    for (const auto& tag : full_hashtags_map.keys()) {
+        object[tag] = full_hashtags_map[tag].to_json();
     }
     QFile file(locations[CONFIGS] + "result\\hashtags.json");
     auto message = save_json(object, file)
             ? "Файл хэштегов сохранён."
             : "Не удалось сохранить файл.";
     ui->statusBar->showMessage(message);
+}
+
+void MainWindow::read_poll_logs() {
+    auto log = json_object(locations[POLL_LOGS]);
+    for (auto key : log.keys()) {
+        poll_logs[key] = log.value(key).toInt();
+    }
+    HashtagPreview::poll_logs = &poll_logs;
 }
 
 void MainWindow::update_poll_logs() {
@@ -487,10 +495,11 @@ void MainWindow::update_poll_logs() {
         object[key] = poll_logs[key];
     }
     for (auto hashtag : selected_hashtags) {
-//        hashtag->update_log_info();
+        hashtag->update_log_info();
     }
     auto message = save_json(object, file)
-            ? "Логи публикаций опросов обновлены."
+            ? "Логи опросов обновлены."
             : "Не удалось обновить логи.";
-    ui->statusBar->showMessage(message);
+    auto current_message = ui->statusBar->currentMessage();
+    ui->statusBar->showMessage(current_message + ". " + message);
 }

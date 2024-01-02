@@ -124,7 +124,7 @@ private:
     QList<QStringList> ranked_hashtags;
     QStringList current_hashtags;
     QMap<int, QStringList> hashtags_by_index;
-    QList<Hashtag> full_hashtags;
+    QMap<QString, Hashtag> full_hashtags_map;
     QMap<QString, HashtagPreview*> selected_hashtags;
     QMap<int, RecordBase*> filtration_results;
     QList<RecordPreview*> selected_records;
@@ -191,6 +191,7 @@ private:
     QSet<int> word_search(const QString&);
     QSet<int> records_by_public(bool);
     void convert_hashtags();
+    void read_poll_logs();
     void update_poll_logs();
     void update_hashtag_file();
 

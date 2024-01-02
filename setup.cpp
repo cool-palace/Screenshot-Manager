@@ -251,6 +251,7 @@ void MainWindow::set_mode(Mode mode) {
         break;
     case RELEASE_PREPARATION:
         load_hashtag_info();
+        read_poll_logs();
         ui->date->setMinimumDate(QDate::currentDate());
         ui->date->setDate(QTime::currentTime() < QTime(3,0)
                               ? QDate::currentDate()

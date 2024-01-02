@@ -53,14 +53,16 @@ HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget(), index(total++), 
     layout.addWidget(reroll_button,0,3);
     connect(reroll_button, &QPushButton::clicked, this, &HashtagPreview::reroll);
     reroll_button->setIconSize(QSize(30,30));
+    connect(&description, &QLineEdit::editingFinished, [this]() { edited = true; });
 }
 
 int HashtagPreview::total = 0;
+QMap<QString, int>* HashtagPreview::poll_logs;
 
 void HashtagPreview::update_log_info() {
     auto font = log_info.font();
-    QDateTime last = hashtag.last_poll();
-    if (last.toSecsSinceEpoch() > 0) {
+    if (poll_logs->contains(hashtag.tag())) {
+        QDateTime last = QDateTime::fromSecsSinceEpoch(poll_logs->value(hashtag.tag()), Qt::LocalTime);
         log_info.setText(QString("Публиковалось %1 дней назад").arg(last.daysTo(QDateTime::currentDateTime())));
         font.setBold(true);
         font.setItalic(false);
@@ -80,6 +82,7 @@ void HashtagPreview::set_hashtag(const Hashtag& tag) {
     hashtag = tag;
     text.setText(hashtag.text());
     description.setText(hashtag.description());
+    edited = false;
     update_log_info();
 }
 

@@ -55,7 +55,19 @@ void MainWindow::post_poll(int id) {
 }
 
 void MainWindow::poll_posting_success() {
-    ui->statusBar->showMessage(QString("Опрос опубликован"));
+    int time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime).toSecsSinceEpoch();
+    for (const auto& tag : selected_hashtags.keys()) {
+        poll_logs[tag] = time;
+        if (selected_hashtags[tag]->is_edited()) {
+            qDebug() << selected_hashtags[tag]->text_description();
+            full_hashtags_map[tag].set_description(selected_hashtags[tag]->text_description());
+
+        }
+    }
+    update_hashtag_file();
+    update_poll_logs();
+    auto current_message = ui->statusBar->currentMessage();
+    ui->statusBar->showMessage(current_message + ". Опрос опубликован");
 }
 
 void MainWindow::poll_posting_fail(const QString& reply) {
@@ -282,21 +294,21 @@ void MainWindow::generate_poll() {
     }
     selected_hashtags.clear();
     while (selected_hashtags.size() < ui->quantity->value()) {
-        int r_index = QRandomGenerator::global()->bounded(full_hashtags.size());
-        auto tag = full_hashtags[r_index];
-        if (!selected_hashtags.contains(tag.tag())) {
-            selected_hashtags[tag.tag()] = new HashtagPreview(tag);
-            connect(selected_hashtags[tag.tag()], &HashtagPreview::reroll_request, [this](const QString& old_tag){
+        int r_index = QRandomGenerator::global()->bounded(full_hashtags_map.keys().size());
+        auto tag = full_hashtags_map.keys()[r_index];
+        if (!selected_hashtags.contains(tag)) {
+            selected_hashtags[tag] = new HashtagPreview(full_hashtags_map[tag]);
+            connect(selected_hashtags[tag], &HashtagPreview::reroll_request, [this](const QString& old_tag){
                 auto preview = selected_hashtags[old_tag];
                 selected_hashtags.remove(old_tag);
-                Hashtag tag;
+                QString tag;
                 do {
-                    int index = QRandomGenerator::global()->bounded(full_hashtags.size());
-                    tag = full_hashtags[index];
-                    qDebug() << tag.tag() << selected_hashtags.contains(tag.tag());
-                } while (selected_hashtags.contains(tag.tag()));
-                selected_hashtags.insert(tag.tag(), preview);
-                selected_hashtags[tag.tag()]->set_hashtag(tag);
+                    int index = QRandomGenerator::global()->bounded(full_hashtags_map.keys().size());
+                    tag = full_hashtags_map.keys()[index];
+                    qDebug() << tag << selected_hashtags.contains(tag);
+                } while (selected_hashtags.contains(tag));
+                selected_hashtags.insert(tag, preview);
+                selected_hashtags[tag]->set_hashtag(full_hashtags_map[tag]);
                 QLayoutItem* child;
                 while ((child = ui->preview_grid->takeAt(0))) {
                     // Clearing items from the grid
@@ -323,7 +335,6 @@ void MainWindow::post_button() {
         QDateTime poll_end = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
         int time_offset = ui->interval->time().hour()*24*3600 + ui->interval->time().minute()*3600 - 300;
         poll_end = poll_end.addSecs(time_offset);
-        qDebug() << poll_end;
         manager->get_poll(options(), poll_end.toSecsSinceEpoch());
     }
 }

@@ -18,6 +18,7 @@ public:
     QString tag() const { return name; }
     QDateTime last_poll() const { return poll; }
     QJsonObject to_json() const;
+    void set_description(const QString& new_descr) { descr = new_descr; }
 private:
     QString name;
     int rank;
@@ -36,9 +37,11 @@ public:
     void set_hashtag(const Hashtag&);
     QString line() const { return hashtag.text(); }
     QString option() const { return hashtag.option(); }
-    QString text_description() const { return (description.text().isEmpty() ? hashtag.description() : description.text()) + '\n' ; }
+    QString text_description() const { return description.text().isEmpty() ? hashtag.description() : description.text(); }
     void update_log_info();
     static QMap<QString, HashtagPreview*>* selected_hashtags;
+    static QMap<QString, int>* poll_logs;
+    bool is_edited() const { return edited; }
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
 signals:
     void reroll_request(const QString&);
@@ -51,6 +54,7 @@ private:
     static int total;
     QLabel log_info;
     QLineEdit description;
+    bool edited = false;
     QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
     void reroll();
 };
