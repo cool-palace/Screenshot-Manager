@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QGridLayout>
 #include <QLabel>
+#include <QLineEdit>
 
 class Hashtag {
 public:
@@ -13,13 +14,14 @@ public:
     Hashtag() {};
     QString text() const;
     QString option() const;
+    QString description() const { return descr; }
     QString tag() const { return name; }
     QDateTime last_poll() const { return poll; }
 private:
     QString name;
     int rank;
     QString emoji;
-    QString description;
+    QString descr;
     QDateTime poll;
     QDateTime won;
 };
@@ -31,8 +33,9 @@ public:
     HashtagPreview(const Hashtag&);
     ~HashtagPreview() override { --total; }
     void set_hashtag(const Hashtag&);
-    QString line() const { return hashtag.text() + '\n'; }
+    QString line() const { return hashtag.text(); }
     QString option() const { return hashtag.option(); }
+    QString text_description() const { return (description.text().isEmpty() ? hashtag.description() : description.text()) + '\n' ; }
     void update_log_info();
     static QMap<QString, HashtagPreview*>* selected_hashtags;
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
@@ -46,6 +49,7 @@ private:
     QGridLayout layout;
     static int total;
     QLabel log_info;
+    QLineEdit description;
     QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
     void reroll();
 };

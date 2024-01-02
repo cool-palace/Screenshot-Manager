@@ -4,13 +4,13 @@ Hashtag::Hashtag(const QString& name, const QJsonObject& object) : name(name) {
     rank = object["rank"].toInt();
     poll = QDateTime::fromSecsSinceEpoch(object["last_poll"].toInt(), Qt::LocalTime);
     won = QDateTime::fromSecsSinceEpoch(object["last_won"].toInt(), Qt::LocalTime);
-    description = object["description"].toString();
+    descr = object["description"].toString();
     emoji = object["emoji"].toString();
 }
 
 QString Hashtag::text() const {
     QString tag = name;
-    return tag.replace(0, 1, name[0].toUpper()) + " — " + description;
+    return tag.replace(0, 1, name[0].toUpper()) + " — ";
 }
 
 QString Hashtag::option() const {
@@ -19,7 +19,8 @@ QString Hashtag::option() const {
 
 HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget(), index(total++), hashtag(tag) {
     text.setText(hashtag.text());
-    text.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    text.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    text.setMinimumWidth(200);
     text.setMaximumHeight(120);
     text.setWordWrap(true);
     auto font = text.font();
@@ -31,12 +32,17 @@ HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget(), index(total++), 
     number.setText(QString().setNum(index));
     log_info.setFont(text.font());
     update_log_info();
+    description.setFont(font);
+    description.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+//    description.setDisabled(true);
+    description.setText(hashtag.description());
     layout.setContentsMargins(0,0,0,0);
     setLayout(&layout);
     layout.addWidget(&number,0,0);
     layout.addWidget(&text,0,1);
+    layout.addWidget(&description,0,2);
     layout.addWidget(&log_info,1,1);
-    layout.addWidget(reroll_button,0,2);
+    layout.addWidget(reroll_button,0,3);
     connect(reroll_button, &QPushButton::clicked, this, &HashtagPreview::reroll);
     reroll_button->setIconSize(QSize(30,30));
 }
@@ -65,6 +71,7 @@ void HashtagPreview::reroll() {
 void HashtagPreview::set_hashtag(const Hashtag& tag) {
     hashtag = tag;
     text.setText(hashtag.text());
+    description.setText(hashtag.description());
     update_log_info();
 }
 
