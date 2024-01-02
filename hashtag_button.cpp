@@ -17,6 +17,14 @@ QString Hashtag::option() const {
     return QString('\"') + emoji + " " + name + '\"';
 }
 
+QJsonObject Hashtag::to_json() const {
+    QJsonObject current_hashtag;
+    current_hashtag["rank"] = rank;
+    current_hashtag["description"] = descr;
+    current_hashtag["emoji"] = emoji;
+    return current_hashtag;
+}
+
 HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget(), index(total++), hashtag(tag) {
     text.setText(hashtag.text());
     text.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);

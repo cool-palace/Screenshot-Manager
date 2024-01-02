@@ -15,14 +15,13 @@ void MainWindow::get_hashtags() {
     for (const auto& key : hashtags_json.keys()) {
 //        qDebug() << hashtags_json[key].toObject();
         full_hashtags.push_back(Hashtag(key, hashtags_json[key].toObject()));
-        if (full_hashtags.back().last_poll().toSecsSinceEpoch() > 0) {
-            poll_logs[key] = full_hashtags.back().last_poll().toSecsSinceEpoch();
-        }
+//        if (full_hashtags.back().last_poll().toSecsSinceEpoch() > 0) {
+//            poll_logs[key] = full_hashtags.back().last_poll().toSecsSinceEpoch();
+//        }
         ranked_hashtags[hashtags_json[key].toObject()["rank"].toInt()].append(key);
         create_hashtag_button(key);
     }
     qDebug() << poll_logs;
-    update_poll_logs();
 //    QTextStream in(&file);
 //    in.setCodec("UTF-8");
 //    for (int i = 0; i < 10; ++i) {
@@ -43,24 +42,7 @@ void MainWindow::get_hashtags() {
 //    file.close();
     update_hashtag_grid();
 
-//    QJsonObject object;
-//    for (int i = 0; i < ranked_hashtags.size(); ++i) {
-//        for (const auto& tag : ranked_hashtags[i]) {
-//            QJsonObject tag_object;
-////            tag_object["name"] = tag;
-//            tag_object["rank"] = i;
-//            tag_object["last_poll"] = 0;
-//            tag_object["last_won"] = 0;
-//            tag_object["emoji"] = "";
-//            tag_object["description"] = "";
-//            object[tag] = tag_object;
-//        }
-//    }
-//    QFile file1(locations[CONFIGS] + "hashtags.json");
-//    auto message = save_json(object, file1)
-//            ? "Файл хэштегов сохранён."
-//            : "Не удалось сохранить файл.";
-//    ui->statusBar->showMessage(message);
+
 }
 
 void MainWindow::create_hashtag_button(const QString& text) {
@@ -484,6 +466,18 @@ void MainWindow::filter(const QSet<int>& second) {
         result.insert(key,record_items[key]);
     }
     filtration_results = result;
+}
+
+void MainWindow::update_hashtag_file() {
+    QJsonObject object;
+    for (const auto& tag : full_hashtags) {
+        object[tag.tag()] = tag.to_json();
+    }
+    QFile file(locations[CONFIGS] + "result\\hashtags.json");
+    auto message = save_json(object, file)
+            ? "Файл хэштегов сохранён."
+            : "Не удалось сохранить файл.";
+    ui->statusBar->showMessage(message);
 }
 
 void MainWindow::update_poll_logs() {

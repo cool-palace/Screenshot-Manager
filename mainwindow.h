@@ -192,6 +192,7 @@ private:
     QSet<int> records_by_public(bool);
     void convert_hashtags();
     void update_poll_logs();
+    void update_hashtag_file();
 
     // Screenshot management
     bool load_albums(const QJsonObject&);

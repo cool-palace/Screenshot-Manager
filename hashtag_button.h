@@ -17,6 +17,7 @@ public:
     QString description() const { return descr; }
     QString tag() const { return name; }
     QDateTime last_poll() const { return poll; }
+    QJsonObject to_json() const;
 private:
     QString name;
     int rank;
