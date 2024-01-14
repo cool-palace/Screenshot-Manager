@@ -51,8 +51,11 @@ HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget(), index(total++), 
     layout.addWidget(&description,0,2);
     layout.addWidget(&log_info,1,1);
     layout.addWidget(reroll_button,0,3);
+    layout.addWidget(search_button,0,4);
     connect(reroll_button, &QPushButton::clicked, this, &HashtagPreview::reroll);
+    connect(search_button, &QPushButton::clicked, this, &HashtagPreview::search);
     reroll_button->setIconSize(QSize(30,30));
+    search_button->setIconSize(QSize(30,30));
     connect(&description, &QLineEdit::editingFinished, [this]() { edited = true; });
 }
 
@@ -78,6 +81,10 @@ void HashtagPreview::reroll() {
     emit reroll_request(hashtag.tag());
 }
 
+void HashtagPreview::search() {
+    emit search_start(hashtag.tag());
+}
+
 void HashtagPreview::set_hashtag(const Hashtag& tag) {
     hashtag = tag;
     text.setText(hashtag.text());
@@ -96,6 +103,7 @@ HashtagButton::HashtagButton(const QString& text) :
 }
 
 void HashtagButton::mousePressEvent(QMouseEvent * e) {
+    if (preview_to_change) return;
     switch (e->button()) {
     case Qt::LeftButton:
         if (e->modifiers() & Qt::ShiftModifier) {
@@ -124,6 +132,13 @@ void HashtagButton::mousePressEvent(QMouseEvent * e) {
         break;
     default:
         break;
+    }
+}
+
+void HashtagButton::mouseDoubleClickEvent(QMouseEvent* e) {
+    if (!preview_to_change) return;
+    if (e->button() == Qt::LeftButton ) {
+        emit selected(text, preview_to_change);
     }
 }
 
@@ -193,7 +208,16 @@ void HashtagButton::highlight_unregistered() {
 }
 
 int HashtagButton::records_size = 0;
+HashtagPreview* HashtagButton::preview_to_change = nullptr;
 
 void HashtagButton::update_on_records(int size) {
     records_size = size;
+}
+
+void HashtagButton::set_preview_to_change(HashtagPreview * preview) {
+    preview_to_change = preview;
+}
+
+HashtagPreview* HashtagButton::current_preview_to_change() {
+    return preview_to_change;
 }

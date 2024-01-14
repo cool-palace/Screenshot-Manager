@@ -45,6 +45,7 @@ public:
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
 signals:
     void reroll_request(const QString&);
+    void search_start(const QString&);
 private:
     int index;
     Hashtag hashtag;
@@ -56,7 +57,9 @@ private:
     QLineEdit description;
     bool edited = false;
     QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
+    QPushButton* search_button = new QPushButton(QIcon(":/images/icons8-search-80.png"), "");
     void reroll();
+    void search();
 };
 
 class HashtagButton : public QPushButton
@@ -66,6 +69,7 @@ public:
     HashtagButton(const QString&);
     ~HashtagButton() override {}
     void mousePressEvent(QMouseEvent*) override;
+    void mouseDoubleClickEvent(QMouseEvent*) override;
     void highlight(const QChar&, bool);
     void highlight(bool, bool);
     void highlight_unregistered();
@@ -75,14 +79,18 @@ public:
     void remove_index(const QChar&, int);
     QSet<int> indices(const QChar&, bool) const;
     static void update_on_records(int);
+    static void set_preview_to_change(HashtagPreview*);
+    static HashtagPreview* current_preview_to_change();
 signals:
     void filterEvent(const QChar&, const QString&, bool);
     void hashtagEvent(const QChar&, const QString&);
+    void selected(const QString&, HashtagPreview*);
 private:
     QString text;
     int count = 0;
     QMap<QChar, QSet<int>> record_indices;
     static int records_size;
+    static HashtagPreview* preview_to_change;
 };
 
 #endif // HASHTAGBUTTON_H

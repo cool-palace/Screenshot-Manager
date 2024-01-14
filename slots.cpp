@@ -171,8 +171,8 @@ void MainWindow::poll_preparation() {
         child->widget()->hide();
     }
     if (poll_mode) for (auto tag : selected_hashtags) {
-            ui->preview_grid->addWidget(tag);
-            tag->show();
+        ui->preview_grid->addWidget(tag);
+        tag->show();
     } else for (auto record : selected_records) {
         ui->preview_grid->addWidget(record);
         record->show();
@@ -299,6 +299,7 @@ void MainWindow::generate_poll() {
         if (!selected_hashtags.contains(tag)) {
             selected_hashtags[tag] = new HashtagPreview(full_hashtags_map[tag]);
             connect(selected_hashtags[tag], &HashtagPreview::reroll_request, [this](const QString& old_tag){
+                // Saving the pointer to the hashtag preview to replace
                 auto preview = selected_hashtags[old_tag];
                 selected_hashtags.remove(old_tag);
                 QString tag;
@@ -307,15 +308,14 @@ void MainWindow::generate_poll() {
                     tag = full_hashtags_map.keys()[index];
                     qDebug() << tag << selected_hashtags.contains(tag);
                 } while (selected_hashtags.contains(tag));
-                selected_hashtags.insert(tag, preview);
-                selected_hashtags[tag]->set_hashtag(full_hashtags_map[tag]);
-                QLayoutItem* child;
-                while ((child = ui->preview_grid->takeAt(0))) {
-                    // Clearing items from the grid
-                }
-                for (auto item : selected_hashtags) {
-                    ui->preview_grid->addWidget(item);
-                }
+                change_selected_hashtag(tag, preview);
+            });
+            connect(selected_hashtags[tag], &HashtagPreview::search_start, [this](const QString& old_tag){
+                // Saving the pointer to the hashtag preview to replace
+                auto preview = selected_hashtags[old_tag];
+                selected_hashtags.remove(old_tag);
+                HashtagButton::set_preview_to_change(preview);
+                set_view(MAIN);
             });
         }
     }

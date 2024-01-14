@@ -194,6 +194,7 @@ private:
     void read_poll_logs();
     void update_poll_logs();
     void update_hashtag_file();
+    void change_selected_hashtag(const QString&, HashtagPreview*);
 
     // Screenshot management
     bool load_albums(const QJsonObject&);

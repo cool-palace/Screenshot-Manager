@@ -21,7 +21,6 @@ void MainWindow::get_hashtags() {
         ranked_hashtags[hashtags_json[key].toObject()["rank"].toInt()].append(key);
         create_hashtag_button(key);
     }
-    qDebug() << poll_logs;
 //    QTextStream in(&file);
 //    in.setCodec("UTF-8");
 //    for (int i = 0; i < 10; ++i) {
@@ -41,14 +40,28 @@ void MainWindow::get_hashtags() {
 //    }
 //    file.close();
     update_hashtag_grid();
-
-
 }
 
 void MainWindow::create_hashtag_button(const QString& text) {
     hashtags.insert(text, new HashtagButton(text));
     connect(hashtags[text], SIGNAL(filterEvent(const QChar&, const QString&, bool)), this, SLOT(filter_event(const QChar&, const QString&, bool)));
     connect(hashtags[text], SIGNAL(hashtagEvent(const QChar&, const QString&)), this, SLOT(hashtag_event(const QChar&, const QString&)));
+    connect(hashtags[text], &HashtagButton::selected, this, &MainWindow::change_selected_hashtag);
+}
+
+void MainWindow::change_selected_hashtag(const QString& tag, HashtagPreview* preview) {
+    if (selected_hashtags.contains(tag)) return;
+    if (HashtagButton::current_preview_to_change()) HashtagButton::set_preview_to_change(nullptr);
+    selected_hashtags.insert(tag, preview);
+    selected_hashtags[tag]->set_hashtag(full_hashtags_map[tag]);
+    QLayoutItem* child;
+    while ((child = ui->preview_grid->takeAt(0))) {
+        // Clearing items from the grid
+    }
+    for (auto item : selected_hashtags) {
+        ui->preview_grid->addWidget(item);
+    }
+    set_view(PREVIEW);
 }
 
 void MainWindow::hashtag_event(const QChar& c, const QString& text) {
