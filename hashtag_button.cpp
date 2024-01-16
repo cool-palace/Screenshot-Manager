@@ -25,8 +25,7 @@ QJsonObject Hashtag::to_json() const {
     return current_hashtag;
 }
 
-HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget(), index(total++), hashtag(tag) {
-    text.setText(hashtag.text());
+HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget() {
     text.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     text.setMinimumWidth(200);
     text.setMaximumHeight(120);
@@ -39,11 +38,8 @@ HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget(), index(total++), 
     number.setFont(font);
     number.setText(QString().setNum(index));
     log_info.setFont(text.font());
-    update_log_info();
     description.setFont(font);
     description.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-//    description.setDisabled(true);
-    description.setText(hashtag.description());
     layout.setContentsMargins(0,0,0,0);
     setLayout(&layout);
     layout.addWidget(&number,0,0);
@@ -57,9 +53,9 @@ HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget(), index(total++), 
     reroll_button->setIconSize(QSize(30,30));
     search_button->setIconSize(QSize(30,30));
     connect(&description, &QLineEdit::editingFinished, [this]() { edited = true; });
+//    set_hashtag(tag);
 }
 
-int HashtagPreview::total = 0;
 QMap<QString, int>* HashtagPreview::poll_logs;
 
 void HashtagPreview::update_log_info() {
@@ -77,6 +73,10 @@ void HashtagPreview::update_log_info() {
     log_info.setFont(font);
 }
 
+void HashtagPreview::update_count(int count) {
+    number.setText(QString().setNum(count));
+}
+
 void HashtagPreview::reroll() {
     emit reroll_request(hashtag.tag());
 }
@@ -91,6 +91,7 @@ void HashtagPreview::set_hashtag(const Hashtag& tag) {
     description.setText(hashtag.description());
     edited = false;
     update_log_info();
+    emit count_request(hashtag.tag());
 }
 
 HashtagButton::HashtagButton(const QString& text) :

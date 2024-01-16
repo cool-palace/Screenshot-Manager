@@ -32,13 +32,14 @@ class HashtagPreview : public QWidget
 {
     Q_OBJECT
 public:
-    HashtagPreview(const Hashtag&);
-    ~HashtagPreview() override { --total; }
+    HashtagPreview(const Hashtag& tag = Hashtag());
+    ~HashtagPreview() override {}
     void set_hashtag(const Hashtag&);
     QString line() const { return hashtag.text(); }
     QString option() const { return hashtag.option(); }
     QString text_description() const { return description.text().isEmpty() ? hashtag.description() : description.text(); }
     void update_log_info();
+    void update_count(int count);
     static QMap<QString, HashtagPreview*>* selected_hashtags;
     static QMap<QString, int>* poll_logs;
     bool is_edited() const { return edited; }
@@ -46,13 +47,13 @@ public:
 signals:
     void reroll_request(const QString&);
     void search_start(const QString&);
+    void count_request(const QString&);
 private:
     int index;
     Hashtag hashtag;
     QLabel text;
     QLabel number;
     QGridLayout layout;
-    static int total;
     QLabel log_info;
     QLineEdit description;
     bool edited = false;
@@ -74,6 +75,7 @@ public:
     void highlight(bool, bool);
     void highlight_unregistered();
     void show_count();
+    int get_count() const { return count; }
     void reset();
     void add_index(const QChar&, int);
     void remove_index(const QChar&, int);

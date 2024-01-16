@@ -297,7 +297,7 @@ void MainWindow::generate_poll() {
         int r_index = QRandomGenerator::global()->bounded(full_hashtags_map.keys().size());
         auto tag = full_hashtags_map.keys()[r_index];
         if (!selected_hashtags.contains(tag)) {
-            selected_hashtags[tag] = new HashtagPreview(full_hashtags_map[tag]);
+            selected_hashtags[tag] = new HashtagPreview();
             connect(selected_hashtags[tag], &HashtagPreview::reroll_request, [this](const QString& old_tag){
                 // Saving the pointer to the hashtag preview to replace
                 auto preview = selected_hashtags[old_tag];
@@ -317,6 +317,13 @@ void MainWindow::generate_poll() {
                 HashtagButton::set_preview_to_change(preview);
                 set_view(MAIN);
             });
+            connect(selected_hashtags[tag], &HashtagPreview::count_request, [this](const QString& tag){
+                // Saving the pointer to the hashtag preview to replace
+                int count = hashtags[tag]->get_count();
+                selected_hashtags[tag]->update_count(count);
+            });
+            // Setting the actual tag contents
+            selected_hashtags[tag]->set_hashtag(full_hashtags_map[tag]);
         }
     }
     for (const auto& tag : selected_hashtags) {
