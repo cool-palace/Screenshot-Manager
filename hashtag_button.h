@@ -47,6 +47,7 @@ public:
 signals:
     void reroll_request(const QString&);
     void search_start(const QString&);
+    void check_request(const QString&);
     void count_request(const QString&);
 private:
     int index;
@@ -58,9 +59,11 @@ private:
     QLineEdit description;
     bool edited = false;
     QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
-    QPushButton* search_button = new QPushButton(QIcon(":/images/icons8-search-80.png"), "");
+    QPushButton* search_button = new QPushButton(QIcon(":/images/icons8-text-80.png"), "");
+    QPushButton* check_button = new QPushButton(QIcon(":/images/icons8-search-80.png"), "");
     void reroll();
     void search();
+    void check();
 };
 
 class HashtagButton : public QPushButton

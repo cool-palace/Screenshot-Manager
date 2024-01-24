@@ -298,30 +298,7 @@ void MainWindow::generate_poll() {
         auto tag = full_hashtags_map.keys()[r_index];
         if (!selected_hashtags.contains(tag)) {
             selected_hashtags[tag] = new HashtagPreview();
-            connect(selected_hashtags[tag], &HashtagPreview::reroll_request, [this](const QString& old_tag){
-                // Saving the pointer to the hashtag preview to replace
-                auto preview = selected_hashtags[old_tag];
-                selected_hashtags.remove(old_tag);
-                QString tag;
-                do {
-                    int index = QRandomGenerator::global()->bounded(full_hashtags_map.keys().size());
-                    tag = full_hashtags_map.keys()[index];
-                    qDebug() << tag << selected_hashtags.contains(tag);
-                } while (selected_hashtags.contains(tag));
-                change_selected_hashtag(tag, preview);
-            });
-            connect(selected_hashtags[tag], &HashtagPreview::search_start, [this](const QString& old_tag){
-                // Saving the pointer to the hashtag preview to replace
-                auto preview = selected_hashtags[old_tag];
-                selected_hashtags.remove(old_tag);
-                HashtagButton::set_preview_to_change(preview);
-                set_view(MAIN);
-            });
-            connect(selected_hashtags[tag], &HashtagPreview::count_request, [this](const QString& tag){
-                // Saving the pointer to the hashtag preview to replace
-                int count = hashtags[tag]->get_count();
-                selected_hashtags[tag]->update_count(count);
-            });
+            create_hashtag_preview_connections(tag);
             // Setting the actual tag contents
             selected_hashtags[tag]->set_hashtag(full_hashtags_map[tag]);
         }
@@ -329,6 +306,37 @@ void MainWindow::generate_poll() {
     for (const auto& tag : selected_hashtags) {
         ui->preview_grid->addWidget(tag);
     }
+}
+
+void MainWindow::create_hashtag_preview_connections(const QString& tag) {
+    connect(selected_hashtags[tag], &HashtagPreview::reroll_request, [this](const QString& old_tag){
+        // Saving the pointer to the hashtag preview to replace
+        auto preview = selected_hashtags[old_tag];
+        selected_hashtags.remove(old_tag);
+        QString tag;
+        do {
+            int index = QRandomGenerator::global()->bounded(full_hashtags_map.keys().size());
+            tag = full_hashtags_map.keys()[index];
+            qDebug() << tag << selected_hashtags.contains(tag);
+        } while (selected_hashtags.contains(tag));
+        change_selected_hashtag(tag, preview);
+    });
+    connect(selected_hashtags[tag], &HashtagPreview::search_start, [this](const QString& old_tag){
+        // Saving the pointer to the hashtag preview to replace
+        auto preview = selected_hashtags[old_tag];
+        selected_hashtags.remove(old_tag);
+        HashtagButton::set_preview_to_change(preview);
+        set_view(MAIN);
+    });
+    connect(selected_hashtags[tag], &HashtagPreview::count_request, [this](const QString& tag){
+        // Saving the pointer to the hashtag preview to replace
+        int count = hashtags[tag]->get_count();
+        selected_hashtags[tag]->update_count(count);
+    });
+    connect(selected_hashtags[tag], &HashtagPreview::check_request, [this](const QString& tag){
+        emit hashtags[tag]->filterEvent(' ', tag, true);;
+        set_view(LIST);
+    });
 }
 
 void MainWindow::post_button() {

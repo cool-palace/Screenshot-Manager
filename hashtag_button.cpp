@@ -48,10 +48,13 @@ HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget() {
     layout.addWidget(&log_info,1,1);
     layout.addWidget(reroll_button,0,3);
     layout.addWidget(search_button,0,4);
+    layout.addWidget(check_button,0,5);
     connect(reroll_button, &QPushButton::clicked, this, &HashtagPreview::reroll);
     connect(search_button, &QPushButton::clicked, this, &HashtagPreview::search);
+    connect(check_button, &QPushButton::clicked, this, &HashtagPreview::check);
     reroll_button->setIconSize(QSize(30,30));
     search_button->setIconSize(QSize(30,30));
+    check_button->setIconSize(QSize(30,30));
     connect(&description, &QLineEdit::editingFinished, [this]() { edited = true; });
 //    set_hashtag(tag);
 }
@@ -83,6 +86,10 @@ void HashtagPreview::reroll() {
 
 void HashtagPreview::search() {
     emit search_start(hashtag.tag());
+}
+
+void HashtagPreview::check() {
+    emit check_request(hashtag.tag());
 }
 
 void HashtagPreview::set_hashtag(const Hashtag& tag) {
