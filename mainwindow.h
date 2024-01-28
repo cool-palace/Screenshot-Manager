@@ -28,8 +28,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
     enum Mode {
         IDLE,
-        CONFIG_CREATION,
-        CONFIG_READING,
+        JOURNAL_CREATION,
+        JOURNAL_READING,
         TEXT_READING,
         RELEASE_PREPARATION
     };
@@ -37,10 +37,11 @@ class MainWindow : public QMainWindow
         MAIN,
         LIST,
         GALLERY,
-        PREVIEW
+        PREVIEW,
+        TITLES
     };
     enum Directories {
-        CONFIGS,
+        JOURNALS,
         SCREENSHOTS,
         QUOTES,
         SUBS,
@@ -101,6 +102,8 @@ public slots:
     void filter_event(const QString&);
     void filter_event(const QChar&, const QString&, bool);
     void lay_previews(int page = 1);
+    void lay_titles();
+    void clear_grid(QLayout*);
 
 signals:
     void reroll_response(int);
@@ -131,6 +134,7 @@ private:
     QMap<QString, FilterSpecs> filters;
     QVector<Record> records;
     QList<RecordBase*> record_items;
+    QList<RecordBase*> title_items;
     QMap<int, int> logs;
     QMap<QString, int> poll_logs;
     int pic_index;
@@ -205,19 +209,19 @@ private:
     bool update_quote_file(int, int);
     void register_record();
     void update_record();
-    bool open_title_config(bool all = false);
-    bool open_public_config();
-    void read_title_config(const QJsonObject&);
-    void save_title_config(const QString&);
-    void save_title_config(int, int);
+    bool open_title_journal(bool all = false);
+    bool open_public_journal();
+    void read_title_journal(const QJsonObject&);
+    void save_title_journal(const QString&);
+    void save_title_journal(int, int);
     void read_text_from_subs();
     QMultiMap<QString, QTime> timestamps_multimap();
     bool find_lines_by_timestamps(const QMultiMap<QString, QTime>&);
     bool get_subs_for_pic();
-    void compile_configs();
+    void compile_journals();
     void export_text();
     QJsonObject reverse_index(const QJsonArray&);
-    void refactor_configs();
+    void refactor_journals();
     void display(int);
     void draw(int);
     void show_text(int);

@@ -70,22 +70,22 @@ void MainWindow::update_record() {
     update_hashtag_info();
 }
 
-bool MainWindow::open_title_config(bool all) {
+bool MainWindow::open_title_journal(bool all) {
     clear_all();
     QStringList filepaths;
     if (!all) {
         filepaths = QFileDialog::getOpenFileNames(nullptr, "Открыть конфигурационный файл",
-                                                           locations[CONFIGS],
+                                                           locations[JOURNALS],
                                                            "Файлы (*.json)");
     } else {
-        QDir dir = QDir(locations[CONFIGS]);
+        QDir dir = QDir(locations[JOURNALS]);
         dir.setNameFilters(QStringList("*.json"));
         filepaths = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
         if (filepaths.contains(".test.json")) {
             filepaths.removeAt(filepaths.indexOf(".test.json"));
         }
         for (QString& path : filepaths) {
-            path = locations[CONFIGS] + path;
+            path = locations[JOURNALS] + path;
         }
     }
     if (filepaths.isEmpty()) return false;
@@ -95,7 +95,7 @@ bool MainWindow::open_title_config(bool all) {
             ui->statusBar->showMessage("Неверный формат файла: " + filepath);
             return false;
         }
-        read_title_config(json_file);
+        read_title_journal(json_file);
     }
     for (int i = 0; i < records.size(); ++i) {
         QString title = title_name(i);
@@ -109,8 +109,8 @@ bool MainWindow::open_title_config(bool all) {
     return !records.empty();
 }
 
-bool MainWindow::open_public_config() {
-    auto json_file = json_object(locations[CONFIGS] + "result\\public_records.json");
+bool MainWindow::open_public_journal() {
+    auto json_file = json_object(locations[JOURNALS] + "result\\public_records.json");
     if (!json_file.contains("records")) {
         ui->statusBar->showMessage("Неверный формат файла public_records.json" );
         return false;
@@ -145,7 +145,6 @@ bool MainWindow::open_public_config() {
         if (logs.contains(records[i].ids[0])) {
             dynamic_cast<RecordItem*>(record_items.back())->include_log_info(logs.value(records[i].ids[0]));
         }
-
         ui->view_grid->addWidget(record_items.back());
         connect(record_items[i], &RecordItem::selected, [this](int index){
             selected_records[pic_index]->set_index(index);
@@ -155,7 +154,7 @@ bool MainWindow::open_public_config() {
     return !records.empty();
 }
 
-void MainWindow::read_title_config(const QJsonObject& json_file) {
+void MainWindow::read_title_journal(const QJsonObject& json_file) {
     auto title = json_file.value("title").toString();
     dir = QDir(locations[SCREENSHOTS] + title);
     title_map[records.size()] = title;
@@ -179,7 +178,9 @@ void MainWindow::read_title_config(const QJsonObject& json_file) {
         }
         records.push_back(record);
     }
-    for (int i = records.size() - records_array.size(); i < records.size(); ++i) {
+    int title_start_index = records.size() - records_array.size();
+    title_items.push_back(new RecordTitleItem(records[title_start_index], records_array.size(), path(title_start_index)));
+    for (int i = title_start_index; i < records.size(); ++i) {
         record_items.push_back(new RecordItem(records[i], i, path(i)));
         connect(record_items[i], &RecordItem::selected, [this](int index){
             ui->slider->setValue(index);
@@ -188,12 +189,12 @@ void MainWindow::read_title_config(const QJsonObject& json_file) {
     }
 }
 
-void MainWindow::save_title_config(const QString& title) {
+void MainWindow::save_title_journal(const QString& title) {
     QJsonArray record_array;
     for (const auto& record : records) {
         record_array.push_back(record.to_json());
     }
-    QFile file(locations[CONFIGS] + title + ".json");
+    QFile file(locations[JOURNALS] + title + ".json");
     QJsonObject object;
     object["title"] = title;
     object["album_id"] = album_ids[title];
@@ -204,13 +205,13 @@ void MainWindow::save_title_config(const QString& title) {
     ui->statusBar->showMessage(message);
 }
 
-void MainWindow::save_title_config(int start, int end) {
+void MainWindow::save_title_journal(int start, int end) {
     QJsonArray record_array;
     for (int i = start; i <= end; ++i) {
         record_array.push_back(records[i].to_json());
     }
     auto title = title_map.value(start);
-    QFile file(locations[CONFIGS] + title + ".json");
+    QFile file(locations[JOURNALS] + title + ".json");
     QJsonObject object;
     object["title"] = title;
     object["album_id"] = album_ids[title];
@@ -330,8 +331,8 @@ bool MainWindow::get_subs_for_pic() {
     return true;
 }
 
-void MainWindow::compile_configs() {
-    QDir dir = QDir(locations[CONFIGS]);
+void MainWindow::compile_journals() {
+    QDir dir = QDir(locations[JOURNALS]);
     auto configs = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
     if (configs.contains(".test.json")) {
         configs.removeAt(configs.indexOf(".test.json"));
@@ -340,7 +341,7 @@ void MainWindow::compile_configs() {
     QJsonArray hidden_array;
     QJsonObject title_map;
     for (const auto& config : configs) {
-        auto object = json_object(locations[CONFIGS] + config);
+        auto object = json_object(locations[JOURNALS] + config);
         auto title = object["title"].toString();
         title_map[QString().setNum(resulting_array.size())] = title;
         auto array = object["screens"].toArray();
@@ -356,8 +357,8 @@ void MainWindow::compile_configs() {
     result["title_map"] = title_map;
     hidden_result["records"] = hidden_array;
     hidden_result["reverse_index"] = reverse_index(hidden_array);
-    QFile file(locations[CONFIGS] + "result\\public_records.json");
-    QFile hidden_file(locations[CONFIGS] + "result\\hidden_records.json");
+    QFile file(locations[JOURNALS] + "result\\public_records.json");
+    QFile hidden_file(locations[JOURNALS] + "result\\hidden_records.json");
     save_json(hidden_result, hidden_file);
     auto message = save_json(result, file)
             ? "Обработано конфигов: " + QString().setNum(configs.size()) + ", "
@@ -376,11 +377,11 @@ void MainWindow::export_text() {
     QRegularExpression regex("(.*?)\\s[#&].*$");
     QTextStream out(&file);
     out.setCodec("UTF-8");
-    QDir dir = QDir(locations[CONFIGS]);
+    QDir dir = QDir(locations[JOURNALS]);
     auto configs = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
     for (const auto& config : configs) {
 //        if (config.startsWith("Kono")) break;
-        auto object = json_object(locations[CONFIGS] + config);
+        auto object = json_object(locations[JOURNALS] + config);
         auto array = object["screens"].toArray();
         for (QJsonValueRef item : array) {
             auto record = item.toObject();

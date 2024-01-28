@@ -64,6 +64,22 @@ private:
     void load_thumbmnail(const QString&);
 };
 
+class RecordTitleItem : public RecordItem
+{
+    Q_OBJECT
+public:
+    RecordTitleItem(const Record&, int, const QString&);
+    ~RecordTitleItem() override {}
+//    void set_gallery_view() override {};
+//    void set_list_view() override {};
+//    void mouseDoubleClickEvent(QMouseEvent*) override;
+//    void update_text(const QString&);
+//signals:
+//    void selected(int);
+private:
+    void load_thumbmnail(const QString&);
+};
+
 class RecordFrame : public QLabel
 {
     Q_OBJECT

@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->poll_preparation, &QAction::triggered, this, &MainWindow::poll_preparation);
 
     connect(ui->save, &QAction::triggered, this, &MainWindow::save_changes);
-    connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_configs);
+    connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_journals);
     connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
     connect(ui->add_hashtag, &QAction::triggered, this, &MainWindow::add_hashtag);
 
@@ -52,6 +52,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->list_view, &QAction::triggered, [this]() { set_view(LIST); });
     connect(ui->gallery_view, &QAction::triggered, [this]() { set_view(GALLERY); });
     connect(ui->preview_view, &QAction::triggered, [this]() { set_view(PREVIEW); });
+    connect(ui->title_view, &QAction::triggered, [this]() { set_view(TITLES); });
 
     connect(ui->alphabet_order, &QAction::triggered, [this]() {
         ui->addition_order->setChecked(!ui->alphabet_order->isChecked());
@@ -72,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(ui->private_switch, &QAction::triggered, [this] () {
-        if (current_mode == CONFIG_READING)
+        if (current_mode == JOURNAL_READING)
             set_edited();
     });
 
@@ -92,9 +93,9 @@ MainWindow::~MainWindow() {
 
 void MainWindow::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Control) {
-        if (current_mode == CONFIG_READING) {
+        if (current_mode == JOURNAL_READING) {
             ui->stackedWidget->setCurrentIndex(1);
-        } else if (current_mode == CONFIG_CREATION) {
+        } else if (current_mode == JOURNAL_CREATION) {
             ui->back->setText("Отмена");
         } else if (current_mode == RELEASE_PREPARATION && current_view != PREVIEW) {
             set_view(MAIN);
@@ -105,9 +106,9 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 void MainWindow::keyReleaseEvent(QKeyEvent* event) {
     switch (event->key()) {
     case Qt::Key_Control:
-        if (current_mode == CONFIG_READING) {
+        if (current_mode == JOURNAL_READING) {
             ui->stackedWidget->setCurrentIndex(0);
-        } else if (current_mode == CONFIG_CREATION) {
+        } else if (current_mode == JOURNAL_CREATION) {
             ui->back->setText("Назад");
         } else if (current_mode == RELEASE_PREPARATION && current_view != PREVIEW) {
             set_view(LIST);
@@ -172,7 +173,7 @@ bool MainWindow::initialize() {
     locations[SCREENSHOTS] = json_file.value("screenshots").toString();
     locations[QUOTES] = json_file.value("docs").toString();
     locations[SUBS] = json_file.value("subs").toString();
-    locations[CONFIGS] = json_file.value("configs").toString();
+    locations[JOURNALS] = json_file.value("configs").toString();
     locations[LOGS] = json_file.value("logs").toString();
     locations[POLL_LOGS] = json_file.value("poll_logs").toString();
     QString access_token = json_file.value("access_token").toString();
@@ -182,7 +183,7 @@ bool MainWindow::initialize() {
     RecordFrame::manager = manager;
     manager->get_albums();
     load_special_titles();
-    if (!QDir(locations[SCREENSHOTS]).exists() || !QDir(locations[CONFIGS]).exists()) {
+    if (!QDir(locations[SCREENSHOTS]).exists() || !QDir(locations[JOURNALS]).exists()) {
         ui->statusBar->showMessage("Указаны несуществующие директории. Перепроверьте конфигурационный файл.");
         return false;
     }
@@ -201,20 +202,31 @@ void MainWindow::clear_all() {
     hashtags_by_index.clear();
     filters.clear();
     filtration_results.clear();
-    while (ui->view_grid->takeAt(0) != nullptr) {
-        // Clearing items from the grid
-    }
+    clear_grid(ui->view_grid);
     for (auto item : record_items) {
         delete item;
     }
     record_items.clear();
+    clear_grid(ui->title_grid);
+    for (auto item : title_items) {
+        delete item;
+    }
+    title_items.clear();
+}
+
+void MainWindow::clear_grid(QLayout* layout) {
+    QLayoutItem* child;
+    while ((child = layout->takeAt(0))) {
+        // Clearing items from the grid
+        child->widget()->hide();
+    }
 }
 
 void MainWindow::set_mode(Mode mode) {
     current_mode = mode;
     quote_index = pic_index = pic_end_index = 0;
     switch (mode) {
-    case CONFIG_CREATION:
+    case JOURNAL_CREATION:
         ui->ok->setText("Готово");
         ui->add->setText("Добавить");
         ui->skip->setText("Пропустить");
@@ -222,7 +234,7 @@ void MainWindow::set_mode(Mode mode) {
         ui->stackedWidget->setCurrentIndex(0);
         draw(0);
         break;
-    case CONFIG_READING:
+    case JOURNAL_READING:
         ui->ok->setText("Далее");
         ui->add->setText("Листать");
         ui->skip->setText("Сохранить");
@@ -233,8 +245,13 @@ void MainWindow::set_mode(Mode mode) {
         for (auto record : record_items) {
             ui->view_grid->addWidget(record);
         }
-        if (ui->stacked_view->currentIndex() > 0) {
+        for (auto title : title_items) {
+            ui->title_grid->addWidget(title);
+        }
+        if (ui->stacked_view->currentIndex() == 1) {
             lay_previews();
+        } else if (ui->stacked_view->currentIndex() == 3) {
+            lay_titles();
         }
         break;
     case TEXT_READING:
@@ -290,26 +307,29 @@ void MainWindow::set_view(View view) {
             ui->stacked_view->setCurrentIndex(2);
         }
         break;
+    case TITLES:
+        if (current_mode == JOURNAL_READING || current_mode == RELEASE_PREPARATION) {
+            ui->stacked_view->setCurrentIndex(3);
+            lay_titles();
+        }
+        break;
     }
     ui->main_view->setChecked(current_view == MAIN);
     ui->list_view->setChecked(current_view == LIST);
     ui->gallery_view->setChecked(current_view == GALLERY);
     ui->preview_view->setChecked(current_view == PREVIEW);
+    ui->title_view->setChecked(current_view == TITLES);
 }
 
 void MainWindow::lay_previews(int page) {
     if (current_view == MAIN || current_mode == IDLE) return;
-    int total_previews = current_mode == CONFIG_READING
+    int total_previews = current_mode == JOURNAL_READING
                             ? (filtration_results.isEmpty()
                                 ? records.size()
                                 : filtration_results.values().size())
                             : record_items.size();
     ui->page_index->setMaximum(total_previews / pics_per_page + 1);
-    QLayoutItem* child;
-    while ((child = ui->view_grid->takeAt(0))) {
-        // Clearing items from the grid
-        child->widget()->hide();
-    }
+    clear_grid(ui->view_grid);
     const auto& items = filtration_results.empty()
                         ? record_items
                         : filtration_results.values();
@@ -324,20 +344,32 @@ void MainWindow::lay_previews(int page) {
     }
 }
 
+void MainWindow::lay_titles() {
+//    int total_titles = title_map.size();
+//    ui->page_index->setMaximum(total_previews / pics_per_page + 1);
+//    clear_view_grid();
+    qDebug() << title_items;
+    for (int i = 0 ; i < title_items.size(); ++i) {
+        title_items[i]->set_gallery_view();
+        ui->title_grid->addWidget(title_items[i], i/10, i%10);
+    }
+}
+
 void MainWindow::set_enabled(bool enable) {
     ui->back->setEnabled(enable && pic_index > 0 && current_mode != RELEASE_PREPARATION);
     ui->ok->setEnabled(enable && current_mode != RELEASE_PREPARATION);
-    ui->skip->setEnabled(enable && current_mode == CONFIG_CREATION);
-    bool listing_enabled = (current_mode == CONFIG_CREATION && pics.size() > 1)
-            || (current_mode == CONFIG_READING && records[0].pics.size() > 1);
+    ui->skip->setEnabled(enable && current_mode == JOURNAL_CREATION);
+    bool listing_enabled = (current_mode == JOURNAL_CREATION && pics.size() > 1)
+            || (current_mode == JOURNAL_READING && records[0].pics.size() > 1);
     ui->add->setEnabled(enable && listing_enabled);
     ui->text->setEnabled(enable && current_mode != TEXT_READING && current_mode != RELEASE_PREPARATION);
-    ui->private_switch->setEnabled(current_mode == CONFIG_CREATION || current_mode == CONFIG_READING);
+    ui->private_switch->setEnabled(current_mode == JOURNAL_CREATION || current_mode == JOURNAL_READING);
     ui->load_subs->setEnabled(current_mode == TEXT_READING);
-    ui->slider->setEnabled(current_mode == CONFIG_READING);
+    ui->slider->setEnabled(current_mode == JOURNAL_READING);
     ui->slider->setValue(0);
     ui->preview_view->setEnabled(current_mode == RELEASE_PREPARATION);
     ui->poll_preparation->setEnabled(current_mode == RELEASE_PREPARATION);
+    ui->title_view->setEnabled(current_mode == JOURNAL_READING || current_mode == RELEASE_PREPARATION);
 }
 
 void MainWindow::set_edited() {
@@ -382,7 +414,7 @@ void MainWindow::save_changes() {
         int start = pair.first;
         int end = pair.second;
         update_quote_file(start, end);
-        save_title_config(start, end);
+        save_title_journal(start, end);
         record_edited = false;
         ui->save->setEnabled(false);
     }
@@ -432,7 +464,7 @@ bool MainWindow::save_json(const QJsonObject& object, QFile& file) const {
 }
 
 void MainWindow::load_special_titles() {
-    auto json_file = json_object(locations[CONFIGS] + "\\result\\titles.json");
+    auto json_file = json_object(locations[JOURNALS] + "\\result\\titles.json");
     for (auto key : json_file.keys()) {
         special_titles[key] = json_file.value(key).toString();
     }
@@ -516,7 +548,7 @@ QString MainWindow::filtration_indices() const {
 
 void MainWindow::show_status() {
     switch (current_mode) {
-    case CONFIG_CREATION: {
+    case JOURNAL_CREATION: {
         bool multiple_pics = pic_end_index > 0;
         QString s_quote = QString().setNum(quote_index + 1) + " из " + QString().setNum(quotes.size());
         QString s_pic = multiple_pics ? "кадры " : "кадр ";
@@ -525,7 +557,7 @@ void MainWindow::show_status() {
         ui->statusBar->showMessage("Цитата " + s_quote + ", " + s_pic + s_pic_index + s_pic_from);
         break;
     }
-    case CONFIG_READING: {
+    case JOURNAL_READING: {
         QString filtration = ui->text->isEnabled()
                 ? ""
                 : filtration_message(filtration_results.size()) + filtration_indices();

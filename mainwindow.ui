@@ -21,7 +21,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="page_4">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -40,7 +40,7 @@
         <item>
          <widget class="QStackedWidget" name="stackedWidget">
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="page">
            <layout class="QGridLayout" name="gridLayout">
@@ -560,6 +560,11 @@ p, li { white-space: pre-wrap; }
              <height>459</height>
             </rect>
            </property>
+           <layout class="QGridLayout" name="gridLayout_11">
+            <item row="0" column="0">
+             <layout class="QGridLayout" name="title_grid"/>
+            </item>
+           </layout>
           </widget>
          </widget>
         </item>
@@ -667,6 +672,7 @@ p, li { white-space: pre-wrap; }
    <addaction name="list_view"/>
    <addaction name="gallery_view"/>
    <addaction name="preview_view"/>
+   <addaction name="title_view"/>
   </widget>
   <action name="config_creation">
    <property name="icon">
@@ -972,6 +978,21 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Подготовка опроса</string>
+   </property>
+  </action>
+  <action name="title_view">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-small-icons-80.png</normaloff>:/images/icons8-small-icons-80.png</iconset>
+   </property>
+   <property name="text">
+    <string>Выбор по тайтлам</string>
+   </property>
+   <property name="toolTip">
+    <string>Выбор по тайтлам</string>
    </property>
   </action>
  </widget>

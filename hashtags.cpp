@@ -10,7 +10,7 @@ void MainWindow::get_hashtags() {
     for (int i = 0; i < 13; ++i) {
         ranked_hashtags.append(QStringList());
     }
-    hashtags_json = json_object(locations[CONFIGS] + "result\\hashtags.json");
+    hashtags_json = json_object(locations[JOURNALS] + "result\\hashtags.json");
 
     for (const auto& key : hashtags_json.keys()) {
 //        qDebug() << hashtags_json[key].toObject();
@@ -54,10 +54,7 @@ void MainWindow::change_selected_hashtag(const QString& tag, HashtagPreview* pre
     if (HashtagButton::current_preview_to_change()) HashtagButton::set_preview_to_change(nullptr);
     selected_hashtags.insert(tag, preview);
     selected_hashtags[tag]->set_hashtag(full_hashtags_map[tag]);
-    QLayoutItem* child;
-    while ((child = ui->preview_grid->takeAt(0))) {
-        // Clearing items from the grid
-    }
+    clear_grid(ui->preview_grid);
     for (auto item : selected_hashtags) {
         ui->preview_grid->addWidget(item);
     }
@@ -486,7 +483,7 @@ void MainWindow::update_hashtag_file() {
     for (const auto& tag : full_hashtags_map.keys()) {
         object[tag] = full_hashtags_map[tag].to_json();
     }
-    QFile file(locations[CONFIGS] + "result\\hashtags.json");
+    QFile file(locations[JOURNALS] + "result\\hashtags.json");
     auto message = save_json(object, file)
             ? "Файл хэштегов сохранён."
             : "Не удалось сохранить файл.";

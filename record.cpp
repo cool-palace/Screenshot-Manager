@@ -87,6 +87,11 @@ void RecordItem::set_list_view() {
     show();
 }
 
+RecordTitleItem::RecordTitleItem(const Record& record, int index, const QString& path) :
+    RecordItem(record, index, path) {
+//    set_gallery_view();
+}
+
 void RecordPreview::set_list_view() {
     number.show();
     text.show();

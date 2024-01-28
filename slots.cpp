@@ -14,7 +14,7 @@ void MainWindow::set_albums(const QMap<QString, int>& ids) {
 void MainWindow::set_photo_ids(const QVector<int>& ids, const QStringList& urls) {
     photo_ids = ids;
     links = urls;
-    set_mode(data_ready() ? CONFIG_CREATION : IDLE);
+    set_mode(data_ready() ? JOURNAL_CREATION : IDLE);
 }
 
 void MainWindow::set_loaded_image(const QImage& image) {
@@ -117,22 +117,22 @@ void MainWindow::journal_creation() {
 }
 
 void MainWindow::journal_reading() {
-    if (!open_title_config()) {
+    if (!open_title_journal()) {
         set_mode(IDLE);
         ui->statusBar->showMessage("Конфигурационный файл не открыт.");
         return;
     }
-    set_mode(CONFIG_READING);
+    set_mode(JOURNAL_READING);
     if (current_view == PREVIEW) set_view(MAIN);
 }
 
 void MainWindow::journal_reading_all() {
-    if (!open_title_config(true)) {
+    if (!open_title_journal(true)) {
         set_mode(IDLE);
         ui->statusBar->showMessage("Конфигурационный файл не открыт.");
         return;
     }
-    set_mode(CONFIG_READING);
+    set_mode(JOURNAL_READING);
     if (current_view == PREVIEW) set_view(MAIN);
 }
 
@@ -154,7 +154,7 @@ void MainWindow::text_reading() {
 
 void MainWindow::release_preparation() {
     clear_all();
-    if (!open_public_config()) {
+    if (!open_public_journal()) {
         set_mode(IDLE);
         ui->statusBar->showMessage("Конфигурационный файл не открыт.");
         return;
@@ -201,7 +201,7 @@ void MainWindow::show_private(bool checked) {
 
 void MainWindow::slider_change(int value) {
     switch (current_mode) {
-    case CONFIG_READING:
+    case JOURNAL_READING:
         pic_end_index = 0;
         pic_index = value;
         display(pic_index);
@@ -356,13 +356,13 @@ void MainWindow::post_button() {
 
 void MainWindow::skip_button() {
     switch (current_mode) {
-    case CONFIG_CREATION:
+    case JOURNAL_CREATION:
         pic_index = qMax(pic_index, pic_end_index) + 1;
         draw(pic_index);
         ui->slider->setValue(pic_index);
         show_status();
         break;
-    case CONFIG_READING:
+    case JOURNAL_READING:
         // Saving button
             save_changes();
         break;
@@ -378,13 +378,13 @@ void MainWindow::skip_button() {
 
 void MainWindow::add_button() {
     switch (current_mode) {
-    case CONFIG_CREATION:
+    case JOURNAL_CREATION:
         // Adding one more image to current record
         pic_end_index = qMax(pic_index, pic_end_index) + 1;
         draw(pic_end_index);
         ui->slider->setValue(pic_end_index);
         break;
-    case CONFIG_READING:
+    case JOURNAL_READING:
         // Showing next image in current record
         ++pic_end_index;
         display(pic_index);
@@ -405,7 +405,7 @@ void MainWindow::add_button() {
 
 void MainWindow::back_button() {
     switch (current_mode) {
-    case CONFIG_CREATION:
+    case JOURNAL_CREATION:
         if (ui->back->text() == "Назад") {
             // Going back in picture list
             if (pic_index == pic_end_index) {
@@ -432,7 +432,7 @@ void MainWindow::back_button() {
             }
         }
         break;
-    case CONFIG_READING:
+    case JOURNAL_READING:
         pic_end_index = 0;
         if (ui->text->isEnabled()) {
             ui->slider->setValue(pic_index - 1);
@@ -465,7 +465,7 @@ void MainWindow::back_button() {
 
 void MainWindow::ok_button() {
     switch (current_mode) {
-    case CONFIG_CREATION:
+    case JOURNAL_CREATION:
         register_record();
         pic_index = qMax(pic_index, pic_end_index) + 1;
         pic_end_index = 0;
@@ -475,12 +475,12 @@ void MainWindow::ok_button() {
             ui->slider->setValue(pic_index);
             show_text(++quote_index);
         } else {
-            save_title_config(dir.dirName());
+            save_title_journal(dir.dirName());
             update_quote_file(dir.dirName());
             set_mode(IDLE);
         }
         break;
-    case CONFIG_READING:
+    case JOURNAL_READING:
         if (record_edited) {
             update_record();
             if (pic_index + 1 == records.size()) {
