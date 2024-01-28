@@ -140,6 +140,13 @@ bool MainWindow::open_public_journal() {
     for (auto index : titles.keys()) {
         title_map[index.toInt()] = titles[index].toString();
     }
+    // Creating title items
+    for (auto index : title_map.keys()) {
+        int size = title_range(index).second - index + 1;
+        title_items.push_back(new RecordTitleItem(records[index], size, path(index)));
+        ui->title_grid->addWidget(title_items.back());
+    }
+    // Creating record items
     for (int i = records.size() - records_array.size(); i < records.size(); ++i) {
         record_items.push_back(new RecordItem(records[i], i, path(i)));
         if (logs.contains(records[i].ids[0])) {
