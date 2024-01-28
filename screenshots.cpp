@@ -143,7 +143,7 @@ bool MainWindow::open_public_journal() {
     // Creating title items
     for (auto index : title_map.keys()) {
         int size = title_range(index).second - index + 1;
-        title_items.push_back(new RecordTitleItem(records[index], size, path(index)));
+        title_items.push_back(new RecordTitleItem(title_map.value(index), path(index) + records[index].pics[0], size));
         ui->title_grid->addWidget(title_items.back());
     }
     // Creating record items
@@ -186,7 +186,7 @@ void MainWindow::read_title_journal(const QJsonObject& json_file) {
         records.push_back(record);
     }
     int title_start_index = records.size() - records_array.size();
-    title_items.push_back(new RecordTitleItem(records[title_start_index], records_array.size(), path(title_start_index)));
+    title_items.push_back(new RecordTitleItem(title, path(title_start_index) + records[title_start_index].pics[0], records_array.size()));
     for (int i = title_start_index; i < records.size(); ++i) {
         record_items.push_back(new RecordItem(records[i], i, path(i)));
         connect(record_items[i], &RecordItem::selected, [this](int index){

@@ -348,10 +348,9 @@ void MainWindow::lay_titles() {
 //    int total_titles = title_map.size();
 //    ui->page_index->setMaximum(total_previews / pics_per_page + 1);
 //    clear_view_grid();
-    qDebug() << title_items;
     for (int i = 0 ; i < title_items.size(); ++i) {
-        title_items[i]->set_gallery_view();
-        ui->title_grid->addWidget(title_items[i], i/10, i%10);
+//        title_items[i]->set_gallery_view();
+        ui->title_grid->addWidget(title_items[i], i/9, i%9);
     }
 }
 

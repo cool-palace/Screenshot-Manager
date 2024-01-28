@@ -87,9 +87,21 @@ void RecordItem::set_list_view() {
     show();
 }
 
-RecordTitleItem::RecordTitleItem(const Record& record, int index, const QString& path) :
-    RecordItem(record, index, path) {
-//    set_gallery_view();
+RecordTitleItem::RecordTitleItem(const QString& title, const QString& path, int size) :
+    RecordBase() {
+    QtConcurrent::run(this, &RecordTitleItem::load_thumbmnail, path);
+    auto font = text.font();
+    font.setPointSize(10);
+    text.setFont(font);
+    text.setText(title);
+    box.setText("Записей: " + QString().setNum(size));
+    box.setMinimumHeight(15);
+    box.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    box.setChecked(true);
+    layout.addWidget(&text,0,0);
+    layout.addWidget(&image,1,0);
+    layout.addWidget(&box,2,0);
+    text.show();
 }
 
 void RecordPreview::set_list_view() {
@@ -113,6 +125,12 @@ void RecordItem::load_thumbmnail(const QString& picture) {
     auto pic = QImage(picture);
     if (pic.isNull()) pic = QImage(picture.chopped(3) + "jpg");
     image.setPixmap(QPixmap::fromImage(pic.scaled(QSize(160, 90), Qt::KeepAspectRatio)));
+}
+
+void RecordTitleItem::load_thumbmnail(const QString& picture) {
+    auto pic = QImage(picture);
+    if (pic.isNull()) pic = QImage(picture.chopped(3) + "jpg");
+    image.setPixmap(QPixmap::fromImage(pic.scaled(QSize(192, 108), Qt::KeepAspectRatio)));
 }
 
 VK_Manager* RecordFrame::manager;

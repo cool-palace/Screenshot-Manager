@@ -25,7 +25,7 @@ class RecordBase : public QWidget
 {
     Q_OBJECT
 public:
-    RecordBase(const Record&, int);
+    RecordBase(const Record& rec = Record(), int i = 0);
     ~RecordBase() override {}
     void mouseDoubleClickEvent(QMouseEvent*) override;
     void update_text(const QString&);
@@ -64,20 +64,23 @@ private:
     void load_thumbmnail(const QString&);
 };
 
-class RecordTitleItem : public RecordItem
+class RecordTitleItem : public RecordBase
 {
     Q_OBJECT
 public:
-    RecordTitleItem(const Record&, int, const QString&);
+    RecordTitleItem(const QString&, const QString&, int);
     ~RecordTitleItem() override {}
-//    void set_gallery_view() override {};
-//    void set_list_view() override {};
+    void set_gallery_view() override {};
+    void set_list_view() override {};
+private:
+    QCheckBox box;
+    void load_thumbmnail(const QString&);
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
 //    void update_text(const QString&);
 //signals:
 //    void selected(int);
-private:
-    void load_thumbmnail(const QString&);
+//private:
+//    void load_thumbmnail(const QString&);
 };
 
 class RecordFrame : public QLabel
