@@ -54,7 +54,7 @@ void MainWindow::change_selected_hashtag(const QString& tag, HashtagPreview* pre
     if (HashtagButton::current_preview_to_change()) HashtagButton::set_preview_to_change(nullptr);
     selected_hashtags.insert(tag, preview);
     selected_hashtags[tag]->set_hashtag(full_hashtags_map[tag]);
-    clear_grid(ui->preview_grid);
+    clear_grid(ui->preview_grid, false);
     for (auto item : selected_hashtags) {
         ui->preview_grid->addWidget(item);
     }

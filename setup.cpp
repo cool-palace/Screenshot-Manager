@@ -78,6 +78,8 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(ui->load_subs, &QAction::triggered, this, &MainWindow::load_subs);
+    connect(ui->titles_check_all, &QPushButton::clicked, [this]() { check_titles(true); });
+    connect(ui->titles_uncheck_all, &QPushButton::clicked, [this]() { check_titles(false); });
     connect(ui->generate, &QPushButton::clicked, this, &MainWindow::generate_button);
     connect(ui->post, &QPushButton::clicked, this, &MainWindow::post_button);
     connect(ui->skip, &QPushButton::clicked, this, &MainWindow::skip_button);
@@ -214,11 +216,11 @@ void MainWindow::clear_all() {
     title_items.clear();
 }
 
-void MainWindow::clear_grid(QLayout* layout) {
+void MainWindow::clear_grid(QLayout* layout, bool hide) {
     QLayoutItem* child;
     while ((child = layout->takeAt(0))) {
         // Clearing items from the grid
-        child->widget()->hide();
+        if (hide) child->widget()->hide();
     }
 }
 
@@ -351,6 +353,12 @@ void MainWindow::lay_titles() {
     for (int i = 0 ; i < title_items.size(); ++i) {
 //        title_items[i]->set_gallery_view();
         ui->title_grid->addWidget(title_items[i], i/9, i%9);
+    }
+}
+
+void MainWindow::check_titles(bool enable) {
+    for (auto item : title_items) {
+        dynamic_cast<RecordTitleItem*>(item)->set_checked(enable);
     }
 }
 

@@ -104,6 +104,10 @@ RecordTitleItem::RecordTitleItem(const QString& title, const QString& path, int 
     text.show();
 }
 
+void RecordTitleItem::set_checked(bool enable) {
+    box.setChecked(enable);
+}
+
 void RecordPreview::set_list_view() {
     number.show();
     text.show();

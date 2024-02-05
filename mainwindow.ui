@@ -268,8 +268,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>754</width>
-             <height>410</height>
+             <width>59</width>
+             <height>24</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -334,8 +334,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>754</width>
-             <height>459</height>
+             <width>420</width>
+             <height>266</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -547,6 +547,28 @@ p, li { white-space: pre-wrap; }
       <widget class="QWidget" name="page_6">
        <layout class="QGridLayout" name="gridLayout_9">
         <item row="0" column="0">
+         <widget class="QPushButton" name="titles_check_all">
+          <property name="text">
+           <string>Выбрать все</string>
+          </property>
+          <property name="icon">
+           <iconset resource="icons.qrc">
+            <normaloff>:/images/icons8-checked-checkbox-80.png</normaloff>:/images/icons8-checked-checkbox-80.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QPushButton" name="titles_uncheck_all">
+          <property name="text">
+           <string>Снять все</string>
+          </property>
+          <property name="icon">
+           <iconset resource="icons.qrc">
+            <normaloff>:/images/icons8-unchecked-checkbox-80.png</normaloff>:/images/icons8-unchecked-checkbox-80.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="2">
          <widget class="QScrollArea" name="scrollArea_3">
           <property name="widgetResizable">
            <bool>true</bool>
@@ -557,7 +579,7 @@ p, li { white-space: pre-wrap; }
              <x>0</x>
              <y>0</y>
              <width>754</width>
-             <height>459</height>
+             <height>425</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">

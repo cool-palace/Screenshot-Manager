@@ -103,7 +103,7 @@ public slots:
     void filter_event(const QChar&, const QString&, bool);
     void lay_previews(int page = 1);
     void lay_titles();
-    void clear_grid(QLayout*);
+    void clear_grid(QLayout* layout, bool hide = true);
 
 signals:
     void reroll_response(int);
@@ -174,6 +174,7 @@ private:
     int random_index() const;
     void load_special_titles();
     void add_caption(const QString& captcha_sid = "", const QString& captcha_key = "");
+    void check_titles(bool);
 
     // Hashtag management and filtering
     void get_hashtags();

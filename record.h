@@ -72,6 +72,7 @@ public:
     ~RecordTitleItem() override {}
     void set_gallery_view() override {};
     void set_list_view() override {};
+    void set_checked(bool);
 private:
     QCheckBox box;
     void load_thumbmnail(const QString&);
