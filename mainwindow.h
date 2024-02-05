@@ -101,6 +101,7 @@ public slots:
     void filter_event(bool);
     void filter_event(const QString&);
     void filter_event(const QChar&, const QString&, bool);
+    void filter_event(RecordTitleItem*);
     void lay_previews(int page = 1);
     void lay_titles();
     void clear_grid(QLayout* layout, bool hide = true);
@@ -195,6 +196,7 @@ private:
     void exit_filtering();
     QSet<int> word_search(const QString&);
     QSet<int> records_by_public(bool);
+    QSet<int> checked_title_records();
     void convert_hashtags();
     void read_poll_logs();
     void update_poll_logs();

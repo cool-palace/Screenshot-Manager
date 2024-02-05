@@ -77,9 +77,11 @@ MainWindow::MainWindow(QWidget *parent)
             set_edited();
     });
 
-    connect(ui->load_subs, &QAction::triggered, this, &MainWindow::load_subs);
     connect(ui->titles_check_all, &QPushButton::clicked, [this]() { check_titles(true); });
     connect(ui->titles_uncheck_all, &QPushButton::clicked, [this]() { check_titles(false); });
+    connect(ui->titles_set_filter, &QPushButton::clicked, [this]() { filter_event(nullptr); }); // Check type
+
+    connect(ui->load_subs, &QAction::triggered, this, &MainWindow::load_subs);
     connect(ui->generate, &QPushButton::clicked, this, &MainWindow::generate_button);
     connect(ui->post, &QPushButton::clicked, this, &MainWindow::post_button);
     connect(ui->skip, &QPushButton::clicked, this, &MainWindow::skip_button);

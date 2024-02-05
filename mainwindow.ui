@@ -546,17 +546,6 @@ p, li { white-space: pre-wrap; }
       </widget>
       <widget class="QWidget" name="page_6">
        <layout class="QGridLayout" name="gridLayout_9">
-        <item row="0" column="0">
-         <widget class="QPushButton" name="titles_check_all">
-          <property name="text">
-           <string>Выбрать все</string>
-          </property>
-          <property name="icon">
-           <iconset resource="icons.qrc">
-            <normaloff>:/images/icons8-checked-checkbox-80.png</normaloff>:/images/icons8-checked-checkbox-80.png</iconset>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="1">
          <widget class="QPushButton" name="titles_uncheck_all">
           <property name="text">
@@ -568,7 +557,32 @@ p, li { white-space: pre-wrap; }
           </property>
          </widget>
         </item>
-        <item row="1" column="0" colspan="2">
+        <item row="0" column="0">
+         <widget class="QPushButton" name="titles_check_all">
+          <property name="text">
+           <string>Выбрать все</string>
+          </property>
+          <property name="icon">
+           <iconset resource="icons.qrc">
+            <normaloff>:/images/icons8-checked-checkbox-80.png</normaloff>:/images/icons8-checked-checkbox-80.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="titles_set_filter">
+          <property name="text">
+           <string>Применить выбор</string>
+          </property>
+          <property name="icon">
+           <iconset resource="icons.qrc">
+            <normaloff>:/images/icons8-search-80.png</normaloff>:/images/icons8-search-80.png</iconset>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="3">
          <widget class="QScrollArea" name="scrollArea_3">
           <property name="widgetResizable">
            <bool>true</bool>

@@ -87,9 +87,13 @@ void RecordItem::set_list_view() {
     show();
 }
 
-RecordTitleItem::RecordTitleItem(const QString& title, const QString& path, int size) :
-    RecordBase() {
+RecordTitleItem::RecordTitleItem(const QString& title, const QString& path, int size, int i) :
+    RecordBase(), size(size) {
     QtConcurrent::run(this, &RecordTitleItem::load_thumbmnail, path);
+    index = i;
+    for (int i = index; i < index + size; ++i) {
+        title_indices.insert(i);
+    }
     auto font = text.font();
     font.setPointSize(10);
     text.setFont(font);

@@ -294,7 +294,19 @@ QSet<int> MainWindow::records_by_public(bool publ) {
     return result;
 }
 
+QSet<int> MainWindow::checked_title_records() {
+    QSet<int> result;
+    for (auto title_item : title_items) {
+        RecordTitleItem* item = dynamic_cast<RecordTitleItem*>(title_item);
+        if (item->is_checked()) {
+            result += item->indices();
+        }
+    }
+    return result;
+}
+
 void MainWindow::filter_event(bool publ) {
+    // Public filters
     if (filters.contains("public") && filters["public"].include != publ) {
         filters.remove("public");
         apply_filters();
@@ -317,6 +329,7 @@ void MainWindow::filter_event(bool publ) {
 }
 
 void MainWindow::filter_event(const QString& text) {
+    // Filters for text search
     if (filters.contains(text) && filters.find(text).value().sign == 't') {
         return;
     }
@@ -345,6 +358,7 @@ void MainWindow::filter_event(const QString& text) {
 }
 
 void MainWindow::filter_event(const QChar& sign, const QString& text, bool include) {
+    // Filters for hashtag
     if (filters.contains(text) && (sign != filters[text].sign || include != filters[text].include)) {
         QChar c = filters[text].sign;
         QString tip = c == '#' ? "левую кнопку" : c == '&' ? "правую кнопку" : "колесико";
@@ -371,25 +385,51 @@ void MainWindow::filter_event(const QChar& sign, const QString& text, bool inclu
     show_status();
 }
 
+void MainWindow::filter_event(RecordTitleItem*) {
+    // Filters for titles
+    update_filters('s', "title", true);
+    if (filters.isEmpty()) {
+        exit_filtering();
+    }
+    // Disabling all buttons
+    for (auto button : hashtags) {
+        button->setDisabled(true);
+    }
+
+    // Handling the filter not used in the config
+    if (filtration_results.isEmpty()) {
+        ui->back->setDisabled(true);
+        ui->ok->setDisabled(true);
+    } else show_filtering_results();
+    show_status();
+}
+
 void MainWindow::update_filters(const QChar& sign, const QString& text, bool include) {
     if (filters.isEmpty()) {
+        // First filter handling
         ui->text->setDisabled(true);
         ui->slider->setDisabled(true);
         filters.insert(text, FilterSpecs(sign, include));
         if (!sign.isLetter()) hashtags[text]->highlight(include, true);
         apply_first_filter();
     } else if (!filters.contains(text)) {
+        // Adding new filter
         filters.insert(text, FilterSpecs(sign, include));
         if (!sign.isLetter()) {
+            // Handling hashtags
             filter(hashtags[text]->indices(sign, include));
             hashtags[text]->highlight(include, true);
         } else if (sign == 't') {
+            // Handling word search
             filter(word_search(text));
         } else {
+            // Handling public filter
             filter(records_by_public(include));
         }
     } else {
+        // Removing existing filter
         if (!filters[text].sign.isLetter()) {
+            // Reset hashtag button
             hashtags[text]->highlight(include, false);
             hashtags[text]->setEnabled(true);
         }
@@ -411,9 +451,14 @@ void MainWindow::apply_first_filter() {
         for (int index : word_search(i.key())) {
             filtration_results.insert(index, record_items[index]);
         }
-    } else {
+    } else if (i.value().sign == 'p') {
         // Public filter
         for (int index : records_by_public(i.value().include)) {
+            filtration_results.insert(index, record_items[index]);
+        }
+    } else if (i.value().sign == 's') {
+        // Title filter
+        for (int index : checked_title_records()) {
             filtration_results.insert(index, record_items[index]);
         }
     }
@@ -432,6 +477,9 @@ void MainWindow::apply_filters() {
             } else if (i.value().sign == 'p') {
                 // Public filter
                 filter(records_by_public(i.value().include));
+            } else if (i.value().sign == 's') {
+                // Title filter
+                filter(checked_title_records());
             }
         }
     }
@@ -444,7 +492,7 @@ void MainWindow::show_filtering_results() {
     // Enabling buttons for possible non-zero result filters
     for (int index : filtration_results.keys()) {
         for (const auto& tag : hashtags_by_index[index]) {
-            auto hashtag = tag.right(tag.size()-1);
+            auto hashtag = tag.right(tag.size() - 1);
             hashtags[hashtag]->setEnabled(true);
         }
     }

@@ -68,14 +68,18 @@ class RecordTitleItem : public RecordBase
 {
     Q_OBJECT
 public:
-    RecordTitleItem(const QString&, const QString&, int);
+    RecordTitleItem(const QString&, const QString&, int, int);
     ~RecordTitleItem() override {}
     void set_gallery_view() override {};
     void set_list_view() override {};
     void set_checked(bool);
+    bool is_checked() const { return box.isChecked(); }
+    QSet<int> indices() const { return title_indices; }
 private:
+    int size;
     QCheckBox box;
     void load_thumbmnail(const QString&);
+    QSet<int> title_indices;
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
 //    void update_text(const QString&);
 //signals:
