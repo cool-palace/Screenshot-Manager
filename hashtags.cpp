@@ -385,8 +385,10 @@ void MainWindow::filter_event(const QChar& sign, const QString& text, bool inclu
     show_status();
 }
 
-void MainWindow::filter_event(RecordTitleItem*) {
+void MainWindow::filter_event(RecordTitleItem*, bool set_filter) {
     // Filters for titles
+    ui->titles_set_filter->setEnabled(!set_filter);
+    ui->titles_reset_filter->setEnabled(set_filter);
     update_filters('s', "title", true);
     if (filters.isEmpty()) {
         exit_filtering();

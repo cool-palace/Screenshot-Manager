@@ -101,7 +101,7 @@ public slots:
     void filter_event(bool);
     void filter_event(const QString&);
     void filter_event(const QChar&, const QString&, bool);
-    void filter_event(RecordTitleItem*);
+    void filter_event(RecordTitleItem*, bool);
     void lay_previews(int page = 1);
     void lay_titles();
     void clear_grid(QLayout* layout, bool hide = true);
