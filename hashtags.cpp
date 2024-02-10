@@ -424,9 +424,12 @@ void MainWindow::update_filters(const QChar& sign, const QString& text, bool inc
         } else if (sign == 't') {
             // Handling word search
             filter(word_search(text));
-        } else {
+        } else if (sign == 'p') {
             // Handling public filter
             filter(records_by_public(include));
+        } else if (sign == 's') {
+            // Handling title filter
+            filter(checked_title_records());
         }
     } else {
         // Removing existing filter
