@@ -305,7 +305,7 @@ void MainWindow::set_view(View view) {
         break;
     case LIST: case GALLERY:
         ui->stacked_view->setCurrentIndex(1);
-        lay_previews();
+        lay_previews(ui->page_index->value());
         break;
     case PREVIEW:
         if (current_mode == RELEASE_PREPARATION) {
