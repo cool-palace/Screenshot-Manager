@@ -165,11 +165,7 @@ void MainWindow::release_preparation() {
 
 void MainWindow::poll_preparation() {
     bool poll_mode = ui->poll_preparation->isChecked();
-    QLayoutItem* child;
-    while ((child = ui->preview_grid->takeAt(0))) {
-        // Clearing items from the grid
-        child->widget()->hide();
-    }
+    clear_grid(ui->preview_grid);
     if (poll_mode) for (auto tag : selected_hashtags) {
         ui->preview_grid->addWidget(tag);
         tag->show();
@@ -255,11 +251,7 @@ void MainWindow::add_hashtag() {
 }
 
 void MainWindow::generate_button() {
-    QLayoutItem* child;
-    while ((child = ui->preview_grid->takeAt(0))) {
-        // Clearing items from the grid
-        child->widget()->hide();
-    }
+    clear_grid(ui->preview_grid);
     ui->poll_preparation->isChecked() ? generate_poll() : generate_release();
 }
 

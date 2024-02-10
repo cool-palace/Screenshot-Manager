@@ -80,11 +80,7 @@ void MainWindow::hashtag_event(const QChar& c, const QString& text) {
 }
 
 void MainWindow::update_hashtag_grid() {
-    QLayoutItem* child;
-    while ((child = ui->tag_grid->takeAt(0))) {
-        // Clearing buttons from the grid
-        child->widget()->hide();
-    }
+    clear_grid(ui->tag_grid);
     int i = 0;
     if (ui->alphabet_order->isChecked()) {
         if (ui->hashtags_full->isChecked()) {
