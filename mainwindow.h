@@ -31,7 +31,8 @@ class MainWindow : public QMainWindow
         JOURNAL_CREATION,
         JOURNAL_READING,
         TEXT_READING,
-        RELEASE_PREPARATION
+        RELEASE_PREPARATION,
+        DESCRIPTION_READING
     };
     enum View {
         MAIN,
@@ -48,7 +49,27 @@ class MainWindow : public QMainWindow
         LOGS,
         POLL_LOGS
     };
+//    enum FilterType {
+//        PUBLIC,
+//        HIDDEN,
+//        HASHTAG_INC,
+//        HASHTAG_EXC,
+//        AMPTAG_INC,
+//        AMPTAG_EXC,
+//        TEXT,
+//        TITLE
+//    };
+//    class Filter {
+//    public:
+//        Filter(const QChar& sign, bool include) : sign(sign), include(include) {}
+//        Filter() : sign('#'), include(true) {}
+//    private:
+//        QString text = QString();
+//        QChar sign;
+//        bool include;
+//    };
     struct FilterSpecs {
+//        FilterType type;
         QChar sign;
         bool include;
         FilterSpecs(const QChar& sign, bool include) : sign(sign), include(include) {}
@@ -217,12 +238,12 @@ private:
     void read_title_journal(const QJsonObject&);
     void save_title_journal(const QString&);
     void save_title_journal(int, int);
-    void read_text_from_subs();
     QMultiMap<QString, QTime> timestamps_multimap();
     bool find_lines_by_timestamps(const QMultiMap<QString, QTime>&);
     bool get_subs_for_pic();
     void compile_journals();
     void export_text();
+    void export_captions_by_ids();
     QJsonObject reverse_index(const QJsonArray&);
     void refactor_journals();
     void display(int);

@@ -229,19 +229,6 @@ void MainWindow::save_title_journal(int start, int end) {
     ui->statusBar->showMessage(message);
 }
 
-void MainWindow::read_text_from_subs() {
-    dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
-                                                           locations[SCREENSHOTS]));
-    pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
-    auto timestamps_for_filenames = timestamps_multimap();
-    if (timestamps_for_filenames.isEmpty()) return;
-    find_lines_by_timestamps(timestamps_for_filenames);
-    update_quote_file(dir.dirName());
-    QString message = "Записан файл " + dir.dirName() + ".txt";
-    ui->statusBar->showMessage(message);
-    clear_all();
-}
-
 QMultiMap<QString, QTime> MainWindow::timestamps_multimap() {
     QMultiMap<QString, QTime> timestamps_for_filenames;
     int ms_offset = -250;
@@ -404,6 +391,28 @@ void MainWindow::export_text() {
         }
     }
     file.close();
+}
+
+void MainWindow::export_captions_by_ids() {
+    QJsonObject captions;
+    for (int i = 0; i < records.size(); ++i) {
+        for (int j = 0; j < records[i].ids.size(); ++j) {
+            QString id = QString().setNum(records[i].ids[j]);
+            QString caption;
+            QRegularExpression regex("(.*?)?([#&])(.*)?$");
+            auto it = regex.globalMatch(records[i].quote);
+            if (it.hasNext()) {
+                auto match = it.peekNext();
+                caption = match.captured(1);
+            } else caption = records[i].quote;
+            captions[id] = caption;
+        }
+    }
+    QFile file(locations[JOURNALS] + "result\\captions_list.json");
+    auto message = save_json(captions, file)
+            ? "Список текстов по кадрам сохранён."
+            : "Не удалось сохранить файл.";
+    ui->statusBar->showMessage(message);
 }
 
 QJsonObject MainWindow::reverse_index(const QJsonArray& array) {

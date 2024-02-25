@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_journals);
     connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
     connect(ui->add_hashtag, &QAction::triggered, this, &MainWindow::add_hashtag);
+    connect(ui->export_captions_by_ids, &QAction::triggered, this, &MainWindow::export_captions_by_ids);
 
     connect(ui->add_caption, &QAction::triggered, [this]() {
         add_caption();
