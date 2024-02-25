@@ -28,5 +28,6 @@
         <file>images/icons8-checked-checkbox-80.png</file>
         <file>images/icons8-unchecked-checkbox-80.png</file>
         <file>images/icons8-undo-80.png</file>
+        <file>images/icons8-note-80.png</file>
     </qresource>
 </RCC>

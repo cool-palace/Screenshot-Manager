@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->config_reading, &QAction::triggered, this, &MainWindow::journal_reading);
     connect(ui->config_reading_all, &QAction::triggered, this, &MainWindow::journal_reading_all);
     connect(ui->text_reading, &QAction::triggered, this, &MainWindow::text_reading);
+    connect(ui->descriptions_reading, &QAction::triggered, this, &MainWindow::descriptions_reading);
     connect(ui->release_preparation, &QAction::triggered, this, &MainWindow::release_preparation);
     connect(ui->poll_preparation, &QAction::triggered, this, &MainWindow::poll_preparation);
 
@@ -33,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
     connect(ui->add_hashtag, &QAction::triggered, this, &MainWindow::add_hashtag);
     connect(ui->export_captions_by_ids, &QAction::triggered, this, &MainWindow::export_captions_by_ids);
+    connect(ui->export_info_by_ids, &QAction::triggered, this, &MainWindow::export_info_by_ids);
 
     connect(ui->add_caption, &QAction::triggered, [this]() {
         add_caption();

@@ -415,6 +415,34 @@ void MainWindow::export_captions_by_ids() {
     ui->statusBar->showMessage(message);
 }
 
+void MainWindow::export_info_by_ids() {
+    QJsonObject captions;
+    for (int i = 0; i < records.size(); ++i) {
+        for (int j = 0; j < records[i].ids.size(); ++j) {
+            QString id = QString().setNum(records[i].ids[j]);
+            QString caption;
+            QJsonObject info;
+            QRegularExpression regex("(.*?)? ([#&])(.*)?$");
+            auto it = regex.globalMatch(records[i].quote);
+            if (it.hasNext()) {
+                auto match = it.peekNext();
+                caption = match.captured(1);
+            } else caption = records[i].quote;
+            info["caption"] = caption;
+            info["link"] = records[i].links[j];
+            info["path"] = title_name(i) + QDir::separator() + records[i].pics[j];
+            info["id_prev"] = j > 0 ? records[i].ids[j-1] : 0;
+            info["id_next"] = j + 1 < records[i].ids.size() ? records[i].ids[j+1] : 0;
+            captions[id] = info;
+        }
+    }
+    QFile file(locations[JOURNALS] + "result\\photo_info.json");
+    auto message = save_json(captions, file)
+            ? "Информация по кадрам сохранена."
+            : "Не удалось сохранить файл.";
+    ui->statusBar->showMessage(message);
+}
+
 QJsonObject MainWindow::reverse_index(const QJsonArray& array) {
     QJsonObject result;
     for (int index = 0; index < array.size(); ++index) {

@@ -100,6 +100,7 @@ public slots:
     void journal_reading();
     void journal_reading_all();
     void text_reading();
+    void descriptions_reading();
     void release_preparation();
     void poll_preparation();
     // UI elements
@@ -141,10 +142,10 @@ private:
     QDir dir;
     QMap<int, QString> title_map;
     QMap<QString, QString> special_titles;
-    QStringList pics;
-    QStringList quotes;
-    QVector<int> photo_ids;
-    QStringList links;
+    QStringList pics;                               // JC, TR
+    QStringList quotes;                             // JC, TR
+    QVector<int> photo_ids;                         // JC
+    QStringList links;                              // JC
     QMap<QString, HashtagButton*> hashtags;
     QList<QStringList> ranked_hashtags;
     QStringList current_hashtags;
@@ -244,6 +245,7 @@ private:
     void compile_journals();
     void export_text();
     void export_captions_by_ids();
+    void export_info_by_ids();
     QJsonObject reverse_index(const QJsonArray&);
     void refactor_journals();
     void display(int);

@@ -653,6 +653,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="show_private"/>
     <addaction name="add_caption"/>
     <addaction name="export_captions_by_ids"/>
+    <addaction name="export_info_by_ids"/>
    </widget>
    <widget class="QMenu" name="view_menu">
     <property name="title">
@@ -709,6 +710,7 @@ p, li { white-space: pre-wrap; }
    <addaction name="config_creation"/>
    <addaction name="text_reading"/>
    <addaction name="config_reading"/>
+   <addaction name="descriptions_reading"/>
    <addaction name="release_preparation"/>
    <addaction name="poll_preparation"/>
    <addaction name="separator"/>
@@ -1046,6 +1048,20 @@ p, li { white-space: pre-wrap; }
   <action name="export_captions_by_ids">
    <property name="text">
     <string>Экспорт списка текстов по кадрам</string>
+   </property>
+  </action>
+  <action name="descriptions_reading">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-note-80.png</normaloff>:/images/icons8-note-80.png</iconset>
+   </property>
+   <property name="text">
+    <string>Чтение описаний</string>
+   </property>
+  </action>
+  <action name="export_info_by_ids">
+   <property name="text">
+    <string>Экспорт информации по кадрам</string>
    </property>
   </action>
  </widget>

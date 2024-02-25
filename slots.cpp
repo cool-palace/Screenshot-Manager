@@ -152,6 +152,11 @@ void MainWindow::text_reading() {
     }
 }
 
+void MainWindow::descriptions_reading() {
+    clear_all();
+
+}
+
 void MainWindow::release_preparation() {
     clear_all();
     if (!open_public_journal()) {
