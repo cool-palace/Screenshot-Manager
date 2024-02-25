@@ -289,6 +289,14 @@ void MainWindow::set_mode(Mode mode) {
         RecordPreview::records = &records;
         ui->generate->click();
         break;
+    case DESCRIPTION_READING:
+//        ui->page_index->setMaximum(records.size() / pics_per_page + 1);
+        ui->offline->setChecked(true);
+        clear_grid(ui->tag_grid);
+//        display(0);
+        draw(0);
+        show_text(0);
+        break;
     default:
         break;
     }
@@ -304,7 +312,7 @@ void MainWindow::set_view(View view) {
         ui->stacked_view->setCurrentIndex(0);
         if (current_mode == RELEASE_PREPARATION) {
             ui->stackedWidget->setCurrentIndex(1);
-        }
+        } else ui->stackedWidget->setCurrentIndex(0);
         break;
     case LIST: case GALLERY:
         ui->stacked_view->setCurrentIndex(1);

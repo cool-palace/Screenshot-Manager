@@ -239,6 +239,7 @@ private:
     void read_title_journal(const QJsonObject&);
     void save_title_journal(const QString&);
     void save_title_journal(int, int);
+    void read_descriptions(const QJsonObject&);
     QMultiMap<QString, QTime> timestamps_multimap();
     bool find_lines_by_timestamps(const QMultiMap<QString, QTime>&);
     bool get_subs_for_pic();

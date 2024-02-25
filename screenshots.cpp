@@ -229,6 +229,33 @@ void MainWindow::save_title_journal(int start, int end) {
     ui->statusBar->showMessage(message);
 }
 
+void MainWindow::read_descriptions(const QJsonObject& json_file) {
+    auto info_json = json_object(locations[JOURNALS] + "result\\photo_info.json");
+    for (auto it = json_file.begin(); it != json_file.end(); ++it) {
+        auto info = info_json.value(it.key()).toObject();
+//        Record record;
+//        record.ids.append(it.key().toInt());
+        auto path = info.value("path").toString().split('\\');
+//        qDebug() << path;
+        auto title = path.first();
+        if (title_map.isEmpty() || title_map.last() != title) {
+            title_map[quotes.size()] = title;
+        }
+//        record.pics.append(path.back());
+//        record.links.append(info["link"].toString());
+//        record.quote = it.value().toString();
+//        record.is_public = true;
+//        records.append(record);
+        photo_ids.append(it.key().toInt());
+        links.append(info["link"].toString());
+        pics.append(path.back());
+        quotes.append(it.value().toString());
+    }
+//    qDebug() << records.size();
+//    qDebug() << records.first().quote << records.first().pics << records.first().links;
+    qDebug() << title_map;
+}
+
 QMultiMap<QString, QTime> MainWindow::timestamps_multimap() {
     QMultiMap<QString, QTime> timestamps_for_filenames;
     int ms_offset = -250;
@@ -308,7 +335,7 @@ bool MainWindow::get_subs_for_pic() {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
         QString message = "Ошибка при чтении субтитров: не удалось открыть файл " + file.fileName();
-         ui->statusBar->showMessage(message);
+        ui->statusBar->showMessage(message);
         return false;
     }
     QTextStream in(&file);
@@ -480,13 +507,16 @@ void MainWindow::draw(int index = 0) {
     if (!ui->offline->isChecked() && current_mode != TEXT_READING) {
         manager->get_image(links[index]);
     } else {
-        auto image = QImage(dir.path() + QDir::separator() + pics[index]);
+        auto dir_path = current_mode != DESCRIPTION_READING ? dir.path() + QDir::separator() : path(index);
+        qDebug() << dir_path + pics[index];
+        auto image = QImage(dir_path + pics[index]);
         ui->image->setPixmap(scaled(image));
     }
     bool reached_end = index + 1 >= pics.size();
     ui->skip->setEnabled(!reached_end && current_mode != TEXT_READING);
     ui->add->setEnabled(!reached_end && current_mode != TEXT_READING);
     ui->back->setEnabled(index > 0);
+    if (current_mode == DESCRIPTION_READING) ui->ok->setEnabled(!reached_end);
 }
 
 void MainWindow::show_text(int index) {

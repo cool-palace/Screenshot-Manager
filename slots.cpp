@@ -154,7 +154,17 @@ void MainWindow::text_reading() {
 
 void MainWindow::descriptions_reading() {
     clear_all();
-
+    auto path = QFileDialog::getOpenFileName(nullptr, "Открыть файл с описаниями",
+                                                       locations[JOURNALS] + "//descriptions",
+                                                       "Файлы (*.json)");
+    read_descriptions(json_object(path));
+    if (quotes.isEmpty() || pics.isEmpty()) {
+        set_mode(IDLE);
+        ui->statusBar->showMessage("Не удалось прочесть описания из файла.");
+        return;
+    }
+    set_mode(DESCRIPTION_READING);
+    set_view(MAIN);
 }
 
 void MainWindow::release_preparation() {
@@ -210,6 +220,11 @@ void MainWindow::slider_change(int value) {
         break;
     case TEXT_READING:
         quote_index = value;
+        show_text(value);
+        break;
+    case DESCRIPTION_READING:
+        pic_index = value;
+        draw(value);
         show_text(value);
         break;
     default:
@@ -520,6 +535,17 @@ void MainWindow::ok_button() {
             ui->statusBar->showMessage("Цитаты записаны в файл " + dir.dirName() + ".txt");
             set_mode(IDLE);
         }
+        break;
+    case DESCRIPTION_READING:
+            if (++pic_index < pics.size()) {
+                draw(pic_index);
+                ui->slider->setValue(pic_index);
+                show_text(++quote_index);
+            } else {
+//                save_title_journal(dir.dirName());
+//                update_quote_file(dir.dirName());
+//                set_mode(IDLE);
+            }
         break;
     default:
         break;
