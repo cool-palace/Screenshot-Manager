@@ -220,6 +220,7 @@ void MainWindow::clear_all() {
         delete item;
     }
     title_items.clear();
+    edited_ranges.clear();
 }
 
 void MainWindow::clear_grid(QLayout* layout, bool hide) {
@@ -233,6 +234,7 @@ void MainWindow::clear_grid(QLayout* layout, bool hide) {
 void MainWindow::set_mode(Mode mode) {
     current_mode = mode;
     quote_index = pic_index = pic_end_index = 0;
+    ui->stackedWidget->setMaximumHeight(mode == DESCRIPTION_READING ? 360 : 1000);
     switch (mode) {
     case JOURNAL_CREATION:
         ui->ok->setText("Готово");
@@ -290,12 +292,15 @@ void MainWindow::set_mode(Mode mode) {
         ui->generate->click();
         break;
     case DESCRIPTION_READING:
+        ui->slider->setMaximum(records.size() - 1);
+//        qDebug() << ui->stackedWidget->height();
+//        ui->text->setGeometry(0, 0, ui->text->width(), ui->back->height());
 //        ui->page_index->setMaximum(records.size() / pics_per_page + 1);
         ui->offline->setChecked(true);
         clear_grid(ui->tag_grid);
-//        display(0);
-        draw(0);
-        show_text(0);
+        display(0);
+//        draw(0);
+//        show_text(0);
         break;
     default:
         break;
@@ -386,7 +391,7 @@ void MainWindow::set_enabled(bool enable) {
     ui->text->setEnabled(enable && current_mode != TEXT_READING && current_mode != RELEASE_PREPARATION);
     ui->private_switch->setEnabled(current_mode == JOURNAL_CREATION || current_mode == JOURNAL_READING);
     ui->load_subs->setEnabled(current_mode == TEXT_READING);
-    ui->slider->setEnabled(current_mode == JOURNAL_READING);
+    ui->slider->setEnabled(current_mode == JOURNAL_READING || current_mode == DESCRIPTION_READING);
     ui->slider->setValue(0);
     ui->preview_view->setEnabled(current_mode == RELEASE_PREPARATION);
     ui->poll_preparation->setEnabled(current_mode == RELEASE_PREPARATION);

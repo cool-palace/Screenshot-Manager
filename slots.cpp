@@ -158,7 +158,7 @@ void MainWindow::descriptions_reading() {
                                                        locations[JOURNALS] + "//descriptions",
                                                        "Файлы (*.json)");
     read_descriptions(json_object(path));
-    if (quotes.isEmpty() || pics.isEmpty()) {
+    if (records.isEmpty()/* quotes.isEmpty() || pics.isEmpty()*/) {
         set_mode(IDLE);
         ui->statusBar->showMessage("Не удалось прочесть описания из файла.");
         return;
@@ -224,8 +224,7 @@ void MainWindow::slider_change(int value) {
         break;
     case DESCRIPTION_READING:
         pic_index = value;
-        draw(value);
-        show_text(value);
+        display(pic_index);
         break;
     default:
         break;
@@ -290,8 +289,10 @@ void MainWindow::generate_release() {
         });
         connect(selected_records.back(), &RecordPreview::reroll_request, [this](int selected_index){
             connect(this, &MainWindow::reroll_response, selected_records[selected_index], &RecordPreview::set_index);
+            qDebug() << "Connected signal to" << selected_records[selected_index];
             emit reroll_response(random_index());
             disconnect(this, &MainWindow::reroll_response, selected_records[selected_index], &RecordPreview::set_index);
+            qDebug() << "Disconnected signal from" << selected_records[selected_index];
         });
         time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
         ui->preview_grid->addWidget(selected_records.back());
@@ -347,6 +348,7 @@ void MainWindow::create_hashtag_preview_connections(const QString& tag) {
     });
     connect(selected_hashtags[tag], &HashtagPreview::check_request, [this](const QString& tag){
         filters.clear();
+        exit_filtering();
         emit hashtags[tag]->filterEvent(' ', tag, true);;
         set_view(LIST);
     });
@@ -445,7 +447,7 @@ void MainWindow::back_button() {
             }
         }
         break;
-    case JOURNAL_READING:
+    case JOURNAL_READING: case DESCRIPTION_READING:
         pic_end_index = 0;
         if (ui->text->isEnabled()) {
             ui->slider->setValue(pic_index - 1);
@@ -493,7 +495,7 @@ void MainWindow::ok_button() {
             set_mode(IDLE);
         }
         break;
-    case JOURNAL_READING:
+    case JOURNAL_READING: case DESCRIPTION_READING:
         if (record_edited) {
             update_record();
             if (pic_index + 1 == records.size()) {
@@ -536,16 +538,26 @@ void MainWindow::ok_button() {
             set_mode(IDLE);
         }
         break;
-    case DESCRIPTION_READING:
-            if (++pic_index < pics.size()) {
-                draw(pic_index);
-                ui->slider->setValue(pic_index);
-                show_text(++quote_index);
-            } else {
-//                save_title_journal(dir.dirName());
-//                update_quote_file(dir.dirName());
-//                set_mode(IDLE);
-            }
+//    case DESCRIPTION_READING:
+//        if (record_edited) {
+//            update_record();
+//            if (pic_index + 1 == records.size()) {
+//                ui->ok->setEnabled(false);
+//                ui->save->setEnabled(true);
+//                break;
+//            }
+//        }
+//        ui->slider->setValue(pic_index + 1);
+//            if (++pic_index < pics.size()) {
+////                draw(pic_index);
+////                show_text(++quote_index);
+////                display(pic_index);
+//                ui->slider->setValue(pic_index);
+//            } else {
+////                save_title_journal(dir.dirName());
+////                update_quote_file(dir.dirName());
+////                set_mode(IDLE);
+//            }
         break;
     default:
         break;

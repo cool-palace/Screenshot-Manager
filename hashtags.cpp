@@ -509,6 +509,7 @@ void MainWindow::exit_filtering() {
     filtration_results.clear();
     for (auto button : hashtags) {
         button->setEnabled(true);
+        button->setChecked(false);
     }
     ui->ok->setEnabled(pic_index < records.size() - 1);
     ui->back->setEnabled(pic_index > 0);

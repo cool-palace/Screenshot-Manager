@@ -233,23 +233,24 @@ void MainWindow::read_descriptions(const QJsonObject& json_file) {
     auto info_json = json_object(locations[JOURNALS] + "result\\photo_info.json");
     for (auto it = json_file.begin(); it != json_file.end(); ++it) {
         auto info = info_json.value(it.key()).toObject();
-//        Record record;
-//        record.ids.append(it.key().toInt());
+        Record record;
+        record.ids.append(it.key().toInt());
         auto path = info.value("path").toString().split('\\');
 //        qDebug() << path;
         auto title = path.first();
         if (title_map.isEmpty() || title_map.last() != title) {
-            title_map[quotes.size()] = title;
+//            title_map[quotes.size()] = title;
+            title_map[records.size()] = title;
         }
-//        record.pics.append(path.back());
-//        record.links.append(info["link"].toString());
-//        record.quote = it.value().toString();
-//        record.is_public = true;
-//        records.append(record);
-        photo_ids.append(it.key().toInt());
-        links.append(info["link"].toString());
-        pics.append(path.back());
-        quotes.append(it.value().toString());
+        record.pics.append(path.back());
+        record.links.append(info["link"].toString());
+        record.quote = it.value().toString();
+        record.is_public = true;
+        records.append(record);
+//        photo_ids.append(it.key().toInt());
+//        links.append(info["link"].toString());
+//        pics.append(path.back());
+//        quotes.append(it.value().toString());
     }
 //    qDebug() << records.size();
 //    qDebug() << records.first().quote << records.first().pics << records.first().links;
@@ -422,6 +423,7 @@ void MainWindow::export_text() {
 
 void MainWindow::export_captions_by_ids() {
     QJsonObject captions;
+    QJsonObject links;
     for (int i = 0; i < records.size(); ++i) {
         for (int j = 0; j < records[i].ids.size(); ++j) {
             QString id = QString().setNum(records[i].ids[j]);
@@ -433,10 +435,12 @@ void MainWindow::export_captions_by_ids() {
                 caption = match.captured(1);
             } else caption = records[i].quote;
             captions[id] = caption;
+            links[id] = records[i].links[j];
         }
     }
-    QFile file(locations[JOURNALS] + "result\\captions_list.json");
-    auto message = save_json(captions, file)
+    QFile file_captions(locations[JOURNALS] + "result\\captions_list.json");
+    QFile file_links(locations[JOURNALS] + "result\\links_list.json");
+    auto message = save_json(captions, file_captions) && save_json(links, file_links)
             ? "Список текстов по кадрам сохранён."
             : "Не удалось сохранить файл.";
     ui->statusBar->showMessage(message);
