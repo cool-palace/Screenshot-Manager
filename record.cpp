@@ -182,8 +182,7 @@ RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& t
 }
 
 void RecordPreview::reroll() {
-    emit reroll_request(selected_records->indexOf(this));
-//    set_index(QRandomGenerator::global()->bounded(RecordPreview::records->size()));
+    emit reroll_request(this);
 }
 
 void RecordPreview::input_number() {

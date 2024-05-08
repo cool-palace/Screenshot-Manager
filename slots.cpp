@@ -287,12 +287,8 @@ void MainWindow::generate_release() {
             pic_index = index;
             set_view(LIST);
         });
-        connect(selected_records.back(), &RecordPreview::reroll_request, [this](int selected_index){
-            connect(this, &MainWindow::reroll_response, selected_records[selected_index], &RecordPreview::set_index);
-            qDebug() << "Connected signal to" << selected_records[selected_index];
-            emit reroll_response(random_index());
-            disconnect(this, &MainWindow::reroll_response, selected_records[selected_index], &RecordPreview::set_index);
-            qDebug() << "Disconnected signal from" << selected_records[selected_index];
+        connect(selected_records.back(), &RecordPreview::reroll_request, [this](RecordPreview* preview){
+            preview->set_index(random_index());
         });
         time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
         ui->preview_grid->addWidget(selected_records.back());
