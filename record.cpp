@@ -55,8 +55,7 @@ RecordItem::RecordItem(const Record& record, int index, const QString& path) :
 
 void RecordItem::include_log_info(int timestamp) {
     QDateTime last = QDateTime::fromSecsSinceEpoch(timestamp, Qt::LocalTime);
-    auto num = number.text();
-    number.setText(num + QString("\n(%1)").arg(last.daysTo(QDateTime::currentDateTime())));
+    text.setText(text.text() + QString("\n\t\tПубликовалось %1 дней назад").arg(last.daysTo(QDateTime::currentDateTime())));
 }
 
 
