@@ -7,7 +7,7 @@ void MainWindow::get_hashtags() {
 //    if (!file.open(QIODevice::ReadOnly)) {
 //        ui->statusBar->showMessage("Не удалось открыть файл с хэштегами.");
 //    }
-    for (int i = 0; i < 13; ++i) {
+    for (int i = 0; i < 14; ++i) {
         ranked_hashtags.append(QStringList());
     }
     hashtags_json = json_object(locations[JOURNALS] + "result\\hashtags.json");
@@ -218,46 +218,6 @@ QString MainWindow::preprocessed(const QString& text) const {
                 result = match.captured(1) + "?" + (match.captured(2).at(1) == '!' ? "!" : "") + " #вопрос #" + match.captured(3);
                 qDebug() << result;
             }
-        }
-    }{
-        // Replacing #программирование with #айти
-        QMap<QString, QString> map = {{" #программирование", " #айти"},
-                                      {" #имя", " #имена"},
-                                      {" #слово", " #слова"},
-                                      {" #настроение", ""},
-                                      {" #доброе_утро", " #приветствие"},
-                                      {" #соцсети", " #интернет"},
-                                      {" #чтение", " #книги"},
-                                      {" #петух", " #геи"},
-                                      {" #битва", " #поединок"},
-                                      {" #смешное", ""},
-                                      {" #серьёзное", ""},
-                                      {" #комментарий", ""},
-                                     };
-        QRegularExpression it_regex("(.*)?( #программирование| #имя| #слово| "
-                                    "#настроение| #доброе_утро| #соцсети| "
-                                    "#чтение| #петух| #битва| #смешное| #серьёзное| #комментарий)(\\s.*)?$");
-        auto i = it_regex.globalMatch(result);
-        while (i.hasNext()) {
-            auto match = i.next();
-            result = match.captured(1) + map[match.captured(2)] + match.captured(3);
-            qDebug() << result;
-        }
-    }{
-        // Replacing #реакция+#hashtag with &hashtag
-        QRegularExpression reaction_regex("(.*\\s)?#реакция(\\s.*)?$");
-        auto i = reaction_regex.globalMatch(result);
-        QSet<QString> exceptions({"#обман", "#глупость", "#игнор"});
-        if (i.hasNext()) {
-            auto match = i.peekNext();
-            auto reactive_tags = match.captured(2).split(' ', Qt::SkipEmptyParts);
-            for (auto& tag : reactive_tags) {
-                if (tag[0] == '#' && !exceptions.contains(tag)) {
-                    tag.replace(0, 1, "&");
-                }
-            }
-            result = match.captured(1) + reactive_tags.join(" ");
-            qDebug() << result;
         }
     }
     return result;
