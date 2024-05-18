@@ -99,7 +99,6 @@ public:
     void reset();
     void add_index(const QChar&, int);
     void remove_index(const QChar&, int);
-    QSet<int> indices(const QChar&, bool) const;
     QSet<int> indices(FilterType) const;
     static void update_on_records(int);
     static void set_preview_to_change(HashtagPreview*);

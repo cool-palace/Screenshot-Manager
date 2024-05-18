@@ -173,18 +173,6 @@ void HashtagButton::remove_index(const QChar& sign, int index) {
     --count;
 }
 
-QSet<int> HashtagButton::indices(const QChar& sign, bool include) const {
-    auto set = sign == ' '
-             ? record_indices['#'] + record_indices['&']
-             : record_indices[sign];
-    if (include) return set;
-    QSet<int> result;
-    for (int i = 0; i < records_size; ++i) {
-        if (!set.contains(i)) result.insert(i);
-    }
-    return result;
-}
-
 QSet<int> HashtagButton::indices(FilterType type) const {
     QSet<int> set;
     if (!(type & FilterType::EXCLUDE)) {
