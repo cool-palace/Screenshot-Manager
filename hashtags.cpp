@@ -384,6 +384,7 @@ void MainWindow::filter_event(int days) {
     update_filters(FilterType::DATE, "date");
     if (filters.isEmpty()) {
         exit_filtering();
+        return;
     }
     // Disabling all buttons
     for (auto button : hashtags) {
@@ -508,6 +509,7 @@ void MainWindow::show_filtering_results() {
             hashtags[hashtag]->highlight(filters[hashtag], true);
         }
     }
+    ui->statusBar->showMessage(QString("Действует фильтров: %1, найдено результатов: %2").arg(filters.size()).arg(filtration_results.size()));
 }
 
 void MainWindow::exit_filtering() {
@@ -520,6 +522,7 @@ void MainWindow::exit_filtering() {
     ui->back->setEnabled(pic_index > 0);
     ui->text->setEnabled(true);
     ui->slider->setEnabled(true);
+    ui->statusBar->showMessage(QString("Фильтры сняты, всего записей: %1").arg(records.size()));
 }
 
 void MainWindow::filter(const QSet<int>& second) {
