@@ -8,6 +8,23 @@
 #include <QLabel>
 #include <QLineEdit>
 
+enum FilterType {
+    INCLUDE = 0,
+    EXCLUDE = 1,
+    HASHTAG = 1 << 1,
+    AMPTAG = 1 << 2,
+    HASHTAG_EXCLUDE = HASHTAG | EXCLUDE,
+    AMPTAG_EXCLUDE = AMPTAG | EXCLUDE,
+    ANY_TAG = HASHTAG | AMPTAG,
+    ANY_TAG_EXCLUDE = ANY_TAG | EXCLUDE,
+    TEXT = 1 << 3,
+    TITLE = 1 << 4,
+    DATE = 1 << 5,
+    PUBLIC = 1 << 6,
+    HIDDEN = PUBLIC | EXCLUDE,
+    NON_TAG = TEXT | TITLE | DATE | PUBLIC
+};
+
 class Hashtag {
 public:
     Hashtag(const QString&, const QJsonObject&);
@@ -75,7 +92,7 @@ public:
     void mousePressEvent(QMouseEvent*) override;
     void mouseDoubleClickEvent(QMouseEvent*) override;
     void highlight(const QChar&, bool);
-    void highlight(bool, bool);
+    void highlight(FilterType, bool);
     void highlight_unregistered();
     void show_count();
     int get_count() const { return count; }
@@ -83,11 +100,12 @@ public:
     void add_index(const QChar&, int);
     void remove_index(const QChar&, int);
     QSet<int> indices(const QChar&, bool) const;
+    QSet<int> indices(FilterType) const;
     static void update_on_records(int);
     static void set_preview_to_change(HashtagPreview*);
     static HashtagPreview* current_preview_to_change();
 signals:
-    void filterEvent(const QChar&, const QString&, bool);
+    void filterEvent(FilterType, const QString&);
     void hashtagEvent(const QChar&, const QString&);
     void selected(const QString&, HashtagPreview*);
 private:

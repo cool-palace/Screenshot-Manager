@@ -345,7 +345,7 @@ void MainWindow::create_hashtag_preview_connections(const QString& tag) {
     connect(selected_hashtags[tag], &HashtagPreview::check_request, [this](const QString& tag){
         filters.clear();
         exit_filtering();
-        emit hashtags[tag]->filterEvent(' ', tag, true);;
+        emit hashtags[tag]->filterEvent(FilterType::ANY_TAG, tag);;
         set_view(LIST);
     });
 }

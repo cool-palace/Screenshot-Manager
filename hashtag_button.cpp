@@ -115,27 +115,27 @@ void HashtagButton::mousePressEvent(QMouseEvent * e) {
     switch (e->button()) {
     case Qt::LeftButton:
         if (e->modifiers() & Qt::ShiftModifier) {
-            emit filterEvent('#', text, true);
+            emit filterEvent(FilterType::HASHTAG, text);
         } else if (e->modifiers() & Qt::AltModifier) {
-            emit filterEvent('#', text, false);
+            emit filterEvent(FilterType::HASHTAG_EXCLUDE, text);
         } else {
             emit hashtagEvent('#', text);
         }
         break;
     case Qt::RightButton:
         if (e->modifiers() & Qt::ShiftModifier) {
-            emit filterEvent('&', text, true);
+            emit filterEvent(FilterType::AMPTAG, text);
         } else if (e->modifiers() & Qt::AltModifier) {
-            emit filterEvent('&', text, false);
+            emit filterEvent(FilterType::AMPTAG_EXCLUDE, text);
         } else {
             emit hashtagEvent('&', text);
         }
         break;
     case Qt::MiddleButton:
         if (e->modifiers() & Qt::AltModifier) {
-            emit filterEvent(' ', text, false);
+            emit filterEvent(FilterType::ANY_TAG_EXCLUDE, text);
         } else {
-            emit filterEvent(' ', text, true);
+            emit filterEvent(FilterType::ANY_TAG, text);
         }
         break;
     default:
@@ -185,6 +185,21 @@ QSet<int> HashtagButton::indices(const QChar& sign, bool include) const {
     return result;
 }
 
+QSet<int> HashtagButton::indices(FilterType type) const {
+    QSet<int> set;
+    if (!(type & FilterType::EXCLUDE)) {
+        set = type == FilterType::ANY_TAG
+                 ? record_indices['#'] + record_indices['&']
+                 : record_indices[type == FilterType::HASHTAG ? '#' : '&'];
+        return set;
+    }
+    QSet<int> result;
+    for (int i = 0; i < records_size; ++i) {
+        if (!set.contains(i)) result.insert(i);
+    }
+    return result;
+}
+
 void HashtagButton::highlight(const QChar& sign, bool enable) {
     auto _font = font();
     if (sign == '#') {
@@ -195,8 +210,9 @@ void HashtagButton::highlight(const QChar& sign, bool enable) {
     setFont(_font);
 }
 
-void HashtagButton::highlight(bool include, bool enable) {
+void HashtagButton::highlight(FilterType type, bool enable) {
     auto _font = font();
+    bool include = !(type & FilterType::EXCLUDE);
     if (include) {
         _font.setUnderline(enable);
     } else {

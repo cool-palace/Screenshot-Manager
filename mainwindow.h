@@ -49,32 +49,6 @@ class MainWindow : public QMainWindow
         LOGS,
         POLL_LOGS
     };
-//    enum FilterType {
-//        PUBLIC,
-//        HIDDEN,
-//        HASHTAG_INC,
-//        HASHTAG_EXC,
-//        AMPTAG_INC,
-//        AMPTAG_EXC,
-//        TEXT,
-//        TITLE
-//    };
-//    class Filter {
-//    public:
-//        Filter(const QChar& sign, bool include) : sign(sign), include(include) {}
-//        Filter() : sign('#'), include(true) {}
-//    private:
-//        QString text = QString();
-//        QChar sign;
-//        bool include;
-//    };
-    struct FilterSpecs {
-//        FilterType type;
-        QChar sign;
-        bool include;
-        FilterSpecs(const QChar& sign, bool include) : sign(sign), include(include) {}
-        FilterSpecs() : sign('#'), include(true) {}
-    };
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -120,10 +94,10 @@ public slots:
     void ok_button();
 
     void hashtag_event(const QChar&, const QString&);
-    void filter_event(bool);
-    void filter_event(const QString&);
-    void filter_event(const QChar&, const QString&, bool);
-    void filter_event(RecordTitleItem*, bool);
+    void filter_event(bool);                        // Public filters
+    void filter_event(const QString&);              // Text filters
+    void filter_event(FilterType, const QString&);  // Tag filters
+    void filter_event(RecordTitleItem*, bool);      // Title filters
     void lay_previews(int page = 1);
     void lay_titles();
     void clear_grid(QLayout* layout, bool hide = true);
@@ -154,7 +128,7 @@ private:
     QMap<QString, HashtagPreview*> selected_hashtags;
     QMap<int, RecordBase*> filtration_results;
     QList<RecordPreview*> selected_records;
-    QMap<QString, FilterSpecs> filters;
+    QMap<QString, FilterType> filters;
     QVector<Record> records;
     QList<RecordBase*> record_items;
     QList<RecordBase*> title_items;
@@ -211,7 +185,7 @@ private:
     void highlight_current_hashtags(bool);
     QString preprocessed(const QString&) const;
     void filter(const QSet<int>&);
-    void update_filters(const QChar&, const QString&, bool);
+    void update_filters(FilterType, const QString&);
     void apply_first_filter();
     void apply_filters();
     void show_filtering_results();

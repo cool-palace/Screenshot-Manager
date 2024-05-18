@@ -44,7 +44,7 @@ void MainWindow::get_hashtags() {
 
 void MainWindow::create_hashtag_button(const QString& text) {
     hashtags.insert(text, new HashtagButton(text));
-    connect(hashtags[text], SIGNAL(filterEvent(const QChar&, const QString&, bool)), this, SLOT(filter_event(const QChar&, const QString&, bool)));
+    connect(hashtags[text], SIGNAL(filterEvent(FilterType, const QString&)), this, SLOT(filter_event(FilterType, const QString&)));
     connect(hashtags[text], SIGNAL(hashtagEvent(const QChar&, const QString&)), this, SLOT(hashtag_event(const QChar&, const QString&)));
     connect(hashtags[text], &HashtagButton::selected, this, &MainWindow::change_selected_hashtag);
 }
@@ -63,10 +63,6 @@ void MainWindow::change_selected_hashtag(const QString& tag, HashtagPreview* pre
 
 void MainWindow::hashtag_event(const QChar& c, const QString& text) {
     if (current_mode == IDLE || current_mode == RELEASE_PREPARATION) return;
-//    if (!filters.isEmpty()) {
-//        filter_event(c, text, true);
-//        return;
-//    }
     QRegularExpression regex(QString("(.*)?") + c + text + "(\\s.*)?$");
     auto i = regex.globalMatch(ui->text->toPlainText());
     bool hashtag_is_in_text = i.hasNext();
@@ -262,12 +258,13 @@ QSet<int> MainWindow::checked_title_records() {
 }
 
 void MainWindow::filter_event(bool publ) {
+    FilterType type = publ ? FilterType::PUBLIC : FilterType::HIDDEN;
     // Public filters
-    if (filters.contains("public") && filters["public"].include != publ) {
+    if (filters.contains("public") && filters["public"] != type) {
         filters.remove("public");
         apply_filters();
     }
-    update_filters('p', "public", publ);
+    update_filters(type, "public");
     if (filters.empty()) {
         exit_filtering();
         return;
@@ -286,11 +283,11 @@ void MainWindow::filter_event(bool publ) {
 
 void MainWindow::filter_event(const QString& text) {
     // Filters for text search
-    if (filters.contains(text) && filters.find(text).value().sign == 't') {
+    if (filters.contains(text) && filters.find(text).value() == FilterType::TEXT) {
         return;
     }
     for (auto i = filters.begin(); i != filters.end(); i++) {
-        if (i.value().sign == 't') {
+        if (i.value() == FilterType::TEXT) {
             filters.erase(i);
             apply_filters();
             break;
@@ -300,7 +297,7 @@ void MainWindow::filter_event(const QString& text) {
         exit_filtering();
         return;
     }
-    update_filters('t', text, true);
+    update_filters(FilterType::TEXT, text);
     // Disabling all buttons
     for (auto button : hashtags) {
         button->setDisabled(true);
@@ -313,11 +310,16 @@ void MainWindow::filter_event(const QString& text) {
     show_status();
 }
 
-void MainWindow::filter_event(const QChar& sign, const QString& text, bool include) {
+void MainWindow::filter_event(FilterType type, const QString& text) {
     // Filters for hashtag
-    if (filters.contains(text) && (sign != filters[text].sign || include != filters[text].include)) {
-        QChar c = filters[text].sign;
-        QString tip = c == '#' ? "левую кнопку" : c == '&' ? "правую кнопку" : "колесико";
+    if (filters.contains(text) && (type != filters[text])) {
+        auto current_type = filters[text];
+        QChar c = current_type & FilterType::ANY_TAG
+                ? ' ' : current_type & FilterType::HASHTAG
+                  ? '#' : '&';
+        QString tip = current_type & FilterType::ANY_TAG
+                ? "колесико" : current_type & FilterType::HASHTAG
+                  ? "левую кнопку" : "правую кнопку";
         ui->statusBar->showMessage("Уже активен фильтр \"" + QString(c + text).simplified() + "\". "
                                    "Нажмите " + tip + " мыши, чтобы снять действующий фильтр.");
         return;
@@ -326,7 +328,7 @@ void MainWindow::filter_event(const QChar& sign, const QString& text, bool inclu
     for (auto button : hashtags) {
         button->setDisabled(true);
     }
-    update_filters(sign, text, include);
+    update_filters(type, text);
     // Checking and unchecking filter buttons
     hashtags[text]->setChecked(filters.contains(text));
     // Enabling necessary buttons
@@ -345,7 +347,7 @@ void MainWindow::filter_event(RecordTitleItem*, bool set_filter) {
     // Filters for titles
     ui->titles_set_filter->setEnabled(!set_filter);
     ui->titles_reset_filter->setEnabled(set_filter);
-    update_filters('s', "title", true);
+    update_filters(FilterType::TITLE, "title");
     if (filters.isEmpty()) {
         exit_filtering();
     }
@@ -362,36 +364,36 @@ void MainWindow::filter_event(RecordTitleItem*, bool set_filter) {
     show_status();
 }
 
-void MainWindow::update_filters(const QChar& sign, const QString& text, bool include) {
+void MainWindow::update_filters(FilterType type, const QString& text) {
     if (filters.isEmpty()) {
         // First filter handling
         ui->text->setDisabled(true);
         ui->slider->setDisabled(true);
-        filters.insert(text, FilterSpecs(sign, include));
-        if (!sign.isLetter()) hashtags[text]->highlight(include, true);
+        filters.insert(text, type);
+        if (type & FilterType::ANY_TAG) hashtags[text]->highlight(type, true);
         apply_first_filter();
     } else if (!filters.contains(text)) {
         // Adding new filter
-        filters.insert(text, FilterSpecs(sign, include));
-        if (!sign.isLetter()) {
+        filters.insert(text, type);
+        if (type & FilterType::ANY_TAG) {
             // Handling hashtags
-            filter(hashtags[text]->indices(sign, include));
-            hashtags[text]->highlight(include, true);
-        } else if (sign == 't') {
+            filter(hashtags[text]->indices(type));
+            hashtags[text]->highlight(type, true);
+        } else if (type == FilterType::TEXT) {
             // Handling word search
             filter(word_search(text));
-        } else if (sign == 'p') {
+        } else if (type & FilterType::PUBLIC) {
             // Handling public filter
-            filter(records_by_public(include));
-        } else if (sign == 's') {
+            filter(records_by_public(type == FilterType::PUBLIC));
+        } else if (type == FilterType::TITLE) {
             // Handling title filter
             filter(checked_title_records());
         }
     } else {
         // Removing existing filter
-        if (!filters[text].sign.isLetter()) {
+        if (type & FilterType::ANY_TAG) {
             // Reset hashtag button
-            hashtags[text]->highlight(include, false);
+            hashtags[text]->highlight(type, false);
             hashtags[text]->setEnabled(true);
         }
         filters.remove(text);
@@ -402,22 +404,23 @@ void MainWindow::update_filters(const QChar& sign, const QString& text, bool inc
 void MainWindow::apply_first_filter() {
     filtration_results.clear();
     auto i = filters.begin();
-    if (!i.value().sign.isLetter()) {
+    auto type = i.value();
+    if (type & FilterType::ANY_TAG) {
         // First hashtag search
-        for (int index : hashtags[i.key()]->indices(i.value().sign, i.value().include)) {
+        for (int index : hashtags[i.key()]->indices(type)) {
             filtration_results.insert(index, record_items[index]);
         }
-    } else if (i.value().sign == 't') {
+    } else if (type == FilterType::TEXT) {
         // Full-text search
         for (int index : word_search(i.key())) {
             filtration_results.insert(index, record_items[index]);
         }
-    } else if (i.value().sign == 'p') {
+    } else if (type & FilterType::PUBLIC) {
         // Public filter
-        for (int index : records_by_public(i.value().include)) {
+        for (int index : records_by_public(type == FilterType::PUBLIC)) {
             filtration_results.insert(index, record_items[index]);
         }
-    } else if (i.value().sign == 's') {
+    } else if (type == FilterType::TITLE) {
         // Title filter
         for (int index : checked_title_records()) {
             filtration_results.insert(index, record_items[index]);
@@ -430,15 +433,16 @@ void MainWindow::apply_filters() {
         if (i == filters.begin()) {
             apply_first_filter();
         } else {
-            if (!i.value().sign.isLetter()) {
-               filter(hashtags[i.key()]->indices(i.value().sign, i.value().include));
-            } else if (i.value().sign == 't') {
+            auto type = i.value();
+            if (type & FilterType::ANY_TAG) {
+               filter(hashtags[i.key()]->indices(type));
+            } else if (type == FilterType::TEXT) {
                 // Full-text search
                 filter(word_search(i.key()));
-            } else if (i.value().sign == 'p') {
+            } else if (type & FilterType::PUBLIC) {
                 // Public filter
-                filter(records_by_public(i.value().include));
-            } else if (i.value().sign == 's') {
+                filter(records_by_public(type == FilterType::PUBLIC));
+            } else if (type == FilterType::TITLE) {
                 // Title filter
                 filter(checked_title_records());
             }
@@ -459,8 +463,8 @@ void MainWindow::show_filtering_results() {
     }
     // Making sure the excluding filter buttons stay enabled
     for (const auto& hashtag : filters.keys()) {
-        if (!filters[hashtag].sign.isLetter()) {
-            hashtags[hashtag]->highlight(filters[hashtag].include, true);
+        if (filters[hashtag] & FilterType::ANY_TAG) {
+            hashtags[hashtag]->highlight(filters[hashtag], true);
         }
     }
 }
