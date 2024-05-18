@@ -257,6 +257,18 @@ QSet<int> MainWindow::checked_title_records() {
     return result;
 }
 
+QSet<int> MainWindow::records_by_date(int days) {
+    QSet<int> result;
+    int limit = QDateTime::currentDateTime().addDays(-days).toSecsSinceEpoch();
+    for (int i = 0; i < records.size(); ++i) {
+        int id = records[i].ids[0];
+        if (!logs.contains(id) || logs[id] < limit) {
+            result.insert(i);
+        }
+    }
+    return result;
+}
+
 void MainWindow::filter_event(bool publ) {
     FilterType type = publ ? FilterType::PUBLIC : FilterType::HIDDEN;
     // Public filters
@@ -284,6 +296,7 @@ void MainWindow::filter_event(bool publ) {
 void MainWindow::filter_event(const QString& text) {
     // Filters for text search
     if (filters.contains(text) && filters.find(text).value() == FilterType::TEXT) {
+        // Re-entering same text does nothing
         return;
     }
     for (auto i = filters.begin(); i != filters.end(); i++) {
@@ -294,7 +307,10 @@ void MainWindow::filter_event(const QString& text) {
         }
     }
     if (text.size() < 2) {
-        exit_filtering();
+        // Extremely short or empty queries are not searched
+        if (filters.empty()) {
+            exit_filtering();
+        } else show_filtering_results();
         return;
     }
     update_filters(FilterType::TEXT, text);
@@ -355,7 +371,24 @@ void MainWindow::filter_event(RecordTitleItem*, bool set_filter) {
     for (auto button : hashtags) {
         button->setDisabled(true);
     }
+    // Handling the filter not used in the config
+    if (filtration_results.isEmpty()) {
+        ui->back->setDisabled(true);
+        ui->ok->setDisabled(true);
+    } else show_filtering_results();
+    show_status();
+}
 
+void MainWindow::filter_event(int days) {
+    // Filters for date
+    update_filters(FilterType::DATE, "date");
+    if (filters.isEmpty()) {
+        exit_filtering();
+    }
+    // Disabling all buttons
+    for (auto button : hashtags) {
+        button->setDisabled(true);
+    }
     // Handling the filter not used in the config
     if (filtration_results.isEmpty()) {
         ui->back->setDisabled(true);
@@ -425,6 +458,11 @@ void MainWindow::apply_first_filter() {
         for (int index : checked_title_records()) {
             filtration_results.insert(index, record_items[index]);
         }
+    } else if (type == FilterType::DATE) {
+        // Date filter
+        for (int index : records_by_date(ui->last_used_days->value())) {
+            filtration_results.insert(index, record_items[index]);
+        }
     }
 }
 
@@ -445,6 +483,9 @@ void MainWindow::apply_filters() {
             } else if (type == FilterType::TITLE) {
                 // Title filter
                 filter(checked_title_records());
+            } else if (type == FilterType::DATE) {
+                // Date filter
+                filter(records_by_date(ui->last_used_days->value()));
             }
         }
     }

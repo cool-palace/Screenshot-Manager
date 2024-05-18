@@ -49,6 +49,12 @@ MainWindow::MainWindow(QWidget *parent)
         filter_event(ui->search_bar->text());
         lay_previews();
     });
+    connect(ui->word_search_button, &QPushButton::clicked, [this]() { filter_event(ui->search_bar->text()); });
+    connect(ui->word_search_reset, &QPushButton::clicked, [this]() {
+        ui->search_bar->clear();
+        filter_event(ui->search_bar->text());
+        lay_previews();
+    });
 //    connect(ui->refactor, &QAction::triggered, this, &MainWindow::refactor_configs);
 
     connect(ui->main_view, &QAction::triggered, [this]() { set_view(MAIN); });
@@ -84,6 +90,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->titles_uncheck_all, &QPushButton::clicked, [this]() { check_titles(false); });
     connect(ui->titles_set_filter, &QPushButton::clicked, [this]() { filter_event(nullptr, true); }); // Check type
     connect(ui->titles_reset_filter, &QPushButton::clicked, [this]() { filter_event(nullptr, false); }); // Check type
+
+    connect(ui->last_used_limit, &QCheckBox::stateChanged, [this](int state) {
+        bool checked = static_cast<bool>(state);
+        ui->last_used_days->setEnabled(checked);
+        filter_event(ui->last_used_days->value());
+    });
+    connect(ui->last_used_days, QOverload<int>::of(&QSpinBox::valueChanged), [this](int days){
+        filter_event(days);
+    });
 
     connect(ui->load_subs, &QAction::triggered, this, &MainWindow::load_subs);
     connect(ui->generate, &QPushButton::clicked, this, &MainWindow::generate_button);
@@ -289,6 +304,7 @@ void MainWindow::set_mode(Mode mode) {
         if (weekend) ui->quantity->setValue(6);
     }
         RecordPreview::records = &records;
+        ui->last_used_limit->setChecked(true);
         ui->generate->click();
         break;
     case DESCRIPTION_READING:
@@ -396,6 +412,7 @@ void MainWindow::set_enabled(bool enable) {
     ui->preview_view->setEnabled(current_mode == RELEASE_PREPARATION);
     ui->poll_preparation->setEnabled(current_mode == RELEASE_PREPARATION);
     ui->title_view->setEnabled(current_mode == JOURNAL_READING || current_mode == RELEASE_PREPARATION);
+    ui->last_used_limit->setEnabled(current_mode == RELEASE_PREPARATION);
 }
 
 void MainWindow::set_edited() {
