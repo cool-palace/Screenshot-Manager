@@ -96,8 +96,9 @@ MainWindow::MainWindow(QWidget *parent)
         ui->last_used_days->setEnabled(checked);
         filter_event(ui->last_used_days->value());
     });
-    connect(ui->last_used_days, QOverload<int>::of(&QSpinBox::valueChanged), [this](int days){
-        filter_event(days);
+    connect(ui->last_used_days, QOverload<int>::of(&QSpinBox::valueChanged), [this](int days) {
+        filter_event(days);     // First call removes last date filter
+        filter_event(days);     // Second call sets new date filter
     });
 
     connect(ui->load_subs, &QAction::triggered, this, &MainWindow::load_subs);

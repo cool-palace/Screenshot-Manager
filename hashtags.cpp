@@ -422,6 +422,9 @@ void MainWindow::update_filters(FilterType type, const QString& text) {
         } else if (type == FilterType::TITLE) {
             // Handling title filter
             filter(checked_title_records());
+        } else if (type == FilterType::DATE) {
+            // Handling date filter
+            filter(records_by_date(ui->last_used_days->value()));
         }
     } else {
         // Removing existing filter
