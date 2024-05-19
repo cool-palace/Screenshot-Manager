@@ -37,10 +37,16 @@ RecordBase::RecordBase(const Record& record, int index) :
     setLayout(&layout);
 }
 
-RecordItem::RecordItem(const Record& record, int index, const QString& path) :
+void RecordBase::load_thumbmnail() {
+    auto pic = QImage(path);
+    if (pic.isNull()) pic = QImage(path.chopped(3) + "jpg");
+    image.setPixmap(QPixmap::fromImage(pic.scaled(pic_size, Qt::KeepAspectRatio)));
+}
+
+RecordItem::RecordItem(const Record& record, int index, const QString& dir) :
     RecordBase(record, index)
 {
-    QtConcurrent::run(this, &RecordItem::load_thumbmnail, path + record.pics[0]);
+    path = dir + record.pics[0];
     box.setText("Кадров: " + QString().setNum(record.pics.size()));
     box.setMinimumHeight(15);
     box.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -86,9 +92,11 @@ void RecordItem::set_list_view() {
     show();
 }
 
-RecordTitleItem::RecordTitleItem(const QString& title, const QString& path, int size, int i) :
-    RecordBase(), size(size) {
-    QtConcurrent::run(this, &RecordTitleItem::load_thumbmnail, path);
+RecordTitleItem::RecordTitleItem(const QString& title, const QString& pic_path, int size, int i) :
+    RecordBase(), size(size)
+{
+    path = pic_path;
+    pic_size = QSize(192, 108);
     index = i;
     for (int i = index; i < index + size; ++i) {
         title_indices.insert(i);
@@ -126,18 +134,6 @@ void RecordBase::update_text(const QString& caption) {
         text.setText(match.captured(1) + '\n' + match.captured(2) + match.captured(3));
     } else text.setText(caption);
     image.setToolTip(caption);
-}
-
-void RecordItem::load_thumbmnail(const QString& picture) {
-    auto pic = QImage(picture);
-    if (pic.isNull()) pic = QImage(picture.chopped(3) + "jpg");
-    image.setPixmap(QPixmap::fromImage(pic.scaled(QSize(160, 90), Qt::KeepAspectRatio)));
-}
-
-void RecordTitleItem::load_thumbmnail(const QString& picture) {
-    auto pic = QImage(picture);
-    if (pic.isNull()) pic = QImage(picture.chopped(3) + "jpg");
-    image.setPixmap(QPixmap::fromImage(pic.scaled(QSize(192, 108), Qt::KeepAspectRatio)));
 }
 
 VK_Manager* RecordFrame::manager;

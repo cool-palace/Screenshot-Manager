@@ -32,6 +32,7 @@ public:
     virtual void set_gallery_view() = 0;
     virtual void set_list_view() = 0;
     int get_index() const { return index; };
+    virtual void load_thumbmnail();
 signals:
     void selected(int);
 protected:
@@ -42,6 +43,8 @@ protected:
     QLabel text;
     QLabel number;
     QGridLayout layout;
+    QString path;
+    QSize pic_size = QSize(160, 90);
 };
 
 class RecordItem : public RecordBase
@@ -61,7 +64,6 @@ public:
 private:
     int index;
     QCheckBox box;
-    void load_thumbmnail(const QString&);
 };
 
 class RecordTitleItem : public RecordBase
@@ -78,7 +80,6 @@ public:
 private:
     int size;
     QCheckBox box;
-    void load_thumbmnail(const QString&);
     QSet<int> title_indices;
 //    void mouseDoubleClickEvent(QMouseEvent*) override;
 //    void update_text(const QString&);
@@ -106,7 +107,6 @@ public:
     ~RecordPreview() override {}
     void set_gallery_view() override {};
     void set_list_view() override;
-//    static VK_Manager* manager;
     static QVector<Record>* records;
     static QMap<int, int>* logs;
     static QList<RecordPreview*>* selected_records;

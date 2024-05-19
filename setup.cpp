@@ -375,6 +375,7 @@ void MainWindow::lay_previews(int page) {
                             ? record_items
                             : filtration_results.values();
         for (int i = (page - 1) * pics_per_page ; i < qMin(items.size(), page * pics_per_page); ++i) {
+            QtConcurrent::run(items[i], &RecordBase::load_thumbmnail);
             if (current_view == LIST) {
                 items[i]->set_list_view();
                 ui->view_grid->addWidget(items[i], i, 0);
@@ -391,6 +392,7 @@ void MainWindow::lay_previews(int page) {
         int end_index = qMax(total_items - page * pics_per_page, 0);
         for (int i = start_index; i >= end_index && i >= 0; --i) {
             auto item = filtration_results[keys[i]];
+            QtConcurrent::run(item, &RecordBase::load_thumbmnail);
             if (current_view == LIST) {
                 item->set_list_view();
                 ui->view_grid->addWidget(item, (start_index - i), 0);
@@ -408,6 +410,7 @@ void MainWindow::lay_titles() {
 //    clear_view_grid();
     for (int i = 0 ; i < title_items.size(); ++i) {
 //        title_items[i]->set_gallery_view();
+        QtConcurrent::run(title_items[i], &RecordBase::load_thumbmnail);
         ui->title_grid->addWidget(title_items[i], i/9, i%9);
     }
 }
