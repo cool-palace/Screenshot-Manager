@@ -494,7 +494,9 @@ void MainWindow::apply_first_filter() {
     } else if (type == FilterType::LOGS) {
         // Logs watching filter, using unix time as keys for results
         for (auto id : logs.keys()) {
-            filtration_results.insert(logs[id], record_items[records_by_photo_ids[id]]);
+            if (records_by_photo_ids.contains(id)) {
+                filtration_results.insert(logs[id], record_items[records_by_photo_ids[id]]);
+            }
         }
     }
 }
