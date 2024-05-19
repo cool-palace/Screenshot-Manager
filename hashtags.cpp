@@ -398,6 +398,25 @@ void MainWindow::filter_event(int days) {
     show_status();
 }
 
+void MainWindow::filter_event(const QMap<int, int>&) {
+    // Filter for log watching
+    update_filters(FilterType::LOGS, "logs");
+    if (filters.isEmpty()) {
+        exit_filtering();
+        return;
+    }
+    // Disabling all buttons
+    for (auto button : hashtags) {
+        button->setDisabled(true);
+    }
+    // Handling the filter not used in the config
+    if (filtration_results.isEmpty()) {
+        ui->back->setDisabled(true);
+        ui->ok->setDisabled(true);
+    } else show_filtering_results();
+    show_status();
+}
+
 void MainWindow::update_filters(FilterType type, const QString& text) {
     if (filters.isEmpty()) {
         // First filter handling
@@ -425,6 +444,9 @@ void MainWindow::update_filters(FilterType type, const QString& text) {
         } else if (type == FilterType::DATE) {
             // Handling date filter
             filter(records_by_date(ui->last_used_days->value()));
+        } else if (type == FilterType::LOGS) {
+            // Handling log filter, overriding any others
+            apply_first_filter();
         }
     } else {
         // Removing existing filter
@@ -440,7 +462,9 @@ void MainWindow::update_filters(FilterType type, const QString& text) {
 
 void MainWindow::apply_first_filter() {
     filtration_results.clear();
-    auto i = filters.begin();
+    bool logs_mode_on = filters.contains("logs") && filters["logs"] == FilterType::LOGS;
+    // Log filters overrides any others
+    auto i = logs_mode_on ? filters.find("logs") : filters.begin();
     auto type = i.value();
     if (type & FilterType::ANY_TAG) {
         // First hashtag search
@@ -466,6 +490,11 @@ void MainWindow::apply_first_filter() {
         // Date filter
         for (int index : records_by_date(ui->last_used_days->value())) {
             filtration_results.insert(index, record_items[index]);
+        }
+    } else if (type == FilterType::LOGS) {
+        // Logs watching filter, using unix time as keys for results
+        for (auto id : logs.keys()) {
+            filtration_results.insert(logs[id], record_items[records_by_photo_ids[id]]);
         }
     }
 }

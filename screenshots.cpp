@@ -136,6 +136,10 @@ bool MainWindow::open_public_journal() {
         records.push_back(record);
     }
     read_logs();
+    auto reverse = json_file.value("reverse_index").toObject();
+    for (auto index : reverse.keys()) {
+        records_by_photo_ids[index.toInt()] = reverse[index].toInt();
+    }
     auto titles = json_file.value("title_map").toObject();
     for (auto index : titles.keys()) {
         title_map[index.toInt()] = titles[index].toString();

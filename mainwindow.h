@@ -87,6 +87,7 @@ public slots:
     void generate_button();
     void generate_release();
     void generate_poll();
+    void check_logs();
     void post_button();
     void skip_button();
     void add_button();
@@ -99,6 +100,7 @@ public slots:
     void filter_event(FilterType, const QString&);  // Tag filters
     void filter_event(RecordTitleItem*, bool);      // Title filters
     void filter_event(int);                         // Date filters
+    void filter_event(const QMap<int, int>&);       // Logs checking
     void lay_previews(int page = 1);
     void lay_titles();
     void clear_grid(QLayout* layout, bool hide = true);
@@ -133,6 +135,7 @@ private:
     QVector<Record> records;
     QList<RecordBase*> record_items;
     QList<RecordBase*> title_items;
+    QMap<int, int> records_by_photo_ids;
     QMap<int, int> logs;
     QMap<QString, int> poll_logs;
     int pic_index;

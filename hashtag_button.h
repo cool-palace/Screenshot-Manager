@@ -22,7 +22,7 @@ enum FilterType {
     DATE = 1 << 5,
     PUBLIC = 1 << 6,
     HIDDEN = PUBLIC | EXCLUDE,
-    NON_TAG = TEXT | TITLE | DATE | PUBLIC
+    LOGS = 1 << 7
 };
 
 class Hashtag {

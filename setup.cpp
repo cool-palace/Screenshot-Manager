@@ -100,6 +100,7 @@ MainWindow::MainWindow(QWidget *parent)
         filter_event(days);     // First call removes last date filter
         filter_event(days);     // Second call sets new date filter
     });
+    connect(ui->check_log, &QAction::triggered, this, &MainWindow::check_logs);
 
     connect(ui->load_subs, &QAction::triggered, this, &MainWindow::load_subs);
     connect(ui->generate, &QPushButton::clicked, this, &MainWindow::generate_button);
@@ -306,6 +307,7 @@ void MainWindow::set_mode(Mode mode) {
     }
         RecordPreview::records = &records;
         ui->last_used_limit->setChecked(true);
+        ui->generate->setEnabled(true);
         ui->generate->click();
         break;
     case DESCRIPTION_READING:
@@ -368,16 +370,34 @@ void MainWindow::lay_previews(int page) {
                             : record_items.size();
     ui->page_index->setMaximum(total_previews / pics_per_page + 1);
     clear_grid(ui->view_grid);
-    const auto& items = filtration_results.empty()
-                        ? record_items
-                        : filtration_results.values();
-    for (int i = (page - 1) * pics_per_page ; i < qMin(items.size(), page * pics_per_page); ++i) {
-        if (current_view == LIST) {
-            items[i]->set_list_view();
-            ui->view_grid->addWidget(items[i], i, 0);
-        } else {
-            items[i]->set_gallery_view();
-            ui->view_grid->addWidget(items[i], i/10, i%10);
+    if (!ui->check_log->isChecked()) {
+        const auto& items = filtration_results.empty()
+                            ? record_items
+                            : filtration_results.values();
+        for (int i = (page - 1) * pics_per_page ; i < qMin(items.size(), page * pics_per_page); ++i) {
+            if (current_view == LIST) {
+                items[i]->set_list_view();
+                ui->view_grid->addWidget(items[i], i, 0);
+            } else {
+                items[i]->set_gallery_view();
+                ui->view_grid->addWidget(items[i], i/10, i%10);
+            }
+        }
+    } else {
+        // Log checking
+        auto keys = filtration_results.keys();
+        int total_items = keys.size();
+        int start_index = total_items - (page - 1) * pics_per_page - 1;
+        int end_index = qMax(total_items - page * pics_per_page, 0);
+        for (int i = start_index; i >= end_index && i >= 0; --i) {
+            auto item = filtration_results[keys[i]];
+            if (current_view == LIST) {
+                item->set_list_view();
+                ui->view_grid->addWidget(item, (start_index - i), 0);
+            } else {
+                item->set_gallery_view();
+                ui->view_grid->addWidget(item, i/10, i%10);
+            }
         }
     }
 }
@@ -414,6 +434,8 @@ void MainWindow::set_enabled(bool enable) {
     ui->poll_preparation->setEnabled(current_mode == RELEASE_PREPARATION);
     ui->title_view->setEnabled(current_mode == JOURNAL_READING || current_mode == RELEASE_PREPARATION);
     ui->last_used_limit->setEnabled(current_mode == RELEASE_PREPARATION);
+    ui->check_log->setEnabled(current_mode == RELEASE_PREPARATION);
+    ui->post->setEnabled(current_mode == RELEASE_PREPARATION);
 }
 
 void MainWindow::set_edited() {

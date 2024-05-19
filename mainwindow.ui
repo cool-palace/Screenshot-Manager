@@ -21,7 +21,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="page_4">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -366,13 +366,16 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>482</width>
-             <height>309</height>
+             <width>754</width>
+             <height>459</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
             <item row="2" column="0">
              <widget class="QPushButton" name="post">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                 <horstretch>0</horstretch>
@@ -439,6 +442,9 @@ p, li { white-space: pre-wrap; }
               </item>
               <item row="4" column="0" colspan="4">
                <widget class="QPushButton" name="generate">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
@@ -797,6 +803,7 @@ p, li { white-space: pre-wrap; }
    <addaction name="save"/>
    <addaction name="private_switch"/>
    <addaction name="load_subs"/>
+   <addaction name="check_log"/>
    <addaction name="title_view"/>
    <addaction name="separator"/>
    <addaction name="main_view"/>
@@ -1142,6 +1149,21 @@ p, li { white-space: pre-wrap; }
   <action name="export_info_by_ids">
    <property name="text">
     <string>Экспорт информации по кадрам</string>
+   </property>
+  </action>
+  <action name="check_log">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-history-80.png</normaloff>:/images/icons8-history-80.png</iconset>
+   </property>
+   <property name="text">
+    <string>Логи публикаций</string>
    </property>
   </action>
  </widget>

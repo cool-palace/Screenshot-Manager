@@ -317,6 +317,12 @@ void MainWindow::generate_poll() {
     }
 }
 
+void MainWindow::check_logs() {
+    filter_event(logs);
+    lay_previews();
+    set_view(LIST);
+}
+
 void MainWindow::create_hashtag_preview_connections(const QString& tag) {
     connect(selected_hashtags[tag], &HashtagPreview::reroll_request, [this](const QString& old_tag){
         // Saving the pointer to the hashtag preview to replace
