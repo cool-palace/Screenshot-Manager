@@ -530,11 +530,13 @@ void MainWindow::show_filtering_results() {
     ui->slider->setValue(filtration_results.begin().key());
     ui->ok->setEnabled(filtration_results.size() > 1);
     ui->back->setDisabled(true);
+    QSet<int> filtration_keys = filtration_results.keys().toSet();
     // Enabling buttons for possible non-zero result filters
-    for (int index : filtration_results.keys()) {
+    for (int index : filtration_keys) {
         for (const auto& tag : hashtags_by_index[index]) {
             auto hashtag = tag.right(tag.size() - 1);
             hashtags[hashtag]->setEnabled(true);
+            QtConcurrent::run(hashtags[hashtag], &HashtagButton::show_filtered_count, filtration_keys);
         }
     }
     // Making sure the excluding filter buttons stay enabled
@@ -551,6 +553,7 @@ void MainWindow::exit_filtering() {
     for (auto button : hashtags) {
         button->setEnabled(true);
         button->setChecked(false);
+        button->show_count();
     }
     ui->ok->setEnabled(pic_index < records.size() - 1);
     ui->back->setEnabled(pic_index > 0);

@@ -498,6 +498,7 @@ int MainWindow::random_index() const {
     // Getting random index from filtered records only
     auto filtered_indices = filtration_results.keys();
     int random_pre_index = QRandomGenerator::global()->bounded(filtered_indices.size());
+    qDebug() << filtered_indices.size() << random_pre_index << filtered_indices[random_pre_index];
     return filtered_indices[random_pre_index];
 }
 

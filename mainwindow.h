@@ -144,7 +144,6 @@ private:
     bool record_edited = false;
     bool config_edited = false;
     QSet<QPair<int, int>> edited_ranges;
-    QSet<QChar> sign_set = {'#', '&', ' ', 't', 'p'};
     QSet<int> all_records;
     QStringList subs;
     QMutex status_mutex;

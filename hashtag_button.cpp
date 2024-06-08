@@ -151,12 +151,19 @@ void HashtagButton::mouseDoubleClickEvent(QMouseEvent* e) {
 }
 
 void HashtagButton::show_count() {
+    int count = get_count();
+    setText(count ? text + ' ' + QString().setNum(count) : text);
+    setFlat(count);
+}
+
+void HashtagButton::show_filtered_count(const QSet<int>& results) {
+    QSet<int> intersection = all_indices().intersect(results);
+    int count = intersection.size();
     setText(count ? text + ' ' + QString().setNum(count) : text);
     setFlat(count);
 }
 
 void HashtagButton::reset() {
-    count = 0;
     record_indices.clear();
     setChecked(false);
     setEnabled(true);
@@ -165,12 +172,10 @@ void HashtagButton::reset() {
 
 void HashtagButton::add_index(const QChar& sign, int index) {
     record_indices[sign].insert(index);
-    ++count;
 }
 
 void HashtagButton::remove_index(const QChar& sign, int index) {
     record_indices[sign].remove(index);
-    --count;
 }
 
 QSet<int> HashtagButton::indices(FilterType type) const {

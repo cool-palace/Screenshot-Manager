@@ -22,7 +22,8 @@ enum FilterType {
     DATE = 1 << 5,
     PUBLIC = 1 << 6,
     HIDDEN = PUBLIC | EXCLUDE,
-    LOGS = 1 << 7
+    SIZE = 1 << 7,
+    LOGS = 1 << 8,
 };
 
 class Hashtag {
@@ -95,11 +96,13 @@ public:
     void highlight(FilterType, bool);
     void highlight_unregistered();
     void show_count();
-    int get_count() const { return count; }
+    void show_filtered_count(const QSet<int>&);
+    int get_count() const { return all_indices().size(); }
     void reset();
     void add_index(const QChar&, int);
     void remove_index(const QChar&, int);
     QSet<int> indices(FilterType) const;
+    QSet<int> all_indices() const { return (record_indices['#'] + record_indices['&']); }
     static void update_on_records(int);
     static void set_preview_to_change(HashtagPreview*);
     static HashtagPreview* current_preview_to_change();
@@ -109,7 +112,6 @@ signals:
     void selected(const QString&, HashtagPreview*);
 private:
     QString text;
-    int count = 0;
     QMap<QChar, QSet<int>> record_indices;
     static int records_size;
     static HashtagPreview* preview_to_change;
