@@ -536,7 +536,13 @@ void MainWindow::show_filtering_results() {
         for (const auto& tag : hashtags_by_index[index]) {
             auto hashtag = tag.right(tag.size() - 1);
             hashtags[hashtag]->setEnabled(true);
-            QtConcurrent::run(hashtags[hashtag], &HashtagButton::show_filtered_count, filtration_keys);
+        }
+    }
+    // Updating numbers on enabled buttons
+    for (auto hashtag : hashtags.keys()) {
+        if (hashtags[hashtag]->isEnabled()) {
+            hashtags[hashtag]->show_filtered_count(filtration_keys);
+//            QtConcurrent::run(hashtags[hashtag], &HashtagButton::show_filtered_count, filtration_keys);
         }
     }
     // Making sure the excluding filter buttons stay enabled
