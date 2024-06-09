@@ -22,7 +22,8 @@ enum FilterType {
     DATE = 1 << 5,
     PUBLIC = 1 << 6,
     HIDDEN = PUBLIC | EXCLUDE,
-    SIZE = 1 << 7,
+    SINGLE = 1 << 7,
+    MULTIPLE = SINGLE | EXCLUDE,
     LOGS = 1 << 8,
 };
 

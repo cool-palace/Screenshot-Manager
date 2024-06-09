@@ -101,6 +101,7 @@ public slots:
     void filter_event(RecordTitleItem*, bool);      // Title filters
     void filter_event(int);                         // Date filters
     void filter_event(const QMap<int, int>&);       // Logs checking
+    void filter_event(FilterType);                  // Size filters
     void lay_previews(int page = 1);
     void lay_titles();
     void clear_grid(QLayout* layout, bool hide = true);
@@ -197,6 +198,7 @@ private:
     QSet<int> records_by_public(bool);
     QSet<int> checked_title_records();
     QSet<int> records_by_date(int);
+    QSet<int> records_by_size(FilterType);
     void convert_hashtags();
     void read_poll_logs();
     void update_poll_logs();

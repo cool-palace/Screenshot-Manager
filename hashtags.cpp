@@ -269,6 +269,17 @@ QSet<int> MainWindow::records_by_date(int days) {
     return result;
 }
 
+QSet<int> MainWindow::records_by_size(FilterType type) {
+    if (!(type & SINGLE)) return QSet<int>();
+    QSet<int> result;
+    for (int i = 0; i < records.size(); ++i) {
+        if ((type == SINGLE && records[i].pics.size() == 1) || (type == MULTIPLE && records[i].pics.size() > 1)) {
+            result.insert(i);
+        }
+    }
+    return result;
+}
+
 void MainWindow::filter_event(bool publ) {
     FilterType type = publ ? FilterType::PUBLIC : FilterType::HIDDEN;
     // Public filters
@@ -417,6 +428,25 @@ void MainWindow::filter_event(const QMap<int, int>&) {
     show_status();
 }
 
+void MainWindow::filter_event(FilterType type) {
+    // Filter for record size
+    update_filters(type, "size");
+    if (filters.isEmpty()) {
+        exit_filtering();
+        return;
+    }
+    // Disabling all buttons
+    for (auto button : hashtags) {
+        button->setDisabled(true);
+    }
+    // Handling the filter not used in the config
+    if (filtration_results.isEmpty()) {
+        ui->back->setDisabled(true);
+        ui->ok->setDisabled(true);
+    } else show_filtering_results();
+    show_status();
+}
+
 void MainWindow::update_filters(FilterType type, const QString& text) {
     if (filters.isEmpty()) {
         // First filter handling
@@ -444,6 +474,9 @@ void MainWindow::update_filters(FilterType type, const QString& text) {
         } else if (type == FilterType::DATE) {
             // Handling date filter
             filter(records_by_date(ui->last_used_days->value()));
+        } else if (type & FilterType::SINGLE) {
+            // Handling size filter
+            filter(records_by_size(type));
         } else if (type == FilterType::LOGS) {
             // Handling log filter, overriding any others
             apply_first_filter();
@@ -489,6 +522,11 @@ void MainWindow::apply_first_filter() {
     } else if (type == FilterType::DATE) {
         // Date filter
         for (int index : records_by_date(ui->last_used_days->value())) {
+            filtration_results.insert(index, record_items[index]);
+        }
+    } else if (type & FilterType::SINGLE) {
+        // Size filter
+        for (int index : records_by_size(type)) {
             filtration_results.insert(index, record_items[index]);
         }
     } else if (type == FilterType::LOGS) {
@@ -542,7 +580,8 @@ void MainWindow::show_filtering_results() {
     for (auto hashtag : hashtags.keys()) {
         if (hashtags[hashtag]->isEnabled()) {
             hashtags[hashtag]->show_filtered_count(filtration_keys);
-//            QtConcurrent::run(hashtags[hashtag], &HashtagButton::show_filtered_count, filtration_keys);
+            // Concurrent variant:
+            // QtConcurrent::run(hashtags[hashtag], &HashtagButton::show_filtered_count, filtration_keys);
         }
     }
     // Making sure the excluding filter buttons stay enabled

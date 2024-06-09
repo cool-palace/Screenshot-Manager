@@ -102,6 +102,23 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(ui->check_log, &QAction::triggered, this, &MainWindow::check_logs);
 
+    connect(ui->size_limit, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+        // Removing existing size filter
+        if (filters.contains("size")) {
+            filter_event(filters["size"]);
+        }
+        switch (index) {
+        case 1:
+            filter_event(SINGLE);
+            break;
+        case 2:
+            filter_event(MULTIPLE);
+            break;
+        default:
+            break;
+        }
+    });
+
     connect(ui->load_subs, &QAction::triggered, this, &MainWindow::load_subs);
     connect(ui->generate, &QPushButton::clicked, this, &MainWindow::generate_button);
     connect(ui->post, &QPushButton::clicked, this, &MainWindow::post_button);
