@@ -223,7 +223,7 @@ bool MainWindow::initialize() {
     QString public_id = json_file.value("public_id").toString();
     manager = new VK_Manager(access_token, group_id, public_id);
     RecordFrame::manager = manager;
-    manager->get_albums();
+//    manager->get_albums();
     load_special_titles();
     if (!QDir(locations[SCREENSHOTS]).exists() || !QDir(locations[JOURNALS]).exists()) {
         ui->statusBar->showMessage("Указаны несуществующие директории. Перепроверьте конфигурационный файл.");
@@ -392,7 +392,7 @@ void MainWindow::lay_previews(int page) {
                             ? record_items
                             : filtration_results.values();
         for (int i = (page - 1) * pics_per_page ; i < qMin(items.size(), page * pics_per_page); ++i) {
-            QtConcurrent::run(items[i], &RecordBase::load_thumbmnail);
+            if (current_mode != TEXT_READING) QtConcurrent::run(items[i], &RecordBase::load_thumbmnail);
             if (current_view == LIST) {
                 items[i]->set_list_view();
                 ui->view_grid->addWidget(items[i], i, 0);
