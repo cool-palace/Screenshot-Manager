@@ -290,7 +290,7 @@ void MainWindow::set_mode(Mode mode) {
         ui->add->setText("Листать");
         ui->skip->setText("Сохранить");
         ui->slider->setMaximum(records.size() - 1);
-        ui->page_index->setMaximum(records.size() / pics_per_page + 1);
+        ui->page_index->setMaximum(records.size() / ui->pics_per_page->value() + 1);
         display(0);
         load_hashtag_info();
         for (auto record : record_items) {
@@ -338,7 +338,7 @@ void MainWindow::set_mode(Mode mode) {
         ui->slider->setMaximum(records.size() - 1);
 //        qDebug() << ui->stackedWidget->height();
 //        ui->text->setGeometry(0, 0, ui->text->width(), ui->back->height());
-//        ui->page_index->setMaximum(records.size() / pics_per_page + 1);
+//        ui->page_index->setMaximum(records.size() / ui->pics_per_page->value() + 1);
         ui->offline->setChecked(true);
         clear_grid(ui->tag_grid);
         display(0);
@@ -387,6 +387,7 @@ void MainWindow::set_view(View view) {
 
 void MainWindow::lay_previews(int page) {
     if (current_view == MAIN || current_mode == IDLE) return;
+    int pics_per_page = ui->pics_per_page->value();
     int total_previews = current_mode == JOURNAL_READING
                             ? (filtration_results.isEmpty()
                                 ? records.size()

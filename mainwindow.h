@@ -112,7 +112,6 @@ signals:
 private:
     Ui::MainWindow *ui;
     VK_Manager* manager;
-    const int pics_per_page = 70;
     Mode current_mode = IDLE;
     View current_view = MAIN;
     QMap<Directories, QString> locations;

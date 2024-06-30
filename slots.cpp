@@ -241,7 +241,7 @@ void MainWindow::load_subs() {
         ui->slider->setEnabled(true);
         ui->slider->setMaximum(subs.size() - 1);
         ui->slider->setValue(quote_index);
-        ui->page_index->setMaximum(subs.size() / pics_per_page + 1);
+        ui->page_index->setMaximum(subs.size() / ui->pics_per_page->value() + 1);
         QMap<QString, int> lines;
         for (int i = 0; i < subs.size(); ++i) {
             lines.insert(subs[i], i);
