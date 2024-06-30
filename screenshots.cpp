@@ -106,6 +106,10 @@ bool MainWindow::open_title_journal(bool all) {
             captions_for_ids[id] = title;
         }
     }
+    qDebug() << edited_ranges;
+    for (auto item : edited_ranges) {
+        qDebug() << item.first << title_map[item.first];
+    }
     return !records.empty();
 }
 
@@ -169,6 +173,8 @@ void MainWindow::read_title_journal(const QJsonObject& json_file) {
     auto title = json_file.value("title").toString();
     dir = QDir(locations[SCREENSHOTS] + title);
     title_map[records.size()] = title;
+    int album_id = json_file.value("album_id").toInt();
+    album_ids[title] = album_id;
     auto records_array = json_file.value("screens").toArray();
     for (QJsonValueRef r : records_array) {
         Record record;
