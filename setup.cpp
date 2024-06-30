@@ -38,6 +38,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->export_info_by_ids, &QAction::triggered, this, &MainWindow::export_info_by_ids);
 
     connect(ui->add_caption, &QAction::triggered, [this]() {
+        for (int i = 0; i < records.size(); ++i) {
+            QString title = title_captions[title_name(i)];
+            for (int id : records[i].ids) {
+                captions_for_ids[id] = title;
+            }
+        }
         add_caption();
     });
 
@@ -231,7 +237,6 @@ bool MainWindow::initialize() {
     manager = new VK_Manager(access_token, group_id, public_id);
     RecordFrame::manager = manager;
     manager->get_albums();
-    load_special_titles();
     if (!QDir(locations[SCREENSHOTS]).exists() || !QDir(locations[JOURNALS]).exists()) {
         ui->statusBar->showMessage("Указаны несуществующие директории. Перепроверьте конфигурационный файл.");
         return false;
@@ -556,13 +561,6 @@ bool MainWindow::save_json(const QJsonObject& object, QFile& file) const {
     out << QJsonDocument(object).toJson();
     file.close();
     return true;
-}
-
-void MainWindow::load_special_titles() {
-    auto json_file = json_object(locations[JOURNALS] + "\\result\\titles.json");
-    for (auto key : json_file.keys()) {
-        special_titles[key] = json_file.value(key).toString();
-    }
 }
 
 void MainWindow::add_caption(const QString& captcha_sid, const QString& captcha_key) {

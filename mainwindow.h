@@ -118,7 +118,7 @@ private:
     QMap<QString, int> album_ids;
     QDir dir;
     QMap<int, QString> title_map;
-    QMap<QString, QString> special_titles;
+    QMap<QString, QString> title_captions;
     QStringList pics;                               // JC, TR
     QStringList quotes;                             // JC, TR
     QVector<int> photo_ids;                         // JC
@@ -169,7 +169,6 @@ private:
     QPair<int, int> title_range(int);
     void save_changes();
     int random_index() const;
-    void load_special_titles();
     void add_caption(const QString& captcha_sid = "", const QString& captcha_key = "");
     void check_titles(bool);
 

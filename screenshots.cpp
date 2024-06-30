@@ -97,15 +97,6 @@ bool MainWindow::open_title_journal(bool all) {
         }
         read_title_journal(json_file);
     }
-    for (int i = 0; i < records.size(); ++i) {
-        QString title = title_name(i);
-        if (special_titles.contains(title)) {
-            title = special_titles[title];
-        }
-        for (int id : records[i].ids) {
-            captions_for_ids[id] = title;
-        }
-    }
     qDebug() << edited_ranges;
     for (auto item : edited_ranges) {
         qDebug() << item.first << title_map[item.first];
@@ -175,6 +166,8 @@ void MainWindow::read_title_journal(const QJsonObject& json_file) {
     title_map[records.size()] = title;
     int album_id = json_file.value("album_id").toInt();
     album_ids[title] = album_id;
+    auto title_caption = json_file.value("title_caption").toString();
+    title_captions[title] = title_caption;
     auto records_array = json_file.value("screens").toArray();
     for (QJsonValueRef r : records_array) {
         Record record;
@@ -214,6 +207,7 @@ void MainWindow::save_title_journal(const QString& title) {
     QFile file(locations[JOURNALS] + title + ".json");
     QJsonObject object;
     object["title"] = title;
+    object["title_caption"] = title;
     object["album_id"] = album_ids[title];
     object["screens"] = record_array;
     auto message = save_json(object, file)
@@ -231,6 +225,7 @@ void MainWindow::save_title_journal(int start, int end) {
     QFile file(locations[JOURNALS] + title + ".json");
     QJsonObject object;
     object["title"] = title;
+    object["title_caption"] = title_captions[title];
     object["album_id"] = album_ids[title];
     object["screens"] = record_array;
     auto message = save_json(object, file)
