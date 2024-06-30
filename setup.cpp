@@ -469,6 +469,15 @@ void MainWindow::set_enabled(bool enable) {
     ui->last_used_limit->setEnabled(current_mode == RELEASE_PREPARATION);
     ui->check_log->setEnabled(current_mode == RELEASE_PREPARATION);
     ui->post->setEnabled(current_mode == RELEASE_PREPARATION);
+    if (current_mode == RELEASE_PREPARATION) {
+        ui->back->hide();
+        ui->text->hide();
+        ui->ok->hide();
+    } else {
+        ui->back->show();
+        ui->text->show();
+        ui->ok->show();
+    }
 }
 
 void MainWindow::set_edited() {
