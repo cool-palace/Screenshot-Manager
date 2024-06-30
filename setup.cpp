@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->descriptions_reading, &QAction::triggered, this, &MainWindow::descriptions_reading);
     connect(ui->release_preparation, &QAction::triggered, this, &MainWindow::release_preparation);
     connect(ui->poll_preparation, &QAction::triggered, this, &MainWindow::poll_preparation);
+    connect(ui->initialization, &QAction::triggered, this, &MainWindow::initialize);
 
     connect(ui->save, &QAction::triggered, this, &MainWindow::save_changes);
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_journals);
@@ -208,6 +209,12 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 bool MainWindow::initialize() {
     auto json_file = json_object("config.json");
+    if (json_file.empty()) {
+        auto config_file = QFileDialog::getOpenFileName(nullptr, "Открыть конфигурационный файл",
+                                                                 locations[JOURNALS],
+                                                                 "Файлы (*.json)");
+        json_file = json_object(config_file);
+    }
     if (!json_file.contains("screenshots") /*|| !json_file.contains("docs")*/ || !json_file.contains("configs")) {
         ui->statusBar->showMessage("Неверный формат конфигурационного файла.");
         return false;
@@ -223,7 +230,7 @@ bool MainWindow::initialize() {
     QString public_id = json_file.value("public_id").toString();
     manager = new VK_Manager(access_token, group_id, public_id);
     RecordFrame::manager = manager;
-//    manager->get_albums();
+    manager->get_albums();
     load_special_titles();
     if (!QDir(locations[SCREENSHOTS]).exists() || !QDir(locations[JOURNALS]).exists()) {
         ui->statusBar->showMessage("Указаны несуществующие директории. Перепроверьте конфигурационный файл.");

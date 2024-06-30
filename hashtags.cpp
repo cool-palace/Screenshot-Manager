@@ -3,42 +3,15 @@
 #include <QDebug>
 
 void MainWindow::get_hashtags() {
-//    QFile file(locations[CONFIGS] + "hashtags.json");
-//    if (!file.open(QIODevice::ReadOnly)) {
-//        ui->statusBar->showMessage("Не удалось открыть файл с хэштегами.");
-//    }
     for (int i = 0; i < 14; ++i) {
         ranked_hashtags.append(QStringList());
     }
-    hashtags_json = json_object(locations[JOURNALS] + "result\\hashtags.json");
-
+    QJsonObject hashtags_json = json_object(locations[JOURNALS] + "result\\hashtags.json");
     for (const auto& key : hashtags_json.keys()) {
-//        qDebug() << hashtags_json[key].toObject();
         full_hashtags_map[key] = Hashtag(key, hashtags_json[key].toObject());
-//        if (full_hashtags.back().last_poll().toSecsSinceEpoch() > 0) {
-//            poll_logs[key] = full_hashtags.back().last_poll().toSecsSinceEpoch();
-//        }
         ranked_hashtags[hashtags_json[key].toObject()["rank"].toInt()].append(key);
         create_hashtag_button(key);
     }
-//    QTextStream in(&file);
-//    in.setCodec("UTF-8");
-//    for (int i = 0; i < 10; ++i) {
-//        ranked_hashtags.append(QStringList());
-//    }
-//    while (!in.atEnd()) {
-//        auto line = in.readLine().split(' ');
-//        int rank = line.size() > 1 ? line[1].toInt() : 0;
-//        auto text = line.first();
-//        if (rank >= ranked_hashtags.size()) {
-//            for (int i = ranked_hashtags.size(); i <= rank; ++i) {
-//                ranked_hashtags.append(QStringList());
-//            }
-//        }
-//        ranked_hashtags[rank].append(text);
-//        create_hashtag_button(text);
-//    }
-//    file.close();
     update_hashtag_grid();
 }
 

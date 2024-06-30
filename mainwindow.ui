@@ -21,7 +21,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page_4">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -40,7 +40,7 @@
         <item>
          <widget class="QStackedWidget" name="stackedWidget">
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="page">
            <layout class="QGridLayout" name="gridLayout">
@@ -268,8 +268,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>59</width>
-             <height>24</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -366,8 +366,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>879</width>
-             <height>459</height>
+             <width>947</width>
+             <height>266</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -734,8 +734,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>59</width>
-             <height>24</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">
@@ -765,6 +765,7 @@ p, li { white-space: pre-wrap; }
     <property name="title">
      <string>Запуск</string>
     </property>
+    <addaction name="initialization"/>
     <addaction name="text_reading"/>
     <addaction name="config_creation"/>
     <addaction name="config_reading"/>
@@ -908,7 +909,7 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Работа оффлайн</string>
@@ -1209,6 +1210,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Логи публикаций</string>
+   </property>
+  </action>
+  <action name="initialization">
+   <property name="text">
+    <string>Инициализация</string>
    </property>
   </action>
  </widget>

@@ -143,14 +143,11 @@ private:
     int quote_index;
     int pic_end_index = 0;
     bool record_edited = false;
-    bool config_edited = false;
     QSet<QPair<int, int>> edited_ranges;
-    QSet<int> all_records;
     QStringList subs;
     QMutex status_mutex;
     int post_counter = 0;
     QMap<int, QString> captions_for_ids;
-    QJsonObject hashtags_json;
 
     // Setup functions
     bool initialize();
@@ -199,7 +196,6 @@ private:
     QSet<int> checked_title_records();
     QSet<int> records_by_date(int);
     QSet<int> records_by_size(FilterType);
-    void convert_hashtags();
     void read_poll_logs();
     void update_poll_logs();
     void update_hashtag_file();

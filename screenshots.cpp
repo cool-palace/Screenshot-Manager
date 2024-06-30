@@ -22,7 +22,7 @@ bool MainWindow::read_quote_file(QFile& file) {
 bool MainWindow::update_quote_file(const QString& title) {
     QFile file(locations[QUOTES] + title + ".txt");
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        ui->statusBar->showMessage("Не удалось открыть файл с цитатами.");
+        ui->statusBar->showMessage(QString("Не удалось открыть файл с цитатами: %1").arg(file.fileName()));
         return false;
     }
     QTextStream out(&file);
@@ -37,7 +37,7 @@ bool MainWindow::update_quote_file(const QString& title) {
 bool MainWindow::update_quote_file(int start, int end) {
     QFile file(locations[QUOTES] + title_map.value(start) + ".txt");
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        ui->statusBar->showMessage("Не удалось открыть файл с цитатами.");
+        ui->statusBar->showMessage(QString("Не удалось открыть файл с цитатами: %1").arg(file.fileName()));
         return false;
     }
     QTextStream out(&file);
@@ -74,7 +74,7 @@ bool MainWindow::open_title_journal(bool all) {
     clear_all();
     QStringList filepaths;
     if (!all) {
-        filepaths = QFileDialog::getOpenFileNames(nullptr, "Открыть конфигурационный файл",
+        filepaths = QFileDialog::getOpenFileNames(nullptr, "Открыть журнал скриншотов",
                                                            locations[JOURNALS],
                                                            "Файлы (*.json)");
     } else {
@@ -211,8 +211,8 @@ void MainWindow::save_title_journal(const QString& title) {
     object["album_id"] = album_ids[title];
     object["screens"] = record_array;
     auto message = save_json(object, file)
-            ? "Конфигурационный файл сохранён."
-            : "Не удалось сохранить файл.";
+            ? "Журнал скриншотов сохранён."
+            : QString("Не удалось сохранить файл: %1").arg(file.fileName());
     ui->statusBar->showMessage(message);
 }
 
@@ -228,8 +228,8 @@ void MainWindow::save_title_journal(int start, int end) {
     object["album_id"] = album_ids[title];
     object["screens"] = record_array;
     auto message = save_json(object, file)
-            ? "Конфигурационный файл сохранён."
-            : "Не удалось сохранить файл.";
+            ? "Журнал скриншотов сохранён."
+            : QString("Не удалось сохранить файл: %1").arg(file.fileName());
     ui->statusBar->showMessage(message);
 }
 
