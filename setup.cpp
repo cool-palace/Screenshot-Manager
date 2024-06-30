@@ -237,7 +237,6 @@ bool MainWindow::initialize() {
     QString public_id = json_file.value("public_id").toString();
     manager = new VK_Manager(access_token, group_id, public_id);
     RecordFrame::manager = manager;
-    manager->get_albums();
     if (!QDir(locations[SCREENSHOTS]).exists() || !QDir(locations[JOURNALS]).exists()) {
         ui->statusBar->showMessage("Указаны несуществующие директории. Перепроверьте конфигурационный файл.");
         return false;

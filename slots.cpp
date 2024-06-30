@@ -4,11 +4,10 @@
 
 void MainWindow::set_albums(const QMap<QString, int>& ids) {
     album_ids = ids;
-    qDebug() << ids;
     if (album_ids.empty()) {
         ui->offline->setChecked(true);
         ui->statusBar->showMessage("Не удалось загрузить альбомы. Попробуйте авторизироваться вручную или продолжите работу оффлайн.");
-    }
+    } else manager->get_photo_ids(album_ids[title_name()]);
 }
 
 void MainWindow::set_photo_ids(const QVector<int>& ids, const QStringList& urls) {
@@ -114,7 +113,7 @@ void MainWindow::journal_creation() {
         clear_all();
         return;
     }
-    manager->get_photo_ids(album_ids[dir.dirName()]);
+    manager->get_albums();
 }
 
 void MainWindow::journal_reading() {
