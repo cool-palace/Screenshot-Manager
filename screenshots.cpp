@@ -162,7 +162,6 @@ bool MainWindow::open_public_journal() {
 
 void MainWindow::read_title_journal(const QJsonObject& json_file) {
     auto title = json_file.value("title").toString();
-    dir = QDir(locations[SCREENSHOTS] + title);
     title_map[records.size()] = title;
     int album_id = json_file.value("album_id").toInt();
     album_ids[title] = album_id;
@@ -290,7 +289,7 @@ bool MainWindow::find_lines_by_timestamps(const QMultiMap<QString, QTime>& times
 //    }
 //    auto filenames = first + second;
     for (const auto& filename : timestamps_for_filenames.uniqueKeys()) {
-        auto path = QDir::toNativeSeparators(locations[SUBS]) + dir.dirName() + QDir::separator() + filename + ".ass";
+        auto path = QDir::toNativeSeparators(locations[SUBS]) + title_name() + QDir::separator() + filename + ".ass";
         QFile file(path);
         if (!file.open(QIODevice::ReadOnly)) {
             QString message = "Ошибка при чтении субтитров: не удалось открыть файл " + file.fileName();
@@ -337,7 +336,7 @@ bool MainWindow::get_subs_for_pic() {
             filename = match.captured(1);
         } else return false;
     }
-    auto path = QDir::toNativeSeparators(locations[SUBS]) + QDir::separator() + dir.dirName() + QDir::separator() + filename + ".ass";
+    auto path = QDir::toNativeSeparators(locations[SUBS]) + QDir::separator() + title_name() + QDir::separator() + filename + ".ass";
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
         QString message = "Ошибка при чтении субтитров: не удалось открыть файл " + file.fileName();
@@ -516,9 +515,13 @@ void MainWindow::draw(int index = 0) {
     if (!ui->offline->isChecked() && current_mode != TEXT_READING) {
         manager->get_image(links[index]);
     } else {
-        auto dir_path = current_mode != DESCRIPTION_READING ? dir.path() + QDir::separator() : path(index);
+        auto dir_path = current_mode != DESCRIPTION_READING ? locations[SCREENSHOTS] + QDir::separator() + title_name() + QDir::separator() : path(index);
         qDebug() << dir_path + pics[index];
         auto image = QImage(dir_path + pics[index]);
+        if (image.isNull()) {
+            // Checking the reserve screenshot folder for text reading
+            image = QImage(locations[SCREENSHOTS_NEW] + title_name() + QDir::separator());
+        }
         ui->image->setPixmap(scaled(image));
     }
     bool reached_end = index + 1 >= pics.size();

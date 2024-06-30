@@ -44,6 +44,7 @@ class MainWindow : public QMainWindow
     enum Directories {
         JOURNALS,
         SCREENSHOTS,
+        SCREENSHOTS_NEW,
         QUOTES,
         SUBS,
         LOGS,
@@ -165,7 +166,7 @@ private:
     QString filtration_indices() const;
     QString filtration_message(int) const;
     QString path(int index);
-    QString title_name(int);
+    QString title_name(int index = 0);
     QPair<int, int> title_range(int);
     void save_changes();
     int random_index() const;

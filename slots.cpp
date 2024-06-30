@@ -105,10 +105,11 @@ void MainWindow::captcha_handling(const QString& captcha_id) {
 
 void MainWindow::journal_creation() {
     clear_all();
-    dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
+    QDir dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
                                                  locations[SCREENSHOTS]));
     pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
-    QFile file(locations[QUOTES] + dir.dirName() + ".txt");
+    title_map.insert(0, dir.dirName());
+    QFile file(locations[QUOTES] + title_name() + ".txt");
     if (!read_quote_file(file)) {
         clear_all();
         return;
@@ -138,9 +139,10 @@ void MainWindow::journal_reading_all() {
 
 void MainWindow::text_reading() {
     clear_all();
-    dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
+    QDir dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
                                                  locations[SCREENSHOTS]));
     pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+    title_map.insert(0, dir.dirName());
     auto timestamps_for_filenames = timestamps_multimap();
     if (timestamps_for_filenames.isEmpty()) {
         set_mode(IDLE);
@@ -492,8 +494,8 @@ void MainWindow::ok_button() {
             ui->slider->setValue(pic_index);
             show_text(++quote_index);
         } else {
-            save_title_journal(dir.dirName());
-            update_quote_file(dir.dirName());
+            save_title_journal(title_name());
+            update_quote_file(title_name());
             set_mode(IDLE);
         }
         break;
@@ -535,8 +537,8 @@ void MainWindow::ok_button() {
             for (const auto& quote : quotes) {
                 records.append(Record(quote));
             }
-            update_quote_file(dir.dirName());
-            ui->statusBar->showMessage("Цитаты записаны в файл " + dir.dirName() + ".txt");
+            update_quote_file(title_name());
+            ui->statusBar->showMessage("Цитаты записаны в файл " + title_name() + ".txt");
             set_mode(IDLE);
         }
         break;

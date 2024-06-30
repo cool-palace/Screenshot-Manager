@@ -226,6 +226,7 @@ bool MainWindow::initialize() {
         return false;
     }
     locations[SCREENSHOTS] = json_file.value("screenshots").toString();
+    locations[SCREENSHOTS_NEW] = locations[SCREENSHOTS] + "Новые кадры\\";
     locations[QUOTES] = json_file.value("docs").toString();
     locations[SUBS] = json_file.value("subs").toString();
     locations[JOURNALS] = json_file.value("configs").toString();
