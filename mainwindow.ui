@@ -21,7 +21,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page_4">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -39,6 +39,18 @@
         </property>
         <item>
          <widget class="QStackedWidget" name="stackedWidget">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>1000</height>
+           </size>
+          </property>
           <property name="currentIndex">
            <number>0</number>
           </property>
@@ -177,7 +189,7 @@
              <bool>false</bool>
             </property>
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -196,7 +208,7 @@
              <bool>false</bool>
             </property>
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -233,7 +245,7 @@ p, li { white-space: pre-wrap; }
              <bool>false</bool>
             </property>
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -284,6 +296,9 @@ p, li { white-space: pre-wrap; }
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QLineEdit" name="search_bar">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="font">
              <font>
               <pointsize>14</pointsize>
@@ -296,6 +311,9 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QPushButton" name="word_search_button">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="font">
              <font>
               <pointsize>12</pointsize>
@@ -312,6 +330,9 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QPushButton" name="word_search_reset">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="font">
              <font>
               <pointsize>12</pointsize>
@@ -340,6 +361,9 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QSpinBox" name="pics_per_page">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="font">
              <font>
               <pointsize>14</pointsize>
@@ -373,6 +397,9 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QSpinBox" name="page_index">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="minimumSize">
              <size>
               <width>0</width>
@@ -415,7 +442,7 @@ p, li { white-space: pre-wrap; }
              <x>0</x>
              <y>0</y>
              <width>947</width>
-             <height>266</height>
+             <height>442</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -475,6 +502,9 @@ p, li { white-space: pre-wrap; }
              <layout class="QGridLayout" name="gridLayout_8">
               <item row="0" column="1">
                <widget class="QDateEdit" name="date">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="font">
                  <font>
                   <pointsize>12</pointsize>
@@ -499,6 +529,9 @@ p, li { white-space: pre-wrap; }
               </item>
               <item row="0" column="3">
                <widget class="QTimeEdit" name="time">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="font">
                  <font>
                   <pointsize>12</pointsize>
@@ -523,6 +556,9 @@ p, li { white-space: pre-wrap; }
               </item>
               <item row="3" column="0">
                <widget class="QCheckBox" name="last_used_limit">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="font">
                  <font>
                   <pointsize>12</pointsize>
@@ -553,6 +589,9 @@ p, li { white-space: pre-wrap; }
               </item>
               <item row="0" column="7">
                <widget class="QTimeEdit" name="interval">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="font">
                  <font>
                   <pointsize>12</pointsize>
@@ -569,6 +608,9 @@ p, li { white-space: pre-wrap; }
               </item>
               <item row="0" column="5">
                <widget class="QSpinBox" name="quantity">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="font">
                  <font>
                   <pointsize>12</pointsize>
@@ -672,6 +714,9 @@ p, li { white-space: pre-wrap; }
               </item>
               <item row="3" column="5">
                <widget class="QComboBox" name="size_limit">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="font">
                  <font>
                   <pointsize>12</pointsize>
@@ -727,6 +772,9 @@ p, li { white-space: pre-wrap; }
        <layout class="QGridLayout" name="gridLayout_9">
         <item row="0" column="2">
          <widget class="QPushButton" name="titles_set_filter">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>Применить выбор</string>
           </property>
@@ -738,6 +786,9 @@ p, li { white-space: pre-wrap; }
         </item>
         <item row="0" column="1">
          <widget class="QPushButton" name="titles_uncheck_all">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>Снять все</string>
           </property>
@@ -749,6 +800,9 @@ p, li { white-space: pre-wrap; }
         </item>
         <item row="0" column="0">
          <widget class="QPushButton" name="titles_check_all">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>Выбрать все</string>
           </property>
@@ -782,8 +836,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>59</width>
-             <height>24</height>
+             <width>879</width>
+             <height>425</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">
@@ -997,6 +1051,9 @@ p, li { white-space: pre-wrap; }
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/images/icons8-medium-icons-80.png</normaloff>:/images/icons8-medium-icons-80.png</iconset>
@@ -1009,6 +1066,9 @@ p, li { white-space: pre-wrap; }
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/images/icons8-content-80.png</normaloff>:/images/icons8-content-80.png</iconset>
@@ -1018,6 +1078,9 @@ p, li { white-space: pre-wrap; }
    </property>
   </action>
   <action name="add_hashtag">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Добавить хэштег</string>
    </property>
@@ -1034,6 +1097,9 @@ p, li { white-space: pre-wrap; }
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>По алфавиту</string>
    </property>
@@ -1043,6 +1109,9 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
    <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="text">
@@ -1056,6 +1125,9 @@ p, li { white-space: pre-wrap; }
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Все</string>
    </property>
@@ -1063,6 +1135,9 @@ p, li { white-space: pre-wrap; }
   <action name="hashtags_newest">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>Только новые</string>
@@ -1102,6 +1177,9 @@ p, li { white-space: pre-wrap; }
   <action name="show_public">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>Только публичные</string>
@@ -1192,6 +1270,9 @@ p, li { white-space: pre-wrap; }
    </property>
   </action>
   <action name="add_caption">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Добавить описания в альбом</string>
    </property>

@@ -145,7 +145,7 @@ void HashtagButton::mousePressEvent(QMouseEvent * e) {
 
 void HashtagButton::mouseDoubleClickEvent(QMouseEvent* e) {
     if (!preview_to_change) return;
-    if (e->button() == Qt::LeftButton ) {
+    if (e->button() == Qt::LeftButton) {
         emit selected(text, preview_to_change);
     }
 }

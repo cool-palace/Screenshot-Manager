@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QImageReader>
 #include <QThread>
+#include <QFile>
 
 class VK_Manager : public QNetworkAccessManager
 {
