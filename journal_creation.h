@@ -41,6 +41,7 @@ private:
     bool update_quote_file(const QString&);
     void register_record();
     void save_title_journal(const QString&);
+    QString series_name(const QString&) const;
 };
 
 #endif // JOURNAL_CREATION_H

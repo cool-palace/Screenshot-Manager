@@ -313,6 +313,10 @@ bool JournalReading::open_title_journal(bool all) {
 void JournalReading::read_title_journal(const QJsonObject& json_file) {
     auto title = json_file.value("title").toString();
     title_map[records.size()] = title;
+    auto series = json_file.value("series").toString();
+    if (series_map.empty() || series_map.last() != series) {
+        series_map[records.size()] = series;
+    }
     int album_id = json_file.value("album_id").toInt();
     album_ids[title] = album_id;
     auto title_caption = json_file.value("title_caption").toString();
@@ -358,6 +362,7 @@ void JournalReading::save_title_journal(int start, int end) {
     QJsonObject object;
     object["title"] = title;
     object["title_caption"] = title_captions[title];
+    object["series"] = series_name(start);
     object["album_id"] = album_ids[title];
     object["screens"] = record_array;
     auto message = save_json(object, file)

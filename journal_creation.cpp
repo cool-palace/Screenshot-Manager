@@ -243,10 +243,20 @@ void JournalCreation::save_title_journal(const QString& title) {
     QJsonObject object;
     object["title"] = title;
     object["title_caption"] = title;
+    object["series"] = series_name(title);
     object["album_id"] = album_ids[title];
     object["screens"] = record_array;
     auto message = save_json(object, file)
             ? "Журнал скриншотов сохранён."
             : QString("Не удалось сохранить файл: %1").arg(file.fileName());
     ui->statusBar->showMessage(message);
+}
+
+QString JournalCreation::series_name(const QString& title) const {
+    QRegularExpression regex("^(.*?)(?=\\s\\d|\\sOVA|$)");
+    auto i = regex.globalMatch(title);
+    if (i.hasNext()) {
+        auto match = i.peekNext();
+        return match.captured(1);
+    } else return title;
 }

@@ -94,6 +94,7 @@ protected:
     QMap<QString, QString> title_captions;
     QMap<int, int> records_by_photo_ids;
     QMap<int, int> logs;
+    QMap<int, QString> series_map;
 
 public slots:
     void filter_event(const QString&);              // Text filters
@@ -121,6 +122,7 @@ protected:
     QString filtration_indices() const;
     QString filtration_message(int) const;
     QString path(int index);
+    QString series_name(int index = 0);
     void check_titles(bool);
     QPair<int, int> title_range(int);
     QSet<int> word_search(const QString&);

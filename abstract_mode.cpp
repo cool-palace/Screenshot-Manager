@@ -597,6 +597,16 @@ QString AbstractOperationMode::path(int index) {
     return locations[SCREENSHOTS] + title_name(index) + QDir::separator();
 }
 
+QString AbstractOperationMode::series_name(int index) {
+    if (series_map.empty()) return QString();
+    if (series_map.contains(index)) return series_map.value(index);
+    series_map[index] = QString();
+    auto it = series_map.find(index);
+    auto series = (--it).value();
+    series_map.remove(index);
+    return series;
+}
+
 QPair<int, int> AbstractOperationMode::title_range(int index) {
     // Returns starting and ending indices for a title containing records[index]
     int start, end;
