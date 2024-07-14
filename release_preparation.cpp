@@ -194,10 +194,14 @@ bool ReleasePreparation::open_public_journal() {
     for (auto index : titles.keys()) {
         title_map[index.toInt()] = titles[index].toString();
     }
+    auto series = json_file.value("series_map").toObject();
+    for (auto index : series.keys()) {
+        series_map[index.toInt()] = series[index].toString();
+    }
     // Creating title items
-    for (auto index : title_map.keys()) {
-        int size = title_range(index).second - index + 1;
-        title_items.push_back(new RecordTitleItem(title_map.value(index), path(index) + records[index].pics[0], size, index));
+    for (auto index : series_map.keys()) {
+        int size = series_range(index).second - index + 1;
+        title_items.push_back(new RecordTitleItem(series_map.value(index), path(index) + records[index].pics[0], size, index));
         ui->title_grid->addWidget(title_items.back());
     }
     // Creating record items
@@ -557,4 +561,24 @@ void ReleasePreparation::update_logs() {
             : "Не удалось обновить логи.";
     auto current_message = ui->statusBar->currentMessage();
     ui->statusBar->showMessage(current_message + ". " + message);
+}
+
+QPair<int, int> ReleasePreparation::series_range(int index) {
+    // Returns starting and ending indices for a series containing records[index]
+    int start, end;
+    if (series_map.contains(index)) {
+        auto it = series_map.find(index);
+        if (++it != series_map.end()) {
+            end = it.key() - 1;
+        } else end = records.size() - 1;
+        return qMakePair(index, end);
+    }
+    series_map[index] = QString();
+    auto it = series_map.find(index);
+    start = (--it).key();
+    series_map.remove(index);
+    if (++it != series_map.end()) {
+        end = it.key() - 1;
+    } else end = records.size() - 1;
+    return qMakePair(start, end);
 }

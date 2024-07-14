@@ -175,10 +175,22 @@ void MainWindow::compile_journals() {
     QJsonArray resulting_array;
     QJsonArray hidden_array;
     QJsonObject title_map;
+    QJsonObject series_map;
     for (const auto& config : configs) {
         auto object = json_object(locations[JOURNALS] + config);
         auto title = object["title"].toString();
         title_map[QString().setNum(resulting_array.size())] = title;
+        auto series = object["series"].toString();
+        bool series_exist = false;
+        for (auto key : series_map.keys()) {
+            if (series_map.value(key) == series) {
+                series_exist = true;
+                break;
+            }
+        }
+        if (!series_exist) {
+            series_map[QString().setNum(resulting_array.size())] = series;
+        }
         auto array = object["screens"].toArray();
         for (QJsonValueRef item : array) {
             auto record = item.toObject();
@@ -190,6 +202,7 @@ void MainWindow::compile_journals() {
     result["records"] = resulting_array;
     result["reverse_index"] = reverse_index(resulting_array);
     result["title_map"] = title_map;
+    result["series_map"] = series_map;
     hidden_result["records"] = hidden_array;
     hidden_result["reverse_index"] = reverse_index(hidden_array);
     QFile file(locations[JOURNALS] + "result\\public_records.json");

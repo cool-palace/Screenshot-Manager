@@ -65,6 +65,7 @@ private:
     QString poll_message() const;
     void read_logs();
     void update_logs();
+    QPair<int, int> series_range(int);
 signals:
 
 };
