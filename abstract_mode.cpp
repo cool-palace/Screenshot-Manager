@@ -22,6 +22,7 @@ AbstractMode::~AbstractMode() {
     for (auto item : record_items) {
         delete item;
     }
+    disconnect();
 }
 
 QPixmap AbstractMode::scaled(const QImage& source) const {

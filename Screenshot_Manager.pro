@@ -28,15 +28,12 @@ SOURCES += \
         abstract_mode.cpp \
         common.cpp \
         hashtag_button.cpp \
-        hashtags.cpp \
         journal_creation.cpp \
         journal_reading.cpp \
         main.cpp \
+        mainwindow.cpp \
         record.cpp \
         release_preparation.cpp \
-        screenshots.cpp \
-        setup.cpp \
-        slots.cpp \
         text_reading.cpp \
         vk_manager.cpp
 
