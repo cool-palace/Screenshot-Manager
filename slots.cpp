@@ -7,30 +7,38 @@
 #include "release_preparation.h"
 
 void MainWindow::journal_creation() {
-    if (mode) delete mode;
-    mode = new JournalCreation(this);
+    if (mode) {
+        qDebug() << mode;
+        mode->~AbstractMode();
+        mode = new(mode) JournalCreation(this);
+    } else mode = new JournalCreation(this);
     mode->start();
 }
 
 void MainWindow::journal_reading() {
     if (mode) {
-        delete mode;
-        ui->stacked_view->setCurrentIndex(0);
-        ui->stackedWidget->setCurrentIndex(0);
-    }
-    mode = new JournalReading(this);
+        qDebug() << mode;
+        mode->~AbstractMode();
+        mode = new(mode) JournalReading(this);
+    } else mode = new JournalReading(this);
     mode->start();
 }
 
 void MainWindow::journal_reading_all() {
-    if (mode) delete mode;
-    mode = new JournalReading(this, true);
+    if (mode) {
+        qDebug() << mode;
+        mode->~AbstractMode();
+        mode = new(mode) JournalReading(this, true);
+    } else mode = new JournalReading(this, true);
     mode->start();
 }
 
 void MainWindow::text_reading() {
-    if (mode) delete mode;
-    mode = new TextReading(this);
+    if (mode) {
+        qDebug() << mode;
+        mode->~AbstractMode();
+        mode = new(mode) TextReading(this);
+    } else mode = new TextReading(this);
     mode->start();
 }
 
@@ -50,8 +58,11 @@ void MainWindow::descriptions_reading() {
 }
 
 void MainWindow::release_preparation() {
-    if (mode) delete mode;
-    mode = new ReleasePreparation(this);
+    if (mode) {
+        qDebug() << mode;
+        mode->~AbstractMode();
+        mode = new(mode) ReleasePreparation(this);
+    } else mode = new ReleasePreparation(this);
     mode->start();
 }
 

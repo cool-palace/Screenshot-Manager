@@ -257,7 +257,6 @@ void ReleasePreparation::lay_previews(int page) {
     }
 }
 
-
 void ReleasePreparation::create_hashtag_button(const QString & text) {
     hashtags.insert(text, new HashtagButton(text));
     connect(hashtags[text], SIGNAL(filterEvent(FilterType, const QString&)), this, SLOT(filter_event(FilterType, const QString&)));
