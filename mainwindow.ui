@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>925</width>
-    <height>600</height>
+    <width>1035</width>
+    <height>658</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="page_4">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -441,8 +441,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>947</width>
-             <height>442</height>
+             <width>989</width>
+             <height>517</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -749,15 +749,52 @@ p, li { white-space: pre-wrap; }
                   <pointsize>12</pointsize>
                  </font>
                 </property>
-                <property name="layoutDirection">
-                 <enum>Qt::LeftToRight</enum>
-                </property>
                 <property name="text">
                  <string>По размеру</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
+               </widget>
+              </item>
+              <item row="3" column="6">
+               <widget class="QLabel" name="label_9">
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Источники</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="7">
+               <widget class="QComboBox" name="series_limit">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="currentIndex">
+                 <number>0</number>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>Любые</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Без недавних</string>
+                 </property>
+                </item>
                </widget>
               </item>
              </layout>
@@ -859,7 +896,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>925</width>
+     <width>1035</width>
      <height>25</height>
     </rect>
    </property>
@@ -1266,7 +1303,10 @@ p, li { white-space: pre-wrap; }
      <normaloff>:/images/icons8-tiles-80.png</normaloff>:/images/icons8-tiles-80.png</iconset>
    </property>
    <property name="text">
-    <string>preview_view</string>
+    <string>Выбор материалов</string>
+   </property>
+   <property name="toolTip">
+    <string>Выбор материалов</string>
    </property>
   </action>
   <action name="add_caption">

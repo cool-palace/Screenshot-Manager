@@ -16,6 +16,8 @@ private:
     QMap<QString, int> poll_logs;
     QMutex status_mutex;
     int post_counter = 0;
+    QSet<QString> log_shortlist_series;
+    QMap<QString, RecordBase*> title_items_map;
 
 signals:
     void reroll_response(int);
@@ -66,6 +68,8 @@ private:
     void read_logs();
     void update_logs();
     QPair<int, int> series_range(int);
+    void find_recently_posted_series();
+
 signals:
 
 };

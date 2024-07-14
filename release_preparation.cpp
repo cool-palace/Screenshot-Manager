@@ -37,6 +37,21 @@ ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMo
             break;
         }
     });
+    connect(ui->series_limit, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+        switch (index) {
+        case 0:
+            emit ui->titles_reset_filter->clicked(true);
+            break;
+        case 1:
+            for (auto title : log_shortlist_series) {
+                dynamic_cast<RecordTitleItem*>(title_items_map.value(title))->set_checked(false);
+            }
+            emit ui->titles_set_filter->clicked(true);
+            break;
+        default:
+            break;
+        }
+    });
 }
 
 ReleasePreparation::~ReleasePreparation() {
@@ -154,6 +169,7 @@ void ReleasePreparation::set_enabled(bool enable) {
     ui->last_used_limit->setEnabled(enable);
     ui->quantity->setEnabled(enable);
     ui->size_limit->setEnabled(enable);
+    ui->series_limit->setEnabled(enable);
     ui->time->setEnabled(enable);
     ui->post->setEnabled(enable);
     ui->poll_preparation->setEnabled(enable);
@@ -198,10 +214,11 @@ bool ReleasePreparation::open_public_journal() {
     for (auto index : series.keys()) {
         series_map[index.toInt()] = series[index].toString();
     }
-    // Creating title items
+    // Creating title items for series
     for (auto index : series_map.keys()) {
         int size = series_range(index).second - index + 1;
         title_items.push_back(new RecordTitleItem(series_map.value(index), path(index) + records[index].pics[0], size, index));
+        title_items_map.insert(series_map.value(index), title_items.back());
         ui->title_grid->addWidget(title_items.back());
     }
     // Creating record items
@@ -287,6 +304,7 @@ void ReleasePreparation::generate_release() {
         delete record;
     }
     selected_records.clear();
+    find_recently_posted_series();
     QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
     for (int i = 0; i < ui->quantity->value(); ++i) {
         int r_index = random_index();
@@ -581,4 +599,22 @@ QPair<int, int> ReleasePreparation::series_range(int index) {
         end = it.key() - 1;
     } else end = records.size() - 1;
     return qMakePair(start, end);
+}
+
+void ReleasePreparation::find_recently_posted_series() {
+    // There is an option to check back all the title items and clear log_shortlist_series here first,
+    // but in practice it seems more useful not to do it for now
+    QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
+    for (auto id : logs.keys()) {
+        int value = logs.value(id);
+        int diff = QDateTime::fromSecsSinceEpoch(value, Qt::LocalTime).daysTo(time);
+        if (diff == 1 || diff == -1) {
+            // Saving records posted yesterday to shortlist
+            log_shortlist_series.insert(series_name(records_by_photo_ids[id]));
+        }
+    }
+    qDebug() << log_shortlist_series;
+    if (ui->series_limit->currentIndex() == 1) {
+        emit ui->series_limit->currentIndexChanged(1);
+    }
 }
