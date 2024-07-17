@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1035</width>
+    <width>1108</width>
     <height>658</height>
    </rect>
   </property>
@@ -280,8 +280,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>879</width>
-             <height>410</height>
+             <width>989</width>
+             <height>468</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -441,7 +441,7 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>989</width>
+             <width>1062</width>
              <height>517</height>
             </rect>
            </property>
@@ -500,62 +500,8 @@ p, li { white-space: pre-wrap; }
             </item>
             <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_8">
-              <item row="0" column="1">
-               <widget class="QDateEdit" name="date">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QLabel" name="label_2">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Время</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="3">
-               <widget class="QTimeEdit" name="time">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="4">
-               <widget class="QLabel" name="label_3">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Количество</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QCheckBox" name="last_used_limit">
+              <item row="4" column="5">
+               <widget class="QComboBox" name="size_limit">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -565,30 +511,27 @@ p, li { white-space: pre-wrap; }
                  </font>
                 </property>
                 <property name="layoutDirection">
-                 <enum>Qt::RightToLeft</enum>
+                 <enum>Qt::LeftToRight</enum>
                 </property>
-                <property name="text">
-                 <string>Не менее </string>
-                </property>
+                <item>
+                 <property name="text">
+                  <string>Любые</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Один кадр</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Много кадров</string>
+                 </property>
+                </item>
                </widget>
               </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Дата</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="7">
-               <widget class="QTimeEdit" name="interval">
+              <item row="4" column="7">
+               <widget class="QComboBox" name="series_limit">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -597,37 +540,22 @@ p, li { white-space: pre-wrap; }
                   <pointsize>12</pointsize>
                  </font>
                 </property>
-                <property name="time">
-                 <time>
-                  <hour>2</hour>
-                  <minute>0</minute>
-                  <second>0</second>
-                 </time>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="5">
-               <widget class="QSpinBox" name="quantity">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="minimum">
+                <property name="currentIndex">
                  <number>1</number>
                 </property>
-                <property name="maximum">
-                 <number>20</number>
-                </property>
-                <property name="value">
-                 <number>7</number>
-                </property>
+                <item>
+                 <property name="text">
+                  <string>Любые</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Без недавних</string>
+                 </property>
+                </item>
                </widget>
               </item>
-              <item row="3" column="1">
+              <item row="4" column="1">
                <widget class="QSpinBox" name="last_used_days">
                 <property name="enabled">
                  <bool>false</bool>
@@ -648,22 +576,79 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
-              <item row="0" column="6">
-               <widget class="QLabel" name="label_4">
+              <item row="1" column="1">
+               <widget class="QDateEdit" name="date">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="6">
+               <widget class="QLabel" name="label_9">
                 <property name="font">
                  <font>
                   <pointsize>12</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string>Интервал</string>
+                 <string>Источники</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
                </widget>
               </item>
-              <item row="4" column="0" colspan="8">
+              <item row="1" column="3">
+               <widget class="QTimeEdit" name="time">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QCheckBox" name="last_used_limit">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="layoutDirection">
+                 <enum>Qt::RightToLeft</enum>
+                </property>
+                <property name="text">
+                 <string>Не менее </string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="4">
+               <widget class="QLabel" name="label_3">
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Количество</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0" colspan="8">
                <widget class="QPushButton" name="generate">
                 <property name="enabled">
                  <bool>false</bool>
@@ -700,7 +685,7 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
-              <item row="3" column="2">
+              <item row="4" column="2">
                <widget class="QLabel" name="label_5">
                 <property name="font">
                  <font>
@@ -712,8 +697,8 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
-              <item row="3" column="5">
-               <widget class="QComboBox" name="size_limit">
+              <item row="1" column="5">
+               <widget class="QSpinBox" name="quantity">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -722,27 +707,18 @@ p, li { white-space: pre-wrap; }
                   <pointsize>12</pointsize>
                  </font>
                 </property>
-                <property name="layoutDirection">
-                 <enum>Qt::LeftToRight</enum>
+                <property name="minimum">
+                 <number>1</number>
                 </property>
-                <item>
-                 <property name="text">
-                  <string>Любые</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Один кадр</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Много кадров</string>
-                 </property>
-                </item>
+                <property name="maximum">
+                 <number>20</number>
+                </property>
+                <property name="value">
+                 <number>7</number>
+                </property>
                </widget>
               </item>
-              <item row="3" column="4">
+              <item row="4" column="4">
                <widget class="QLabel" name="label_6">
                 <property name="font">
                  <font>
@@ -757,44 +733,137 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
-              <item row="3" column="6">
-               <widget class="QLabel" name="label_9">
+              <item row="1" column="6">
+               <widget class="QLabel" name="label_interval">
                 <property name="font">
                  <font>
                   <pointsize>12</pointsize>
                  </font>
                 </property>
                 <property name="text">
-                 <string>Источники</string>
+                 <string>Интервал</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
                </widget>
               </item>
-              <item row="3" column="7">
-               <widget class="QComboBox" name="series_limit">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label">
                 <property name="font">
                  <font>
                   <pointsize>12</pointsize>
                  </font>
                 </property>
+                <property name="text">
+                 <string>Дата</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <widget class="QLabel" name="label_2">
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Время</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="7">
+               <widget class="QStackedWidget" name="stackedWidget_interval">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="currentIndex">
                  <number>0</number>
                 </property>
-                <item>
-                 <property name="text">
-                  <string>Любые</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Без недавних</string>
-                 </property>
-                </item>
+                <widget class="QWidget" name="page_9">
+                 <layout class="QGridLayout" name="gridLayout_12">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="spacing">
+                   <number>0</number>
+                  </property>
+                  <item row="0" column="3">
+                   <widget class="QTimeEdit" name="interval">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                    <property name="time">
+                     <time>
+                      <hour>2</hour>
+                      <minute>0</minute>
+                      <second>0</second>
+                     </time>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="page_10">
+                 <layout class="QGridLayout" name="gridLayout_13">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="spacing">
+                   <number>0</number>
+                  </property>
+                  <item row="0" column="1">
+                   <widget class="QDateTimeEdit" name="poll_end_time">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>12</pointsize>
+                     </font>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
                </widget>
               </item>
              </layout>
@@ -873,8 +942,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>879</width>
-             <height>425</height>
+             <width>59</width>
+             <height>24</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">
@@ -896,7 +965,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1035</width>
+     <width>1108</width>
      <height>25</height>
     </rect>
    </property>

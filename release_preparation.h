@@ -52,7 +52,7 @@ private slots:
     void post_poll(int);
     void poll_posting_success();
     void poll_posting_fail(const QString&);
-    void poll_preparation();
+    void poll_preparation(bool);
 
 private:
 //    bool open_public_journal();

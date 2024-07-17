@@ -77,6 +77,7 @@ void ReleasePreparation::start() {
     {
         bool weekend = ui->date->date().dayOfWeek() > 5;
         ui->time->setTime(weekend ? QTime(10,0) : QTime(8,0));
+        ui->poll_end_time->setTime(QTime(21,0));
         if (weekend) ui->quantity->setValue(6);
     }
         RecordPreview::records = &records;
@@ -173,6 +174,7 @@ void ReleasePreparation::set_enabled(bool enable) {
     ui->time->setEnabled(enable);
     ui->post->setEnabled(enable);
     ui->poll_preparation->setEnabled(enable);
+    ui->poll_end_time->setEnabled(enable);
 }
 
 bool ReleasePreparation::open_public_journal() {
@@ -351,10 +353,7 @@ void ReleasePreparation::post_button() {
             manager->post(index, attachments(index), record->timestamp());
         }
     } else {
-        QDateTime poll_end = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
-        int time_offset = ui->interval->time().hour()*24*3600 + ui->interval->time().minute()*3600 - 300;
-        poll_end = poll_end.addSecs(time_offset);
-        manager->get_poll(options(), poll_end.toSecsSinceEpoch());
+        manager->get_poll(options(), ui->poll_end_time->dateTime().toSecsSinceEpoch());
     }
 }
 
@@ -413,8 +412,7 @@ void ReleasePreparation::poll_posting_fail(const QString& reply) {
     msgBox.exec();
 }
 
-void ReleasePreparation::poll_preparation() {
-    bool poll_mode = ui->poll_preparation->isChecked();
+void ReleasePreparation::poll_preparation(bool poll_mode) {
     clear_grid(ui->preview_grid);
     if (poll_mode) for (auto tag : selected_hashtags) {
         ui->preview_grid->addWidget(tag);
@@ -423,12 +421,16 @@ void ReleasePreparation::poll_preparation() {
         ui->preview_grid->addWidget(record);
         record->show();
     }
+    ui->last_used_limit->setEnabled(!poll_mode);
+    ui->last_used_days->setEnabled(!poll_mode);
+    ui->size_limit->setEnabled(!poll_mode);
+    ui->series_limit->setEnabled(!poll_mode);
     ui->time->setTime(poll_mode ? QTime(12,5) : QTime(8,0));
     ui->quantity->setValue(poll_mode ? 6 : 7);
+    ui->label_interval->setText(poll_mode ? "Конец опроса" : "Интервал");
+    ui->stackedWidget_interval->setCurrentIndex(poll_mode ? 1 : 0);
     int day = ui->date->date().dayOfWeek();
-    int hours = (4 - day) * 24 + 9;      // Set to end on thursday evening
-    // Interval hh : mm are used as days : hours in poll mode
-    ui->interval->setTime(poll_mode && hours > 0 ? QTime(hours/24, hours%24) : QTime(2,0));
+    ui->poll_end_time->setDate(ui->date->date().addDays(4 - day)); // Set to end on thursday evening
 }
 
 void ReleasePreparation::read_poll_logs() {
