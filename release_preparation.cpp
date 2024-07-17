@@ -20,6 +20,7 @@ ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMo
         filter_event(days);     // Second call sets new date filter
     });
     connect(ui->check_log, &QAction::triggered, this, &ReleasePreparation::check_logs);
+    connect(ui->selected_tags_analysis, &QAction::triggered, this, &ReleasePreparation::tag_pairing_analysis);
 
     connect(ui->size_limit, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
         // Removing existing size filter
@@ -175,6 +176,16 @@ void ReleasePreparation::set_enabled(bool enable) {
     ui->post->setEnabled(enable);
     ui->poll_preparation->setEnabled(enable);
     ui->poll_end_time->setEnabled(enable);
+    if (enable) {
+        ui->back->hide();
+        ui->text->hide();
+        ui->ok->hide();
+    } else {
+        ui->back->show();
+        ui->text->show();
+        ui->ok->show();
+        ui->ok->setDisabled(!enable);
+    }
 }
 
 bool ReleasePreparation::open_public_journal() {
@@ -340,6 +351,7 @@ void ReleasePreparation::generate_poll() {
             selected_hashtags[tag]->set_hashtag(full_hashtags_map[tag]);
         }
     }
+    tag_pairing_analysis();
     for (const auto& tag : selected_hashtags) {
         ui->preview_grid->addWidget(tag);
     }
@@ -397,7 +409,6 @@ void ReleasePreparation::poll_posting_success() {
         if (selected_hashtags[tag]->is_edited()) {
             qDebug() << selected_hashtags[tag]->text_description();
             full_hashtags_map[tag].set_description(selected_hashtags[tag]->text_description());
-
         }
     }
     update_hashtag_file();
@@ -431,6 +442,35 @@ void ReleasePreparation::poll_preparation(bool poll_mode) {
     ui->stackedWidget_interval->setCurrentIndex(poll_mode ? 1 : 0);
     int day = ui->date->date().dayOfWeek();
     ui->poll_end_time->setDate(ui->date->date().addDays(4 - day)); // Set to end on thursday evening
+}
+
+void ReleasePreparation::tag_pairing_analysis() {
+    selected_tag_pairings.clear();
+    auto selected_tags = selected_hashtags.keys();
+    for (auto it = selected_hashtags.begin(); it != selected_hashtags.end(); ++it) {
+        QList<int> temp;
+        // Copying already checked values
+        for (int i = 0; i < selected_tag_pairings.size(); ++i) {
+            temp.append(selected_tag_pairings[i][selected_tag_pairings.size()]);
+        }
+        auto tag = it.key();
+        // Checking the diagonal value
+        remove_hashtag_filters();
+        emit hashtags[tag]->filterEvent(FilterType::ANY_TAG, tag);
+        temp.append(hashtags[tag]->current_count());
+        // Counting new values
+        for (int i = selected_tag_pairings.size() + 1; i < selected_tags.size(); ++i) {
+            auto current_tag = selected_tags[i];
+            if (hashtags[current_tag]->isEnabled()) {
+                temp.append(hashtags[current_tag]->current_count());
+            } else temp.append(0);
+        }
+        selected_tag_pairings.append(temp);
+    }
+    remove_hashtag_filters();
+    for (int i = 0; i < selected_tag_pairings.size(); ++i) {
+        qDebug() << selected_tags[i] << selected_tag_pairings[i];
+    }
 }
 
 void ReleasePreparation::read_poll_logs() {
@@ -493,6 +533,7 @@ void ReleasePreparation::create_hashtag_preview_connections(const QString& tag) 
             qDebug() << tag << selected_hashtags.contains(tag);
         } while (selected_hashtags.contains(tag));
         change_selected_hashtag(tag, preview);
+        tag_pairing_analysis();
     });
     connect(selected_hashtags[tag], &HashtagPreview::search_start, [this](const QString& old_tag){
         // Saving the pointer to the hashtag preview to replace
@@ -507,15 +548,19 @@ void ReleasePreparation::create_hashtag_preview_connections(const QString& tag) 
         selected_hashtags[tag]->update_count(count);
     });
     connect(selected_hashtags[tag], &HashtagPreview::check_request, [this](const QString& tag){
-        for (auto filter : filters.keys()) {
-            // Cancelling any other hashtag filters
-            if (filters[filter] & FilterType::ANY_TAG) {
-                emit hashtags[tag]->filterEvent(FilterType::ANY_TAG, filter);
-            }
-        }
-        emit hashtags[tag]->filterEvent(FilterType::ANY_TAG, tag);;
+        remove_hashtag_filters();
+        emit hashtags[tag]->filterEvent(FilterType::ANY_TAG, tag);
         set_view(LIST);
     });
+}
+
+void ReleasePreparation::remove_hashtag_filters() {
+    for (auto filter : filters.keys()) {
+        // Cancelling any other hashtag filters
+        if (filters[filter] & FilterType::ANY_TAG) {
+            emit hashtags[filter]->filterEvent(FilterType::ANY_TAG, filter);
+        }
+    }
 }
 
 int ReleasePreparation::random_index() const {

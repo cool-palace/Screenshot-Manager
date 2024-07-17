@@ -21,7 +21,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page_4">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -179,7 +179,7 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <layout class="QHBoxLayout" name="horizontalLayout_main">
           <property name="sizeConstraint">
            <enum>QLayout::SetNoConstraint</enum>
           </property>
@@ -994,6 +994,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="add_caption"/>
     <addaction name="export_captions_by_ids"/>
     <addaction name="export_info_by_ids"/>
+    <addaction name="selected_tags_analysis"/>
    </widget>
    <widget class="QMenu" name="view_menu">
     <property name="title">
@@ -1453,6 +1454,11 @@ p, li { white-space: pre-wrap; }
   <action name="initialization">
    <property name="text">
     <string>Инициализация</string>
+   </property>
+  </action>
+  <action name="selected_tags_analysis">
+   <property name="text">
+    <string>Сочетаемость тегов</string>
    </property>
   </action>
  </widget>

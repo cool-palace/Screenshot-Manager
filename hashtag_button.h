@@ -97,6 +97,7 @@ public:
     void highlight(FilterType, bool);
     void highlight_unregistered();
     void show_count();
+    int current_count() const;
     void show_filtered_count(const QSet<int>&);
     int get_count() const { return all_indices().size(); }
     void reset();

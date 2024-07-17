@@ -18,6 +18,7 @@ private:
     int post_counter = 0;
     QSet<QString> log_shortlist_series;
     QMap<QString, RecordBase*> title_items_map;
+    QList<QList<int>> selected_tag_pairings;
 
 signals:
     void reroll_response(int);
@@ -53,14 +54,15 @@ private slots:
     void poll_posting_success();
     void poll_posting_fail(const QString&);
     void poll_preparation(bool);
+    void tag_pairing_analysis();
 
 private:
-//    bool open_public_journal();
     void read_poll_logs();
     void update_poll_logs();
     void update_hashtag_file();
     void change_selected_hashtag(const QString&, HashtagPreview*);
     void create_hashtag_preview_connections(const QString&);
+    void remove_hashtag_filters();
     int random_index() const;
     QString attachments(int) const;
     QString options() const;

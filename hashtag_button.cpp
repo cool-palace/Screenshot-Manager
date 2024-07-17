@@ -156,6 +156,14 @@ void HashtagButton::show_count() {
     setFlat(count);
 }
 
+int HashtagButton::current_count() const {
+    if (isEnabled()) {
+        bool ok = true;
+        int count = QAbstractButton::text().split(' ').back().toInt(&ok);
+        return ok ? count : 0;
+    } else return 0;
+}
+
 void HashtagButton::show_filtered_count(const QSet<int>& results) {
     QSet<int> intersection = all_indices().intersect(results);
     int count = intersection.size();
