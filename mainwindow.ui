@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1108</width>
-    <height>658</height>
+    <width>1126</width>
+    <height>618</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -442,7 +442,7 @@ p, li { white-space: pre-wrap; }
              <x>0</x>
              <y>0</y>
              <width>1108</width>
-             <height>500</height>
+             <height>460</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -536,43 +536,6 @@ p, li { white-space: pre-wrap; }
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="0" colspan="8">
-               <widget class="QPushButton" name="generate">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>70</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>70</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Генерировать</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="icons.qrc">
-                  <normaloff>:/images/icons8-available-updates-80.png</normaloff>:/images/icons8-available-updates-80.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
                 </property>
                </widget>
               </item>
@@ -868,6 +831,43 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
+              <item row="6" column="0" colspan="8">
+               <widget class="QPushButton" name="generate">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>70</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>70</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Генерировать</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="icons.qrc">
+                  <normaloff>:/images/icons8-available-updates-80.png</normaloff>:/images/icons8-available-updates-80.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>30</width>
+                  <height>30</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
            </layout>
@@ -967,7 +967,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1108</width>
+     <width>1126</width>
      <height>25</height>
     </rect>
    </property>
@@ -1011,6 +1011,7 @@ p, li { white-space: pre-wrap; }
      <string>Режим работы</string>
     </property>
     <addaction name="offline"/>
+    <addaction name="hamiltonian_posts"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -1461,6 +1462,17 @@ p, li { white-space: pre-wrap; }
   <action name="selected_tags_analysis">
    <property name="text">
     <string>Сочетаемость тегов</string>
+   </property>
+  </action>
+  <action name="hamiltonian_posts">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Подбор постов к опросу</string>
    </property>
   </action>
  </widget>

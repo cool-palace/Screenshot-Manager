@@ -108,6 +108,7 @@ public:
     static void update_on_records(int);
     static void set_preview_to_change(HashtagPreview*);
     static HashtagPreview* current_preview_to_change();
+    void emit_filter_event();
 signals:
     void filterEvent(FilterType, const QString&);
     void hashtagEvent(const QChar&, const QString&);

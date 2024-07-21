@@ -10,6 +10,13 @@ ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMo
     connect(ui->poll_preparation, &QAction::triggered, this, &ReleasePreparation::poll_preparation);
     connect(ui->generate, &QPushButton::clicked, this, &ReleasePreparation::generate_button);
     connect(ui->post, &QPushButton::clicked, this, &ReleasePreparation::post_button);
+    connect(ui->hamiltonian_posts, &QAction::triggered, [this](bool enable) {
+        if (enable) {
+            ui->poll_preparation->trigger();
+            ui->time->setTime(QTime(10,0));
+            generate_release(hamiltonian_cycles.first());
+        }
+    });
     connect(ui->last_used_limit, &QCheckBox::stateChanged, [this](int state) {
         bool checked = static_cast<bool>(state);
         ui->last_used_days->setEnabled(checked);
@@ -328,18 +335,43 @@ void ReleasePreparation::generate_release() {
     for (int i = 0; i < ui->quantity->value(); ++i) {
         int r_index = random_index();
         selected_records.push_back(new RecordPreview(records[r_index], r_index, time));
-        connect(selected_records.back(), &RecordPreview::search_start, [this](int index){
-            pic_index = index;
-            set_view(LIST);
-        });
-        connect(selected_records.back(), &RecordPreview::reroll_request, [this](RecordPreview* preview){
-            preview->set_index(random_index());
-        });
-        time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
+        create_record_preview_connections(selected_records.back());
         ui->preview_grid->addWidget(selected_records.back());
         selected_records.back()->set_list_view();
+        time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
     }
     RecordPreview::selected_records = &selected_records;
+}
+
+void ReleasePreparation::generate_release(const QVector<int>& cycle) {
+    QStringList tag_list = selected_hashtags.keys();
+    remove_hashtag_filters();
+    for (int i = 0; i < cycle.size() - 1; ++i) {
+        if (i > 0) {
+            hashtags[tag_list[cycle[i-1]]]->emit_filter_event();
+        } else hashtags[tag_list[cycle[i]]]->emit_filter_event();
+        QStringList tags = QStringList() << tag_list[cycle[i]] << tag_list[cycle[i+1]];
+        hashtags[tags.last()]->emit_filter_event();
+        smart_tag_pairs.insert(tags, filtration_results.keys());
+    }
+    remove_hashtag_filters();
+    qDebug() << smart_tag_pairs;
+    ui->quantity->setValue(selected_hashtags.size());
+
+    for (auto record : selected_records) {
+        delete record;
+    }
+    selected_records.clear();
+    QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
+    auto record_sets = smart_tag_pairs.values();
+    for (int i = 0; i < ui->quantity->value(); ++i) {
+        int r_index = record_sets[i].first();
+        selected_records.push_back(new RecordPreview(records[r_index], r_index, time));
+        create_record_preview_connections(selected_records.back());
+        ui->preview_grid->addWidget(selected_records.back());
+        selected_records.back()->set_list_view();
+        time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
+    }
 }
 
 void ReleasePreparation::generate_poll() {
@@ -347,6 +379,7 @@ void ReleasePreparation::generate_poll() {
         delete tag;
     }
     selected_hashtags.clear();
+    ui->hamiltonian_posts->setChecked(false);
     while (selected_hashtags.size() < ui->quantity->value()) {
         int r_index = QRandomGenerator::global()->bounded(full_hashtags_map.keys().size());
         auto tag = full_hashtags_map.keys()[r_index];
@@ -442,7 +475,10 @@ void ReleasePreparation::poll_preparation(bool poll_mode) {
     ui->last_used_days->setEnabled(!poll_mode);
     ui->size_limit->setEnabled(!poll_mode);
     ui->series_limit->setEnabled(!poll_mode);
-    ui->time->setTime(poll_mode ? QTime(12,5) : QTime(8,0));
+    ui->series_limit_days->setEnabled(!poll_mode);
+    if (ui->hamiltonian_posts->isChecked() && !poll_mode) {
+        ui->time->setTime(QTime(10,0));
+    }
     ui->quantity->setValue(poll_mode ? 6 : 7);
     ui->label_interval->setText(poll_mode ? "Конец опроса" : "Интервал");
     ui->stackedWidget_interval->setCurrentIndex(poll_mode ? 1 : 0);
@@ -477,12 +513,16 @@ void ReleasePreparation::tag_pairing_analysis() {
     for (int i = 0; i < selected_tag_pairings.size(); ++i) {
         qDebug() << selected_tags[i] << selected_tag_pairings[i];
     }
-    QList<QVector<int>> cycles = get_all_hamiltonian_cycles(selected_tag_pairings);
+    hamiltonian_cycles = get_all_hamiltonian_cycles(selected_tag_pairings);
 
     qDebug() << "Hamiltonian cycles:";
-    for (const QVector<int>& cycle : cycles) {
+    for (const QVector<int>& cycle : hamiltonian_cycles) {
         qDebug() << cycle;
     }
+    if (!hamiltonian_cycles.empty()) {
+        ui->statusBar->showMessage("Комбинация тегов подходит для автоматического подбора постов.");
+    }
+    ui->hamiltonian_posts->setEnabled(!hamiltonian_cycles.empty());
 }
 
 int ReleasePreparation::lowest_degree_vertex(const QList<QList<int>> &M){
@@ -501,8 +541,8 @@ int ReleasePreparation::lowest_degree_vertex(const QList<QList<int>> &M){
     return vertex;
 }
 
-void ReleasePreparation::find_hamiltonian_cycles(int current, const QList<QList<int> > &M, QVector<int> &path, QSet<int> &visited, QList<QVector<int> > &cycles, int start) {
-    // Если путь уже содержит все вершины и есть ребро к начальной вершине, добавляем цикл
+void ReleasePreparation::find_hamiltonian_cycles(int current, const QList<QList<int>> &M, QVector<int> &path, QSet<int> &visited, QList<QVector<int>> &cycles, int start) {
+    // Adding cycle if the path contains all the vertices and there is an edge to the starting vertex
     if (path.size() == M.size()) {
         if (M[current][start] > 0) {
             path.append(start);
@@ -583,6 +623,25 @@ void ReleasePreparation::change_selected_hashtag(const QString& tag, HashtagPrev
         ui->preview_grid->addWidget(item);
     }
     set_view(PREVIEW);
+}
+
+void ReleasePreparation::create_record_preview_connections(RecordPreview* preview) {
+    connect(preview, &RecordPreview::search_start, [this](int index){
+        if (ui->hamiltonian_posts->isChecked()) {
+            remove_hashtag_filters();
+            auto tags_in_record = hashtags_by_index[selected_records[index]->get_index()];
+            for (const auto& tag : selected_hashtags.keys()) {
+                if (tags_in_record.contains("#" + tag) || tags_in_record.contains("&" + tag)) {
+                    hashtags[tag]->emit_filter_event();
+                }
+            }
+        }
+        pic_index = index;
+        set_view(LIST);
+    });
+    connect(preview, &RecordPreview::reroll_request, [this](RecordPreview* preview){
+        preview->set_index(random_index());
+    });
 }
 
 void ReleasePreparation::create_hashtag_preview_connections(const QString& tag) {

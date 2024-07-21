@@ -57,10 +57,6 @@ public:
     void set_gallery_view() override;
     void set_list_view() override;
     void include_log_info(int);
-//    void mouseDoubleClickEvent(QMouseEvent*) override;
-//    void update_text(const QString&);
-//signals:
-//    void selected(int);
 private:
     int index;
     QCheckBox box;
@@ -81,12 +77,6 @@ private:
     int size;
     QCheckBox box;
     QSet<int> title_indices;
-//    void mouseDoubleClickEvent(QMouseEvent*) override;
-//    void update_text(const QString&);
-//signals:
-//    void selected(int);
-//private:
-//    void load_thumbmnail(const QString&);
 };
 
 class RecordFrame : public QLabel
@@ -117,7 +107,6 @@ signals:
     void search_start(int);
     void reroll_request(RecordPreview*);
 private:
-//    Record record;
     QList<RecordFrame*> images;
     QLabel log_info;
     QDateTime time;

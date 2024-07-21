@@ -19,6 +19,8 @@ private:
     QSet<QString> recently_posted_series;
     QMap<QString, RecordBase*> title_items_map;
     QList<QList<int>> selected_tag_pairings;
+    QList<QVector<int>> hamiltonian_cycles;
+    QMap<QStringList, QList<int>> smart_tag_pairs;
 
 signals:
     void reroll_response(int);
@@ -46,6 +48,7 @@ private slots:
     void check_logs();
     void generate_button();
     void generate_release();
+    void generate_release(const QVector<int>&);
     void generate_poll();
     void post_button();
     void posting_success(int, int);
@@ -65,6 +68,7 @@ private:
     void update_hashtag_file();
     void change_selected_hashtag(const QString&, HashtagPreview*);
     void create_hashtag_preview_connections(const QString&);
+    void create_record_preview_connections(RecordPreview*);
     void remove_hashtag_filters();
     int random_index() const;
     QString attachments(int) const;
@@ -74,9 +78,6 @@ private:
     void update_logs();
     QPair<int, int> series_range(int);
     void exclude_recently_posted_series(int);
-
-signals:
-
 };
 
 #endif // RELEASE_PREPARATION_H

@@ -246,3 +246,7 @@ void HashtagButton::set_preview_to_change(HashtagPreview * preview) {
 HashtagPreview* HashtagButton::current_preview_to_change() {
     return preview_to_change;
 }
+
+void HashtagButton::emit_filter_event() {
+    emit filterEvent(FilterType::ANY_TAG, text);
+}
