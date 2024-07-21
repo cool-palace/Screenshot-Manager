@@ -671,7 +671,9 @@ QString ReleasePreparation::poll_message() const {
 void ReleasePreparation::read_logs() {
     auto log = json_object(locations[LOGS_FILE]);
     for (auto key : log.keys()) {
-        logs[key.toInt()] = log.value(key).toInt();
+        int photo_id = key.toInt();
+        int timestamp = log.value(key).toInt();
+        logs[photo_id] = timestamp;
     }
     RecordPreview::logs = &logs;
 }
@@ -714,19 +716,23 @@ QPair<int, int> ReleasePreparation::series_range(int index) {
 
 void ReleasePreparation::exclude_recently_posted_series(int days) {
     // Resetting recently_posted_series
-    for (auto title : recently_posted_series) {
+    for (const auto& title : recently_posted_series) {
         dynamic_cast<RecordTitleItem*>(title_items_map[title])->set_checked(true);
     }
     recently_posted_series.clear();
     // Finding series posted during last days
     QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
-    for (int id : logs.keys()) {
-        int value = logs.value(id);
-        int diff = QDateTime::fromSecsSinceEpoch(value, Qt::LocalTime).daysTo(time);
-        if (diff == -1) diff = 1;       // Checking one day ahead
-        if (diff <= days) {
-            // Saving posted records to shortlist
-            recently_posted_series.insert(series_name(records_by_photo_ids[id]));
+    for (auto it = logs.begin(); it != logs.end(); ++it) {
+        int id = it.key();
+        auto title = series_name(records_by_photo_ids[id]);
+        if (!recently_posted_series.contains(title)) {
+            int timestamp = it.value();
+            int diff = QDateTime::fromSecsSinceEpoch(timestamp, Qt::LocalTime).daysTo(time);
+            if (diff == -1) diff = 1;       // Checking one day ahead
+            if (diff <= days) {
+                // Saving posted records to shortlist
+                recently_posted_series.insert(series_name(records_by_photo_ids[id]));
+            }
         }
     }
     qDebug() << recently_posted_series;
