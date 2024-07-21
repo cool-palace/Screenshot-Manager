@@ -16,7 +16,7 @@ private:
     QMap<QString, int> poll_logs;
     QMutex status_mutex;
     int post_counter = 0;
-    QSet<QString> log_shortlist_series;
+    QSet<QString> recently_posted_series;
     QMap<QString, RecordBase*> title_items_map;
     QList<QList<int>> selected_tag_pairings;
 
@@ -55,6 +55,9 @@ private slots:
     void poll_posting_fail(const QString&);
     void poll_preparation(bool);
     void tag_pairing_analysis();
+    int lowest_degree_vertex(const QList<QList<int>>& M);
+    void find_hamiltonian_cycles(int current, const QList<QList<int>>& M, QVector<int>& path, QSet<int>& visited, QList<QVector<int>>& cycles, int start);
+    QList<QVector<int>> get_all_hamiltonian_cycles(const QList<QList<int>>& M);
 
 private:
     void read_poll_logs();
@@ -70,7 +73,7 @@ private:
     void read_logs();
     void update_logs();
     QPair<int, int> series_range(int);
-    void find_recently_posted_series();
+    void exclude_recently_posted_series(int);
 
 signals:
 

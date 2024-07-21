@@ -38,20 +38,27 @@ ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMo
             break;
         }
     });
-    connect(ui->series_limit, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
-        switch (index) {
-        case 0:
+    connect(ui->series_limit, &QCheckBox::stateChanged, [this](int state) {
+        bool checked = static_cast<bool>(state);
+        ui->series_limit_days->setEnabled(checked);
+        if (checked) {
+            exclude_recently_posted_series(ui->series_limit_days->value());
+        } else {
             emit ui->titles_reset_filter->clicked(true);
-            break;
-        case 1:
-            for (auto title : log_shortlist_series) {
-                dynamic_cast<RecordTitleItem*>(title_items_map.value(title))->set_checked(false);
-            }
-            emit ui->titles_set_filter->clicked(true);
-            break;
-        default:
-            break;
         }
+    });
+    connect(ui->series_limit_days, QOverload<int>::of(&QSpinBox::valueChanged), [this](int days) {
+        QString suffix = " дней";
+        if ((days % 100 - days % 10) != 10) {
+            if (days % 10 == 1) {
+                suffix = " день";
+            } else if (days % 10 > 1 && days % 10 < 5) {
+                suffix = " дня";
+            }
+        }
+        ui->series_limit_days->setSuffix(suffix);
+        emit ui->titles_reset_filter->clicked(true);
+        exclude_recently_posted_series(days);
     });
 }
 
@@ -83,13 +90,12 @@ void ReleasePreparation::start() {
     }
         RecordPreview::records = &records;
         ui->last_used_limit->setChecked(true);
+        ui->series_limit->setChecked(true);
         set_enabled(true);
         ui->generate->click();
         set_view(PREVIEW);
         return;
     } else set_enabled(false);
-
-    //    ui->stackedWidget->setCurrentIndex(0);
 }
 
 void ReleasePreparation::keyPressEvent(QKeyEvent * event) {
@@ -172,6 +178,7 @@ void ReleasePreparation::set_enabled(bool enable) {
     ui->quantity->setEnabled(enable);
     ui->size_limit->setEnabled(enable);
     ui->series_limit->setEnabled(enable);
+    ui->series_limit_days->setEnabled(enable);
     ui->time->setEnabled(enable);
     ui->post->setEnabled(enable);
     ui->poll_preparation->setEnabled(enable);
@@ -317,7 +324,6 @@ void ReleasePreparation::generate_release() {
         delete record;
     }
     selected_records.clear();
-    find_recently_posted_series();
     QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
     for (int i = 0; i < ui->quantity->value(); ++i) {
         int r_index = random_index();
@@ -471,6 +477,64 @@ void ReleasePreparation::tag_pairing_analysis() {
     for (int i = 0; i < selected_tag_pairings.size(); ++i) {
         qDebug() << selected_tags[i] << selected_tag_pairings[i];
     }
+    QList<QVector<int>> cycles = get_all_hamiltonian_cycles(selected_tag_pairings);
+
+    qDebug() << "Hamiltonian cycles:";
+    for (const QVector<int>& cycle : cycles) {
+        qDebug() << cycle;
+    }
+}
+
+int ReleasePreparation::lowest_degree_vertex(const QList<QList<int>> &M){
+    int vertex = 0;
+    int lowest_vertex_degree = M.size() - 1;
+    for (int i = 0; i < M.size(); ++i) {
+        int current_vertex_degree = 0;
+        for (int j = 0; j < M[i].size(); ++j) {
+            if (i != j && M[i][j] > 0) ++current_vertex_degree;
+        }
+        if (current_vertex_degree < lowest_vertex_degree) {
+            lowest_vertex_degree = current_vertex_degree;
+            vertex = i;
+        }
+    }
+    return vertex;
+}
+
+void ReleasePreparation::find_hamiltonian_cycles(int current, const QList<QList<int> > &M, QVector<int> &path, QSet<int> &visited, QList<QVector<int> > &cycles, int start) {
+    // Если путь уже содержит все вершины и есть ребро к начальной вершине, добавляем цикл
+    if (path.size() == M.size()) {
+        if (M[current][start] > 0) {
+            path.append(start);
+            cycles.append(path);
+            path.removeLast();
+        }
+        return;
+    }
+    for (int next = 0; next < M.size(); ++next) {
+        if (current != next && M[current][next] > 0 && !visited.contains(next)) {
+            visited.insert(next);
+            path.append(next);
+            find_hamiltonian_cycles(next, M, path, visited, cycles, start);
+            path.removeLast();
+            visited.remove(next);
+        }
+    }
+}
+
+QList<QVector<int> > ReleasePreparation::get_all_hamiltonian_cycles(const QList<QList<int>> &M) {
+    QList<QVector<int>> cycles;
+    QVector<int> path;
+    QSet<int> visited;
+    int start = lowest_degree_vertex(M);
+    path.append(start);
+    visited.insert(start);
+    find_hamiltonian_cycles(start, M, path, visited, cycles, start);
+    // Existing cycles are duplicated at this point because they include both directions for the same cycle
+    for (int i = 0, size = cycles.size() / 2; i < size; ++i) {
+        cycles.removeLast();
+    }
+    return cycles;
 }
 
 void ReleasePreparation::read_poll_logs() {
@@ -648,20 +712,26 @@ QPair<int, int> ReleasePreparation::series_range(int index) {
     return qMakePair(start, end);
 }
 
-void ReleasePreparation::find_recently_posted_series() {
-    // There is an option to check back all the title items and clear log_shortlist_series here first,
-    // but in practice it seems more useful not to do it for now
+void ReleasePreparation::exclude_recently_posted_series(int days) {
+    // Resetting recently_posted_series
+    for (auto title : recently_posted_series) {
+        dynamic_cast<RecordTitleItem*>(title_items_map[title])->set_checked(true);
+    }
+    recently_posted_series.clear();
+    // Finding series posted during last days
     QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
-    for (auto id : logs.keys()) {
+    for (int id : logs.keys()) {
         int value = logs.value(id);
         int diff = QDateTime::fromSecsSinceEpoch(value, Qt::LocalTime).daysTo(time);
-        if (diff == 1 || diff == -1) {
-            // Saving records posted yesterday to shortlist
-            log_shortlist_series.insert(series_name(records_by_photo_ids[id]));
+        if (diff == -1) diff = 1;       // Checking one day ahead
+        if (diff <= days) {
+            // Saving posted records to shortlist
+            recently_posted_series.insert(series_name(records_by_photo_ids[id]));
         }
     }
-    qDebug() << log_shortlist_series;
-    if (ui->series_limit->currentIndex() == 1) {
-        emit ui->series_limit->currentIndexChanged(1);
+    qDebug() << recently_posted_series;
+    for (auto title : recently_posted_series) {
+        dynamic_cast<RecordTitleItem*>(title_items_map[title])->set_checked(false);
     }
+    emit ui->titles_set_filter->clicked(true);
 }

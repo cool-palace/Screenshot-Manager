@@ -21,7 +21,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="page_4">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -280,8 +280,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>989</width>
-             <height>468</height>
+             <width>59</width>
+             <height>24</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -441,8 +441,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1062</width>
-             <height>517</height>
+             <width>1108</width>
+             <height>500</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -500,82 +500,6 @@ p, li { white-space: pre-wrap; }
             </item>
             <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_8">
-              <item row="4" column="5">
-               <widget class="QComboBox" name="size_limit">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="layoutDirection">
-                 <enum>Qt::LeftToRight</enum>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>Любые</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Один кадр</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Много кадров</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="4" column="7">
-               <widget class="QComboBox" name="series_limit">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="currentIndex">
-                 <number>1</number>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>Любые</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Без недавних</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="4" column="1">
-               <widget class="QSpinBox" name="last_used_days">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="maximum">
-                 <number>1000</number>
-                </property>
-                <property name="singleStep">
-                 <number>10</number>
-                </property>
-                <property name="value">
-                 <number>200</number>
-                </property>
-               </widget>
-              </item>
               <item row="1" column="1">
                <widget class="QDateEdit" name="date">
                 <property name="enabled">
@@ -588,21 +512,6 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
-              <item row="4" column="6">
-               <widget class="QLabel" name="label_9">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Источники</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
               <item row="1" column="3">
                <widget class="QTimeEdit" name="time">
                 <property name="enabled">
@@ -612,24 +521,6 @@ p, li { white-space: pre-wrap; }
                  <font>
                   <pointsize>12</pointsize>
                  </font>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QCheckBox" name="last_used_limit">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="layoutDirection">
-                 <enum>Qt::RightToLeft</enum>
-                </property>
-                <property name="text">
-                 <string>Не менее </string>
                 </property>
                </widget>
               </item>
@@ -685,18 +576,6 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
-              <item row="4" column="2">
-               <widget class="QLabel" name="label_5">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>дней назад</string>
-                </property>
-               </widget>
-              </item>
               <item row="1" column="5">
                <widget class="QSpinBox" name="quantity">
                 <property name="enabled">
@@ -715,21 +594,6 @@ p, li { white-space: pre-wrap; }
                 </property>
                 <property name="value">
                  <number>7</number>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="4">
-               <widget class="QLabel" name="label_6">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>По размеру</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
                </widget>
               </item>
@@ -864,6 +728,144 @@ p, li { white-space: pre-wrap; }
                   </item>
                  </layout>
                 </widget>
+               </widget>
+              </item>
+              <item row="4" column="7">
+               <widget class="QComboBox" name="size_limit">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="layoutDirection">
+                 <enum>Qt::LeftToRight</enum>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>Любые</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Один кадр</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Много кадров</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="4" column="6">
+               <widget class="QLabel" name="label_6">
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>По размеру</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="5">
+               <widget class="QSpinBox" name="series_limit_days">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="suffix">
+                 <string> день</string>
+                </property>
+                <property name="prefix">
+                 <string>за </string>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>30</number>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0" colspan="2">
+               <widget class="QCheckBox" name="last_used_limit">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="layoutDirection">
+                 <enum>Qt::RightToLeft</enum>
+                </property>
+                <property name="text">
+                 <string>Не публиковавшиеся</string>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="2">
+               <widget class="QSpinBox" name="last_used_days">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="suffix">
+                 <string> дней</string>
+                </property>
+                <property name="prefix">
+                 <string>&gt;</string>
+                </property>
+                <property name="maximum">
+                 <number>1000</number>
+                </property>
+                <property name="singleStep">
+                 <number>10</number>
+                </property>
+                <property name="value">
+                 <number>200</number>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="3" colspan="2">
+               <widget class="QCheckBox" name="series_limit">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="layoutDirection">
+                 <enum>Qt::RightToLeft</enum>
+                </property>
+                <property name="text">
+                 <string>Без недавних источников</string>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
                </widget>
               </item>
              </layout>

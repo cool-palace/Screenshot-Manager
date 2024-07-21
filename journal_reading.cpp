@@ -26,7 +26,6 @@ JournalReading::JournalReading(MainWindow *parent, bool all) : AbstractOperation
 
 JournalReading::~JournalReading() {
     set_enabled(false);
-//    set_view(MAIN);
 }
 
 void JournalReading::start() {
@@ -193,7 +192,6 @@ void JournalReading::set_enabled(bool enable) {
 }
 
 void JournalReading::set_view(View view) {
-        qDebug() << 1 << current_view << view;
 //    if (view == current_view) { qDebug() << "view = current"; return; }
     current_view = view;
     switch (view) {
@@ -202,7 +200,6 @@ void JournalReading::set_view(View view) {
         ui->stackedWidget->setCurrentIndex(0);
         break;
     case LIST: case GALLERY:
-            qDebug() << 2;
         ui->stacked_view->setCurrentIndex(1);
         lay_previews(ui->page_index->value());
         break;
@@ -213,16 +210,13 @@ void JournalReading::set_view(View view) {
         lay_titles();
         break;
     }
-        qDebug() << 3;
     ui->main_view->setChecked(current_view == MAIN);
     ui->list_view->setChecked(current_view == LIST);
     ui->gallery_view->setChecked(current_view == GALLERY);
     ui->title_view->setChecked(current_view == TITLES);
-        qDebug() << 4;
 }
 
 void JournalReading::lay_previews(int page) {
-    qDebug() << 11;
     if (current_view == MAIN) return;
     int pics_per_page = ui->pics_per_page->value();
     int total_previews = filtration_results.isEmpty()
@@ -230,13 +224,11 @@ void JournalReading::lay_previews(int page) {
                           : filtration_results.values().size();
     ui->page_index->setMaximum(total_previews / pics_per_page + 1);
     clear_grid(ui->view_grid);
-        qDebug() << 22;
     const auto& items = filtration_results.empty()
                         ? record_items
                         : filtration_results.values();
     for (int i = (page - 1) * pics_per_page ; i < qMin(items.size(), page * pics_per_page); ++i) {
         QtConcurrent::run(items[i], &RecordBase::load_thumbmnail);
-            qDebug() << 33;
         if (current_view == LIST) {
             items[i]->set_list_view();
             ui->view_grid->addWidget(items[i], i, 0);
@@ -245,7 +237,6 @@ void JournalReading::lay_previews(int page) {
             ui->view_grid->addWidget(items[i], i/10, i%10);
         }
     }
-        qDebug() << 44;
 }
 
 void JournalReading::show_status() {

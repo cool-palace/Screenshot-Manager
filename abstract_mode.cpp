@@ -7,7 +7,7 @@ AbstractMode::AbstractMode(MainWindow* parent)
     connect(ui->slider, &QAbstractSlider::valueChanged, this, &AbstractMode::slider_change);
     connect(ui->page_index, QOverload<int>::of(&QSpinBox::valueChanged), this, &AbstractMode::lay_previews);
     connect(ui->main_view, &QAction::triggered, [this]() { set_view(MAIN); });
-    connect(ui->list_view, &QAction::triggered, [this]() { qDebug() << "set list call"; set_view(LIST); });
+    connect(ui->list_view, &QAction::triggered, [this]() { set_view(LIST); });
     connect(ui->gallery_view, &QAction::triggered, [this]() { set_view(GALLERY); });
     connect(ui->preview_view, &QAction::triggered, [this]() { set_view(PREVIEW); });
     connect(ui->title_view, &QAction::triggered, [this]() { set_view(TITLES); });
@@ -51,9 +51,7 @@ QString AbstractMode::title_name(int index) {
     return title;
 }
 
-AbstractPreparationMode::AbstractPreparationMode(MainWindow *parent) : AbstractMode(parent) {
-
-}
+AbstractPreparationMode::AbstractPreparationMode(MainWindow *parent) : AbstractMode(parent) { }
 
 void AbstractPreparationMode::set_view(View view) {
     if (view == current_view) return;
@@ -341,7 +339,6 @@ void AbstractOperationMode::filter_event(const QMap<int, int>&) {
 }
 
 void AbstractOperationMode::set_view(View view) {
-        qDebug() << 1 << view;
     if (view == current_view) return;
     current_view = view;
     switch (view) {
@@ -350,7 +347,6 @@ void AbstractOperationMode::set_view(View view) {
         ui->stackedWidget->setCurrentIndex(0);
         break;
     case LIST: case GALLERY:
-            qDebug() << 2;
         ui->stacked_view->setCurrentIndex(1);
         lay_previews(ui->page_index->value());
         break;
@@ -362,13 +358,11 @@ void AbstractOperationMode::set_view(View view) {
         lay_titles();
         break;
     }
-        qDebug() << 3;
     ui->main_view->setChecked(current_view == MAIN);
     ui->list_view->setChecked(current_view == LIST);
     ui->gallery_view->setChecked(current_view == GALLERY);
     ui->preview_view->setChecked(current_view == PREVIEW);
     ui->title_view->setChecked(current_view == TITLES);
-        qDebug() << 4;
 }
 
 void AbstractOperationMode::lay_titles() {
