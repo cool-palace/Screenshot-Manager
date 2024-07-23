@@ -4,6 +4,8 @@ JournalCreation::JournalCreation(MainWindow* parent) : AbstractPreparationMode(p
 {
     connect(manager, &VK_Manager::albums_ready, this, &JournalCreation::set_albums);
     connect(manager, &VK_Manager::photo_ids_ready, this, &JournalCreation::set_photo_ids);
+    connect(parent, &MainWindow::key_press, this, &JournalCreation::keyPressEvent);
+    connect(parent, &MainWindow::key_release, this, &JournalCreation::keyReleaseEvent);
     QDir dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
                                                  locations[SCREENSHOTS]));
     pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
