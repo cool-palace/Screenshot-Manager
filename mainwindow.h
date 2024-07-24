@@ -17,9 +17,6 @@
 #include "hashtag_button.h"
 #include "record.h"
 #include "common.h"
-//#include "base_modes.h"
-//#include "journal_creation.h"
-//#include "text_reading.h"
 
 namespace Ui {
 class MainWindow;
@@ -37,6 +34,7 @@ enum Directories {
     SCREENSHOTS_NEW,
     QUOTES,
     SUBS,
+    HASHTAGS,
     LOGS_FILE,
     POLL_LOGS
 };

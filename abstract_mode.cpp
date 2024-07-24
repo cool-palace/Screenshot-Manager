@@ -140,7 +140,7 @@ void AbstractOperationMode::get_hashtags() {
     for (int i = 0; i < 14; ++i) {
         ranked_hashtags.append(QStringList());
     }
-    QJsonObject hashtags_json = json_object(locations[JOURNALS] + "result\\hashtags.json");
+    QJsonObject hashtags_json = json_object(locations[HASHTAGS]);
     for (const auto& key : hashtags_json.keys()) {
         full_hashtags_map[key] = Hashtag(key, hashtags_json[key].toObject());
         ranked_hashtags[hashtags_json[key].toObject()["rank"].toInt()].append(key);

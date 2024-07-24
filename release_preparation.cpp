@@ -606,7 +606,7 @@ void ReleasePreparation::update_hashtag_file() {
     for (const auto& tag : full_hashtags_map.keys()) {
         object[tag] = full_hashtags_map[tag].to_json();
     }
-    QFile file(locations[JOURNALS] + "result\\hashtags.json");
+    QFile file(locations[HASHTAGS]);
     auto message = save_json(object, file)
             ? "Файл хэштегов сохранён."
             : "Не удалось сохранить файл.";

@@ -63,6 +63,7 @@ bool MainWindow::initialize() {
     locations[QUOTES] = json_file.value("docs").toString();
     locations[SUBS] = json_file.value("subs").toString();
     locations[JOURNALS] = json_file.value("configs").toString();
+    locations[HASHTAGS] = json_file.value("hashtags").toString();
     locations[LOGS_FILE] = json_file.value("logs").toString();
     locations[POLL_LOGS] = json_file.value("poll_logs").toString();
     QString access_token = json_file.value("access_token").toString();
