@@ -503,6 +503,9 @@ void AbstractOperationMode::apply_filters() {
             } else if (type == FilterType::DATE) {
                 // Date filter
                 filter(records_by_date(ui->last_used_days->value()));
+            } else if (type & FilterType::SINGLE) {
+                // Handling size filter
+                filter(records_by_size(type));
             }
         }
     }

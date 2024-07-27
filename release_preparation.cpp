@@ -31,7 +31,6 @@ ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMo
 
     connect(ui->size_limit, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
         // Removing existing size filter
-        qDebug() << filters;
         if (filters.contains("size")) {
             filter_event(filters["size"]);
         }
