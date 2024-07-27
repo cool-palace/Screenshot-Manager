@@ -234,7 +234,6 @@ bool ReleasePreparation::open_public_journal() {
         }
         records.push_back(record);
     }
-    read_logs();
     auto reverse = json_file.value("reverse_index").toObject();
     for (auto index : reverse.keys()) {
         records_by_photo_ids[index.toInt()] = reverse[index].toInt();
@@ -247,6 +246,7 @@ bool ReleasePreparation::open_public_journal() {
     for (auto index : series.keys()) {
         series_map[index.toInt()] = series[index].toString();
     }
+    read_logs();
     // Creating title items for series
     for (auto index : series_map.keys()) {
         int size = series_range(index).second - index + 1;
@@ -736,11 +736,21 @@ QString ReleasePreparation::poll_message() const {
 
 void ReleasePreparation::read_logs() {
     auto log = json_object(locations[LOGS_FILE]);
-    for (auto key : log.keys()) {
-        int photo_id = key.toInt();
-        int timestamp = log.value(key).toInt();
+    for (auto it = log.begin(); it != log.end(); ++it) {
+        int photo_id = it.key().toInt();
+        int timestamp = it.value().toInt();
         logs[photo_id] = timestamp;
+        if (records_by_photo_ids.contains(photo_id)) {
+            int record = records_by_photo_ids[photo_id];
+            auto series = series_name(record);
+            if (!series_last_used_times.contains(series)) {
+                series_last_used_times.insert(series, timestamp);
+            } else if (series_last_used_times[series] < timestamp) {
+                series_last_used_times[series] = timestamp;
+            }
+        }
     }
+    qDebug() << series_last_used_times;
     RecordPreview::logs = &logs;
 }
 
@@ -788,17 +798,13 @@ void ReleasePreparation::exclude_recently_posted_series(int days) {
     recently_posted_series.clear();
     // Finding series posted during last days
     QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
-    for (auto it = logs.begin(); it != logs.end(); ++it) {
-        int id = it.key();
-        auto title = series_name(records_by_photo_ids[id]);
-        if (!recently_posted_series.contains(title)) {
-            int timestamp = it.value();
-            int diff = QDateTime::fromSecsSinceEpoch(timestamp, Qt::LocalTime).daysTo(time);
-            if (diff == -1) diff = 1;       // Checking one day ahead
-            if (diff <= days) {
-                // Saving posted records to shortlist
-                recently_posted_series.insert(series_name(records_by_photo_ids[id]));
-            }
+    for (auto it = series_last_used_times.begin(); it != series_last_used_times.end(); ++it) {
+        int timestamp = it.value();
+        int diff = QDateTime::fromSecsSinceEpoch(timestamp, Qt::LocalTime).daysTo(time);
+        if (diff == -1) diff = 1;       // Checking one day ahead
+        if (diff <= days) {
+            // Saving posted records to shortlist
+            recently_posted_series.insert(it.key());
         }
     }
     qDebug() << recently_posted_series;
