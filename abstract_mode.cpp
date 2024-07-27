@@ -88,11 +88,11 @@ bool AbstractPreparationMode::update_quote_file(const QString& title) {
 }
 
 AbstractOperationMode::AbstractOperationMode(MainWindow *parent) : AbstractMode(parent) {
-    connect(ui->search_bar, &QLineEdit::editingFinished, [this]() {
+    connect(ui->search_bar, &QLineEdit::returnPressed, [this]() {
         filter_event(ui->search_bar->text());
         lay_previews();
     });
-    connect(ui->word_search_button, &QPushButton::clicked, [this]() { filter_event(ui->search_bar->text()); });
+    connect(ui->word_search_button, &QPushButton::clicked, [this]() { emit ui->search_bar->returnPressed(); });
     connect(ui->word_search_reset, &QPushButton::clicked, [this]() {
         ui->search_bar->clear();
         filter_event(ui->search_bar->text());
