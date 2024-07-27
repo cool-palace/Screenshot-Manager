@@ -69,6 +69,17 @@ ReleasePreparation::~ReleasePreparation() {
     for (auto item : selected_records) {
         delete item;
     }
+    disconnect(ui->poll_preparation, nullptr, this, nullptr);
+    disconnect(ui->generate, nullptr, this, nullptr);
+    disconnect(ui->post, nullptr, this, nullptr);
+    disconnect(ui->hamiltonian_posts, nullptr, this, nullptr);
+    disconnect(ui->last_used_limit, nullptr, this, nullptr);
+    disconnect(ui->last_used_days, nullptr, this, nullptr);
+    disconnect(ui->check_log, nullptr, this, nullptr);
+    disconnect(ui->selected_tags_analysis, nullptr, this, nullptr);
+    disconnect(ui->size_limit, nullptr, this, nullptr);
+    disconnect(ui->series_limit, nullptr, this, nullptr);
+    disconnect(ui->series_limit_days, nullptr, this, nullptr);
     set_enabled(false);
 }
 
@@ -128,19 +139,21 @@ void ReleasePreparation::set_view(View view) {
     current_view = view;
     switch (view) {
     case MAIN:
-        ui->stacked_view->setCurrentIndex(0);
+        ui->stacked_view->setCurrentIndex(1);
         ui->stackedWidget->setCurrentIndex(1);
         break;
     case LIST: case GALLERY:
-        ui->stacked_view->setCurrentIndex(1);
+        ui->stacked_view->setCurrentIndex(2);
         lay_previews(ui->page_index->value());
         break;
     case PREVIEW:
-        ui->stacked_view->setCurrentIndex(2);
+        ui->stacked_view->setCurrentIndex(3);
         break;
     case TITLES:
-        ui->stacked_view->setCurrentIndex(3);
+        ui->stacked_view->setCurrentIndex(4);
         lay_titles();
+        break;
+    default:
         break;
     }
     ui->main_view->setChecked(current_view == MAIN);
@@ -151,6 +164,7 @@ void ReleasePreparation::set_view(View view) {
 }
 
 void ReleasePreparation::set_enabled(bool enable) {
+    ui->main_view->setEnabled(enable);
     ui->title_view->setEnabled(enable);
     ui->list_view->setEnabled(enable);
     ui->gallery_view->setEnabled(enable);
@@ -389,6 +403,7 @@ void ReleasePreparation::generate_poll() {
 }
 
 void ReleasePreparation::post_button() {
+    ui->statusBar->clearMessage();
     if (!ui->poll_preparation->isChecked()) {
         post_counter = selected_records.size();
         for (auto record : selected_records) {

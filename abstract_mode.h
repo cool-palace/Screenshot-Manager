@@ -5,6 +5,7 @@
 #include "ui_mainwindow.h"
 
 enum View {
+    START,
     MAIN,
     LIST,
     GALLERY,
@@ -23,7 +24,7 @@ protected:
     MainWindow* parent;
     Ui::MainWindow *ui;
     VK_Manager* manager;
-    View current_view = MAIN;
+    View current_view = START;
     QMap<Directories, QString> locations;
     QMap<QString, int> album_ids;
     QMap<int, QString> title_map;

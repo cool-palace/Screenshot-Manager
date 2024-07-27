@@ -15,6 +15,8 @@ AbstractMode::AbstractMode(MainWindow* parent)
     connect(ui->add, &QPushButton::clicked, this, &AbstractMode::add_button);
     connect(ui->back, &QPushButton::clicked, this, &AbstractMode::back_button);
     connect(ui->ok, &QPushButton::clicked, this, &AbstractMode::ok_button);
+    ui->exit_mode->setEnabled(true);
+    ui->toolBar->show();
 }
 
 AbstractMode::~AbstractMode() {
@@ -22,7 +24,18 @@ AbstractMode::~AbstractMode() {
     for (auto item : record_items) {
         delete item;
     }
-    disconnect();
+    disconnect(manager, nullptr, this, nullptr);
+    disconnect(ui->slider, nullptr, this, nullptr);
+    disconnect(ui->page_index, nullptr, this, nullptr);
+    disconnect(ui->main_view, nullptr, this, nullptr);
+    disconnect(ui->list_view, nullptr, this, nullptr);
+    disconnect(ui->gallery_view, nullptr, this, nullptr);
+    disconnect(ui->preview_view, nullptr, this, nullptr);
+    disconnect(ui->title_view, nullptr, this, nullptr);
+    disconnect(ui->skip, nullptr, this, nullptr);
+    disconnect(ui->add, nullptr, this, nullptr);
+    disconnect(ui->back, nullptr, this, nullptr);
+    disconnect(ui->ok, nullptr, this, nullptr);
 }
 
 QPixmap AbstractMode::scaled(const QImage& source) const {
@@ -58,11 +71,11 @@ void AbstractPreparationMode::set_view(View view) {
     current_view = view;
     switch (view) {
     case MAIN:
-        ui->stacked_view->setCurrentIndex(0);
+        ui->stacked_view->setCurrentIndex(1);
         ui->stackedWidget->setCurrentIndex(0);
         break;
     case LIST:
-        ui->stacked_view->setCurrentIndex(1);
+        ui->stacked_view->setCurrentIndex(2);
         lay_previews(ui->page_index->value());
         break;
     default:
@@ -129,6 +142,17 @@ AbstractOperationMode::~AbstractOperationMode() {
     for (auto item : title_items) {
         delete item;
     }
+    disconnect(ui->search_bar, nullptr, this, nullptr);
+    disconnect(ui->word_search_button, nullptr, this, nullptr);
+    disconnect(ui->word_search_reset, nullptr, this, nullptr);
+    disconnect(ui->alphabet_order, nullptr, this, nullptr);
+    disconnect(ui->addition_order, nullptr, this, nullptr);
+    disconnect(ui->hashtags_full, nullptr, this, nullptr);
+    disconnect(ui->hashtags_newest, nullptr, this, nullptr);
+    disconnect(ui->titles_check_all, nullptr, this, nullptr);
+    disconnect(ui->titles_uncheck_all, nullptr, this, nullptr);
+    disconnect(ui->titles_set_filter, nullptr, this, nullptr);
+    disconnect(ui->titles_reset_filter, nullptr, this, nullptr);
 }
 
 QRegularExpressionMatchIterator AbstractOperationMode::hashtag_match(const QString& text) const {
@@ -362,18 +386,18 @@ void AbstractOperationMode::set_view(View view) {
     current_view = view;
     switch (view) {
     case MAIN:
-        ui->stacked_view->setCurrentIndex(0);
+        ui->stacked_view->setCurrentIndex(1);
         ui->stackedWidget->setCurrentIndex(0);
         break;
     case LIST: case GALLERY:
-        ui->stacked_view->setCurrentIndex(1);
+        ui->stacked_view->setCurrentIndex(2);
         lay_previews(ui->page_index->value());
         break;
     case PREVIEW:
-        ui->stacked_view->setCurrentIndex(2);
+        ui->stacked_view->setCurrentIndex(3);
         break;
     case TITLES:
-        ui->stacked_view->setCurrentIndex(3);
+        ui->stacked_view->setCurrentIndex(4);
         lay_titles();
         break;
     }

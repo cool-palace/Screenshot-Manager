@@ -25,6 +25,14 @@ JournalReading::JournalReading(MainWindow *parent, bool all) : AbstractOperation
 }
 
 JournalReading::~JournalReading() {
+    disconnect(ui->save, nullptr, this, nullptr);
+    disconnect(ui->export_captions_by_ids, nullptr, this, nullptr);
+    disconnect(ui->export_info_by_ids, nullptr, this, nullptr);
+    disconnect(ui->add_caption, nullptr, this, nullptr);
+    disconnect(ui->show_public, nullptr, this, nullptr);
+    disconnect(ui->show_private, nullptr, this, nullptr);
+    disconnect(ui->private_switch, nullptr, this, nullptr);
+    disconnect(parent, nullptr, this, nullptr);
     set_enabled(false);
 }
 
@@ -51,7 +59,7 @@ void JournalReading::start() {
         }
         set_enabled(true);
         show_status();
-        if (current_view == PREVIEW) set_view(MAIN);
+        if (current_view == START || current_view == PREVIEW) set_view(MAIN);
     } else set_enabled(false);
 }
 
@@ -160,6 +168,7 @@ void JournalReading::ok_button() {
 }
 
 void JournalReading::set_enabled(bool enable) {
+    ui->main_view->setEnabled(enable);
     ui->back->setEnabled(enable && pic_index > 0);
     ui->ok->setEnabled(enable);
     ui->add->setEnabled(enable && records[0].pics.size() > 1);
@@ -192,22 +201,24 @@ void JournalReading::set_enabled(bool enable) {
 }
 
 void JournalReading::set_view(View view) {
-//    if (view == current_view) { qDebug() << "view = current"; return; }
+    if (view == current_view) return;
     current_view = view;
     switch (view) {
     case MAIN:
-        ui->stacked_view->setCurrentIndex(0);
+        ui->stacked_view->setCurrentIndex(1);
         ui->stackedWidget->setCurrentIndex(0);
         break;
     case LIST: case GALLERY:
-        ui->stacked_view->setCurrentIndex(1);
+        ui->stacked_view->setCurrentIndex(2);
         lay_previews(ui->page_index->value());
         break;
     case PREVIEW:
         break;
     case TITLES:
-        ui->stacked_view->setCurrentIndex(3);
+        ui->stacked_view->setCurrentIndex(4);
         lay_titles();
+        break;
+    default:
         break;
     }
     ui->main_view->setChecked(current_view == MAIN);

@@ -37,6 +37,10 @@ RecordBase::RecordBase(const Record& record, int index) :
     setLayout(&layout);
 }
 
+RecordBase::~RecordBase() {
+    disconnect(this, nullptr, nullptr, nullptr);
+}
+
 void RecordBase::load_thumbmnail() {
     auto pic = QImage(path);
     if (pic.isNull()) pic = QImage(path.chopped(3) + "jpg");
@@ -64,7 +68,6 @@ void RecordItem::include_log_info(int timestamp) {
     int days = last.daysTo(QDateTime::currentDateTime());
     text.setText(text.text() + QString("\n\t\tПубликовалось %1 %2 назад").arg(days).arg(inflect(days, "дней")));
 }
-
 
 RecordItem::RecordItem(const QString& quote, int index) :
     RecordBase(Record(quote), index)
@@ -159,15 +162,14 @@ TimeInputDialog::TimeInputDialog(const QTime& initial_time, QWidget *parent = nu
     time_edit->setDisplayFormat("HH:mm");
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
-    layout->addWidget(new QLabel("Выберите время:"));
-    layout->addWidget(time_edit);
-    layout->addWidget(buttons);
-    setLayout(layout);
+    layout.addWidget(new QLabel("Выберите время:"));
+    layout.addWidget(time_edit);
+    layout.addWidget(buttons);
+    setLayout(&layout);
 }
 
 TimeInputDialog::~TimeInputDialog() {
     delete buttons;
-    delete layout;
     delete time_edit;
 }
 
@@ -204,6 +206,12 @@ RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& t
 }
 
 RecordPreview::~RecordPreview() {
+    disconnect(this, nullptr, nullptr, nullptr);
+    disconnect(time_button, nullptr, nullptr, nullptr);
+    disconnect(reroll_button, nullptr, nullptr, nullptr);
+    disconnect(number_button, nullptr, nullptr, nullptr);
+    disconnect(search_button, nullptr, nullptr, nullptr);
+    disconnect(switch_button, nullptr, nullptr, nullptr);
     delete reroll_button;
     delete number_button;
     delete search_button;

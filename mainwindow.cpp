@@ -11,17 +11,21 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    if (initialize()) {
-//        get_hashtags();
-    }
+    initialize();
+    ui->toolBar->hide();
 
-    connect(ui->config_creation, &QAction::triggered, this, &MainWindow::journal_creation);
-    connect(ui->config_reading, &QAction::triggered, this, &MainWindow::journal_reading);
-    connect(ui->config_reading_all, &QAction::triggered, this, &MainWindow::journal_reading_all);
+    connect(ui->journal_creation, &QAction::triggered, this, &MainWindow::journal_creation);
+    connect(ui->journal_reading, &QAction::triggered, this, &MainWindow::journal_reading);
+    connect(ui->journal_reading_all, &QAction::triggered, this, &MainWindow::journal_reading_all);
     connect(ui->text_reading, &QAction::triggered, this, &MainWindow::text_reading);
     connect(ui->descriptions_reading, &QAction::triggered, this, &MainWindow::descriptions_reading);
     connect(ui->release_preparation, &QAction::triggered, this, &MainWindow::release_preparation);
 
+    connect(ui->journal_creation_button, &QPushButton::clicked, this, &MainWindow::journal_creation);
+    connect(ui->journal_reading_button, &QPushButton::clicked, this, &MainWindow::journal_reading);
+    connect(ui->text_reading_button, &QPushButton::clicked, this, &MainWindow::text_reading);
+    connect(ui->release_preparation_button, &QPushButton::clicked, this, &MainWindow::release_preparation);
+    connect(ui->exit_mode, &QAction::triggered, this, &MainWindow::exit_mode);
     connect(ui->initialization, &QAction::triggered, this, &MainWindow::initialize);
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_journals);
     connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
@@ -40,6 +44,13 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 
 void MainWindow::keyReleaseEvent(QKeyEvent* event) {
     emit key_release(event);
+}
+
+void MainWindow::exit_mode() {
+    ui->stacked_view->setCurrentIndex(0);
+    ui->exit_mode->setEnabled(false);
+    ui->statusBar->clearMessage();
+    ui->toolBar->hide();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -87,6 +98,7 @@ void MainWindow::journal_creation() {
         mode->~AbstractMode();
         mode = new(mode) JournalCreation(this);
     } else mode = new JournalCreation(this);
+    qDebug() << mode;
     mode->start();
 }
 
@@ -96,6 +108,7 @@ void MainWindow::journal_reading() {
         mode->~AbstractMode();
         mode = new(mode) JournalReading(this);
     } else mode = new JournalReading(this);
+    qDebug() << mode;
     mode->start();
 }
 
@@ -105,6 +118,7 @@ void MainWindow::journal_reading_all() {
         mode->~AbstractMode();
         mode = new(mode) JournalReading(this, true);
     } else mode = new JournalReading(this, true);
+    qDebug() << mode;
     mode->start();
 }
 
@@ -114,6 +128,7 @@ void MainWindow::text_reading() {
         mode->~AbstractMode();
         mode = new(mode) TextReading(this);
     } else mode = new TextReading(this);
+    qDebug() << mode;
     mode->start();
 }
 
@@ -138,6 +153,7 @@ void MainWindow::release_preparation() {
         mode->~AbstractMode();
         mode = new(mode) ReleasePreparation(this);
     } else mode = new ReleasePreparation(this);
+    qDebug() << mode;
     mode->start();
 }
 

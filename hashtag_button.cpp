@@ -56,7 +56,17 @@ HashtagPreview::HashtagPreview(const Hashtag& tag) : QWidget() {
     search_button->setIconSize(QSize(30,30));
     check_button->setIconSize(QSize(30,30));
     connect(&description, &QLineEdit::editingFinished, [this]() { edited = true; });
-//    set_hashtag(tag);
+    //    set_hashtag(tag);
+}
+
+HashtagPreview::~HashtagPreview() {
+    disconnect(reroll_button, nullptr, this, nullptr);
+    disconnect(search_button, nullptr, this, nullptr);
+    disconnect(check_button, nullptr, this, nullptr);
+    disconnect(&description, nullptr, this, nullptr);
+    delete reroll_button;
+    delete search_button;
+    delete check_button;
 }
 
 QMap<QString, int>* HashtagPreview::poll_logs;
@@ -108,6 +118,10 @@ HashtagButton::HashtagButton(const QString& text) :
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setToolTip(text);
     setCheckable(true);
+}
+
+HashtagButton::~HashtagButton() {
+    disconnect(this, nullptr, nullptr, nullptr);
 }
 
 void HashtagButton::mousePressEvent(QMouseEvent * e) {

@@ -59,8 +59,6 @@ private:
     void recalculate_hashtags(bool);
     void export_captions_by_ids();
     void export_info_by_ids();
-//    bool open_title_journal(bool all = false);
-
 };
 
 #endif // JOURNAL_READING_H

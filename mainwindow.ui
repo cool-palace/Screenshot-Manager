@@ -23,6 +23,164 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
+      <widget class="QWidget" name="page_7">
+       <layout class="QGridLayout" name="gridLayout_14">
+        <item row="0" column="0">
+         <layout class="QGridLayout" name="gridLayout_10">
+          <item row="0" column="3">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="journal_reading_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Открыть журнал</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/images/icons8-edit-file-80.png</normaloff>:/images/icons8-edit-file-80.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>80</width>
+              <height>80</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="journal_creation_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Создать журнал</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/images/icons8-add-file-80.png</normaloff>:/images/icons8-add-file-80.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>80</width>
+              <height>80</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="text_reading_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Извлечь текст</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/images/icons8-document-80.png</normaloff>:/images/icons8-document-80.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>80</width>
+              <height>80</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="release_preparation_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Публиковать посты</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/images/icons8-cloud-80.png</normaloff>:/images/icons8-cloud-80.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>80</width>
+              <height>80</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="page_4">
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <property name="leftMargin">
@@ -944,8 +1102,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>59</width>
-             <height>24</height>
+             <width>1080</width>
+             <height>443</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">
@@ -977,9 +1135,9 @@ p, li { white-space: pre-wrap; }
     </property>
     <addaction name="initialization"/>
     <addaction name="text_reading"/>
-    <addaction name="config_creation"/>
-    <addaction name="config_reading"/>
-    <addaction name="config_reading_all"/>
+    <addaction name="journal_creation"/>
+    <addaction name="journal_reading"/>
+    <addaction name="journal_reading_all"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -997,14 +1155,6 @@ p, li { white-space: pre-wrap; }
     <addaction name="export_captions_by_ids"/>
     <addaction name="export_info_by_ids"/>
     <addaction name="selected_tags_analysis"/>
-   </widget>
-   <widget class="QMenu" name="view_menu">
-    <property name="title">
-     <string>Вид</string>
-    </property>
-    <addaction name="main_view"/>
-    <addaction name="list_view"/>
-    <addaction name="gallery_view"/>
    </widget>
    <widget class="QMenu" name="menu_4">
     <property name="title">
@@ -1037,11 +1187,13 @@ p, li { white-space: pre-wrap; }
    <addaction name="menu"/>
    <addaction name="menu_2"/>
    <addaction name="menu_3"/>
-   <addaction name="view_menu"/>
    <addaction name="menu_4"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
@@ -1051,11 +1203,7 @@ p, li { white-space: pre-wrap; }
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="config_creation"/>
-   <addaction name="text_reading"/>
-   <addaction name="config_reading"/>
-   <addaction name="descriptions_reading"/>
-   <addaction name="release_preparation"/>
+   <addaction name="exit_mode"/>
    <addaction name="poll_preparation"/>
    <addaction name="separator"/>
    <addaction name="save"/>
@@ -1069,7 +1217,7 @@ p, li { white-space: pre-wrap; }
    <addaction name="gallery_view"/>
    <addaction name="preview_view"/>
   </widget>
-  <action name="config_creation">
+  <action name="journal_creation">
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/images/icons8-add-file-80.png</normaloff>:/images/icons8-add-file-80.png</iconset>
@@ -1098,7 +1246,7 @@ p, li { white-space: pre-wrap; }
     <string>Открыть журнал скриншотов</string>
    </property>
   </action>
-  <action name="config_reading">
+  <action name="journal_reading">
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/images/icons8-edit-file-80.png</normaloff>:/images/icons8-edit-file-80.png</iconset>
@@ -1148,6 +1296,9 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="checked">
     <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
    </property>
    <property name="icon">
     <iconset resource="icons.qrc">
@@ -1276,7 +1427,7 @@ p, li { white-space: pre-wrap; }
     <string>Экспорт в текст</string>
    </property>
   </action>
-  <action name="config_reading_all">
+  <action name="journal_reading_all">
    <property name="text">
     <string>Общее редактирование</string>
    </property>
@@ -1429,6 +1580,9 @@ p, li { white-space: pre-wrap; }
    </property>
   </action>
   <action name="descriptions_reading">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="icons.qrc">
      <normaloff>:/images/icons8-note-80.png</normaloff>:/images/icons8-note-80.png</iconset>
@@ -1476,6 +1630,18 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Подбор постов к опросу</string>
+   </property>
+  </action>
+  <action name="exit_mode">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/icons8-exit-80.png</normaloff>:/images/icons8-exit-80.png</iconset>
+   </property>
+   <property name="text">
+    <string>Выход из режима</string>
    </property>
   </action>
  </widget>

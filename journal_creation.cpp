@@ -15,11 +15,11 @@ JournalCreation::JournalCreation(MainWindow* parent) : AbstractPreparationMode(p
 }
 
 JournalCreation::~JournalCreation() {
+    disconnect(parent, nullptr, this, nullptr);
     set_enabled(false);
 }
 
 void JournalCreation::start() {
-    set_view(MAIN);
     manager->get_albums();
 }
 
@@ -99,6 +99,7 @@ void JournalCreation::ok_button() {
 }
 
 void JournalCreation::set_enabled(bool enable) {
+    ui->main_view->setEnabled(enable);
     ui->back->setEnabled(enable && pic_index > 0);
     ui->ok->setEnabled(enable);
     ui->skip->setEnabled(enable);
@@ -112,8 +113,7 @@ void JournalCreation::draw(int index = 0) {
     if (!ui->offline->isChecked()) {
         manager->get_image(links[index]);
     } else {
-        auto dir_path = locations[SCREENSHOTS] + QDir::separator() + title_name() + QDir::separator();
-        qDebug() << dir_path + pics[index];
+        auto dir_path = locations[SCREENSHOTS] + title_name() + QDir::separator();
         auto image = QImage(dir_path + pics[index]);
         if (image.isNull()) {
             // Checking the reserve screenshot folder
@@ -180,6 +180,7 @@ void JournalCreation::set_albums(const QMap<QString, int>& ids) {
 void JournalCreation::set_photo_ids(const QVector<int>& ids, const QStringList& urls) {
     photo_ids = ids;
     links = urls;
+    set_view(MAIN);
     if (data_ready()) {
         ui->ok->setText("Готово");
         ui->add->setText("Добавить");
@@ -189,7 +190,10 @@ void JournalCreation::set_photo_ids(const QVector<int>& ids, const QStringList& 
         draw(0);
         set_enabled(true);
         show_status();
-    } else set_enabled(false);
+    } else {
+        set_enabled(false);
+        ui->exit_mode->trigger();
+    }
 }
 
 bool JournalCreation::read_quote_file(QFile& file) {

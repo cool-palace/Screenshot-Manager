@@ -90,6 +90,7 @@ private:
     void set_mode(Mode);
     void keyPressEvent(QKeyEvent*) override;
     void keyReleaseEvent(QKeyEvent*) override;
+    void exit_mode();
 
     // Hashtag management and filtering
 

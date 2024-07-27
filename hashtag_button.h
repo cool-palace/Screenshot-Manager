@@ -52,7 +52,7 @@ class HashtagPreview : public QWidget
     Q_OBJECT
 public:
     HashtagPreview(const Hashtag& tag = Hashtag());
-    ~HashtagPreview() override {}
+    ~HashtagPreview() override;
     void set_hashtag(const Hashtag&);
     QString line() const { return hashtag.text(); }
     QString option() const { return hashtag.option(); }
@@ -90,7 +90,7 @@ class HashtagButton : public QPushButton
     Q_OBJECT
 public:
     HashtagButton(const QString&);
-    ~HashtagButton() override {}
+    ~HashtagButton() override;
     void mousePressEvent(QMouseEvent*) override;
     void mouseDoubleClickEvent(QMouseEvent*) override;
     void highlight(const QChar&, bool);

@@ -9,6 +9,7 @@ TextReading::TextReading(MainWindow* parent) : AbstractPreparationMode(parent) {
 }
 
 TextReading::~TextReading() {
+    disconnect(ui->load_subs, nullptr, this, nullptr);
     set_enabled(false);
 }
 
@@ -71,6 +72,7 @@ void TextReading::ok_button() {
 }
 
 void TextReading::set_enabled(bool enable) {
+    ui->main_view->setEnabled(enable);
     ui->back->setEnabled(enable && pic_index > 0);
     ui->ok->setEnabled(enable);
     ui->load_subs->setEnabled(enable);
@@ -98,8 +100,7 @@ void TextReading::lay_previews(int page) {
 }
 
 void TextReading::draw(int index = 0) {
-    auto dir_path = locations[SCREENSHOTS] + QDir::separator() + title_name() + QDir::separator();
-    qDebug() << dir_path + pics[index];
+    auto dir_path = locations[SCREENSHOTS] + title_name() + QDir::separator();
     auto image = QImage(dir_path + pics[index]);
     if (image.isNull()) {
         // Checking the reserve screenshot folder for text reading

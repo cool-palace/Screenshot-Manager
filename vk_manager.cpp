@@ -85,7 +85,6 @@ void VK_Manager::post(int index, const QString& attachments, int date) {
             emit post_failed(index, QJsonDocument(reply).toJson(QJsonDocument::Compact));
             return;
         }
-//        auto post_id = reply["response"].toObject()["post_id"].toInt();
         emit posted_successfully(index, date);
     });
 }

@@ -28,5 +28,6 @@
         <file>images/icons8-note-80.png</file>
         <file>images/icons8-history-80.png</file>
         <file>images/icons8-time-80.png</file>
+        <file>images/icons8-exit-80.png</file>
     </qresource>
 </RCC>

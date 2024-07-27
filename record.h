@@ -29,7 +29,7 @@ class RecordBase : public QWidget
     Q_OBJECT
 public:
     RecordBase(const Record& rec = Record(), int i = 0);
-    ~RecordBase() override {}
+    ~RecordBase() override;
     void mouseDoubleClickEvent(QMouseEvent*) override;
     void update_text(const QString&);
     virtual void set_gallery_view() = 0;
@@ -87,7 +87,7 @@ class RecordFrame : public QLabel
     Q_OBJECT
 public:
     RecordFrame(const QString&, qreal k = 1);
-    ~RecordFrame() override {};
+    ~RecordFrame() override {}
     static VK_Manager* manager;
 };
 
@@ -99,7 +99,7 @@ public:
     QTime selectedTime() const { return time_edit->time(); }
 private:
     QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-    QVBoxLayout* layout = new QVBoxLayout;
+    QVBoxLayout layout;
     QTimeEdit* time_edit;
 };
 
