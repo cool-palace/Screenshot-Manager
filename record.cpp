@@ -177,7 +177,6 @@ RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& t
     log_info.setFont(text.font());
     update_images(record.links);
     update_log_info(record.ids.first());
-    time_button->setToolTip(time.time().toString());
     layout.addWidget(&number,0,0);
     layout.addLayout(&images_layout,0,1);
     layout.addWidget(&text,0,2);
@@ -192,6 +191,11 @@ RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& t
     connect(number_button, &QPushButton::clicked, this, &RecordPreview::input_number);
     connect(search_button, &QPushButton::clicked, this, &RecordPreview::search);
     connect(switch_button, &QPushButton::clicked, this, &RecordPreview::switch_with_next);
+    time_button->setToolTip(QString("Время публикации: %1").arg(time.time().toString("hh:mm")));
+    reroll_button->setToolTip("Случайный выбор");
+    number_button->setToolTip("Выбор по номеру");
+    search_button->setToolTip("Поиск по списку");
+    switch_button->setToolTip("Сдвинуть вниз");
     time_button->setIconSize(QSize(30,30));
     reroll_button->setIconSize(QSize(30,30));
     number_button->setIconSize(QSize(30,30));
@@ -235,11 +239,10 @@ void RecordPreview::search() {
 }
 
 void RecordPreview::set_time() {
-    QTime timeq = time.time();
-    TimeInputDialog dialog(timeq);
+    TimeInputDialog dialog(time.time());
     if (dialog.exec() == QDialog::Accepted) {
         time.setTime(dialog.selectedTime());
-        time_button->setToolTip(time.time().toString());
+        time_button->setToolTip(QString("Время публикации: %1").arg(time.time().toString("hh:mm")));
     }
 }
 
