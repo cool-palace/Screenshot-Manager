@@ -338,6 +338,25 @@ void AbstractOperationMode::filter_event(const QMap<int, int>&) {
     show_status();
 }
 
+void AbstractOperationMode::filter_event(FilterType type) {
+    // Filter for record size
+    update_filters(type, "size");
+    if (filters.isEmpty()) {
+        exit_filtering();
+        return;
+    }
+    // Disabling all buttons
+    for (auto button : hashtags) {
+        button->setDisabled(true);
+    }
+    // Handling the filter not used in the config
+    if (filtration_results.isEmpty()) {
+        ui->back->setDisabled(true);
+        ui->ok->setDisabled(true);
+    } else show_filtering_results();
+    show_status();
+}
+
 void AbstractOperationMode::set_view(View view) {
     if (view == current_view) return;
     current_view = view;
@@ -544,22 +563,8 @@ void AbstractOperationMode::exit_filtering() {
 }
 
 QString AbstractOperationMode::filtration_message(int i) const {
-    QString found = "Найдено ";
-    QString recs = " записей по ";
-    QString filters_count = " фильтрам";
-    if ((i % 100 - i % 10) != 10) {
-        if (i % 10 == 1) {
-            found = "Найдена ";
-            recs = " запись по ";
-        } else if (i % 10 > 1 && i % 10 < 5) {
-            recs = " записи по ";
-        }
-    }
     int j = filters.size();
-    if ((j % 100 - j % 10) != 10 && j % 10 == 1) {
-        filters_count = " фильтру";
-    }
-    return found + QString().setNum(i) + recs + QString().setNum(j) + filters_count;
+    return QString("%1 %2 %3 по %4 %5").arg(inflect(i, "Найдено")).arg(i).arg(inflect(i, "записей")).arg(j).arg(inflect(j, "фильтрам"));
 }
 
 QString AbstractOperationMode::filtration_indices() const {

@@ -61,7 +61,8 @@ RecordItem::RecordItem(const Record& record, int index, const QString& dir) :
 
 void RecordItem::include_log_info(int timestamp) {
     QDateTime last = QDateTime::fromSecsSinceEpoch(timestamp, Qt::LocalTime);
-    text.setText(text.text() + QString("\n\t\tПубликовалось %1 дней назад").arg(last.daysTo(QDateTime::currentDateTime())));
+    int days = last.daysTo(QDateTime::currentDateTime());
+    text.setText(text.text() + QString("\n\t\tПубликовалось %1 %2 назад").arg(days).arg(inflect(days, "дней")));
 }
 
 
@@ -227,7 +228,8 @@ void RecordPreview::update_log_info(int id) {
     auto font = log_info.font();
     if (logs->contains(id)) {
         QDateTime last = QDateTime::fromSecsSinceEpoch(logs->value(id), Qt::LocalTime);
-        log_info.setText(QString("Публиковалось %1 дней назад").arg(last.daysTo(time)));
+        int days = last.daysTo(time);
+        log_info.setText(QString("Публиковалось %1 %2 назад").arg(days).arg(inflect(days, "дней")));
         font.setBold(true);
         font.setItalic(false);
     } else {

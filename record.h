@@ -10,6 +10,7 @@
 #include <QPushButton>
 #include <QInputDialog>
 #include "vk_manager.h"
+#include "common.h"
 
 struct Record {
     Record(const QString& quote = QString()) : quote(quote) {}

@@ -102,6 +102,7 @@ public slots:
     void filter_event(RecordTitleItem*, bool);      // Title filters
     void filter_event(int);                         // Date filters
     void filter_event(const QMap<int, int>&);       // Logs checking
+    void filter_event(FilterType);                  // Size filters
 
 protected slots:
     virtual void set_view(View) override;

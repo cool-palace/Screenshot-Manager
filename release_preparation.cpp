@@ -31,6 +31,7 @@ ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMo
 
     connect(ui->size_limit, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
         // Removing existing size filter
+        qDebug() << filters;
         if (filters.contains("size")) {
             filter_event(filters["size"]);
         }
@@ -55,15 +56,7 @@ ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMo
         }
     });
     connect(ui->series_limit_days, QOverload<int>::of(&QSpinBox::valueChanged), [this](int days) {
-        QString suffix = " дней";
-        if ((days % 100 - days % 10) != 10) {
-            if (days % 10 == 1) {
-                suffix = " день";
-            } else if (days % 10 > 1 && days % 10 < 5) {
-                suffix = " дня";
-            }
-        }
-        ui->series_limit_days->setSuffix(suffix);
+        ui->series_limit_days->setSuffix(" " + inflect(days, "дней"));
         emit ui->titles_reset_filter->clicked(true);
         exclude_recently_posted_series(days);
     });

@@ -232,6 +232,7 @@ void TextReading::load_subs() {
         ui->skip->setEnabled(true);
         ui->list_view->setEnabled(true);
         ui->page_index->setEnabled(true);
+        ui->pics_per_page->setEnabled(true);
         quote_index = subs.indexOf(ui->text->toPlainText());
         ui->slider->setEnabled(true);
         ui->slider->setMaximum(subs.size() - 1);
@@ -249,7 +250,6 @@ void TextReading::load_subs() {
             });
             ui->view_grid->addWidget(record_items.back());
         }
-//            lay_previews();
     }
 }
 
@@ -265,6 +265,7 @@ void TextReading::clear_subs() {
     ui->add->setEnabled(false);
     ui->list_view->setEnabled(false);
     ui->page_index->setEnabled(false);
+    ui->pics_per_page->setEnabled(false);
 }
 
 void TextReading::update_quote_file() {
