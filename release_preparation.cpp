@@ -195,9 +195,9 @@ void ReleasePreparation::set_enabled(bool enable) {
 }
 
 bool ReleasePreparation::open_public_journal() {
-    auto json_file = json_object(locations[JOURNALS] + "result\\public_records.json");
+    auto json_file = json_object(locations[PUBLIC_RECORDS]);
     if (!json_file.contains("records")) {
-        ui->statusBar->showMessage("Неверный формат файла public_records.json" );
+        ui->statusBar->showMessage("Неверный формат скомпилированного журнала.");
         return false;
     }
     auto records_array = json_file.value("records").toArray();

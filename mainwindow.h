@@ -36,7 +36,9 @@ enum Directories {
     SUBS,
     HASHTAGS,
     LOGS_FILE,
-    POLL_LOGS
+    POLL_LOGS,
+    PUBLIC_RECORDS,
+    HIDDEN_RECORDS
 };
 
 class MainWindow : public QMainWindow

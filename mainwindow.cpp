@@ -66,6 +66,8 @@ bool MainWindow::initialize() {
     locations[HASHTAGS] = json_file.value("hashtags").toString();
     locations[LOGS_FILE] = json_file.value("logs").toString();
     locations[POLL_LOGS] = json_file.value("poll_logs").toString();
+    locations[PUBLIC_RECORDS] = json_file.value("public_records").toString();
+    locations[HIDDEN_RECORDS] = json_file.value("hidden_records").toString();
     QString access_token = json_file.value("access_token").toString();
     QString group_id = json_file.value("group_id").toString();
     QString public_id = json_file.value("public_id").toString();
@@ -206,8 +208,8 @@ void MainWindow::compile_journals() {
     result["series_map"] = series_map;
     hidden_result["records"] = hidden_array;
     hidden_result["reverse_index"] = reverse_index(hidden_array);
-    QFile file(locations[JOURNALS] + "result\\public_records.json");
-    QFile hidden_file(locations[JOURNALS] + "result\\hidden_records.json");
+    QFile file(locations[PUBLIC_RECORDS]);
+    QFile hidden_file(locations[HIDDEN_RECORDS]);
     save_json(hidden_result, hidden_file);
     auto message = save_json(result, file)
             ? "Обработано конфигов: " + QString().setNum(configs.size()) + ", "
