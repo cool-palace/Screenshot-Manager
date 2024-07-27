@@ -9,6 +9,8 @@
 #include <QtConcurrent>
 #include <QPushButton>
 #include <QInputDialog>
+#include <QTimeEdit>
+#include <QDialogButtonBox>
 #include "vk_manager.h"
 #include "common.h"
 
@@ -89,13 +91,24 @@ public:
     static VK_Manager* manager;
 };
 
+class TimeInputDialog : public QDialog {
+    Q_OBJECT
+public:
+    TimeInputDialog(const QTime&, QWidget*);
+    ~TimeInputDialog();
+    QTime selectedTime() const { return time_edit->time(); }
+private:
+    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    QVBoxLayout* layout = new QVBoxLayout;
+    QTimeEdit* time_edit;
+};
 
 class RecordPreview : public RecordBase
 {
     Q_OBJECT
 public:
     RecordPreview(const Record&, int, const QDateTime&);
-    ~RecordPreview() override {}
+    ~RecordPreview() override;
     void set_gallery_view() override {};
     void set_list_view() override;
     static QVector<Record>* records;
@@ -112,6 +125,7 @@ private:
     QLabel log_info;
     QDateTime time;
     QGridLayout images_layout;
+    QPushButton* time_button = new QPushButton(QIcon(":/images/icons8-time-80.png"), "");
     QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
     QPushButton* number_button = new QPushButton(QIcon(":/images/icons8-12-80.png"), "");
     QPushButton* search_button = new QPushButton(QIcon(":/images/icons8-search-80.png"), "");
@@ -120,6 +134,7 @@ private:
     void input_number();
     void switch_with_next();
     void search();
+    void set_time();
     void clear();
     void update_images(const QStringList&);
 };

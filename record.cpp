@@ -153,28 +153,58 @@ RecordFrame::RecordFrame(const QString& link, qreal k) {
     });
 }
 
+TimeInputDialog::TimeInputDialog(const QTime& initial_time, QWidget *parent = nullptr) : QDialog(parent) {
+    setWindowTitle("Редактирование времени");
+    time_edit = new QTimeEdit(initial_time);
+    time_edit->setDisplayFormat("HH:mm");
+    connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    layout->addWidget(new QLabel("Выберите время:"));
+    layout->addWidget(time_edit);
+    layout->addWidget(buttons);
+    setLayout(layout);
+}
+
+TimeInputDialog::~TimeInputDialog() {
+    delete buttons;
+    delete layout;
+    delete time_edit;
+}
+
 RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& time) :
     RecordBase(record, index), time(time)
 {
     log_info.setFont(text.font());
     update_images(record.links);
     update_log_info(record.ids.first());
+    time_button->setToolTip(time.time().toString());
     layout.addWidget(&number,0,0);
     layout.addLayout(&images_layout,0,1);
     layout.addWidget(&text,0,2);
     layout.addWidget(&log_info,1,2);
-    layout.addWidget(reroll_button,0,3);
-    layout.addWidget(number_button,0,4);
-    layout.addWidget(search_button,0,5);
-    layout.addWidget(switch_button,0,6);
+    layout.addWidget(time_button,0,3);
+    layout.addWidget(reroll_button,0,4);
+    layout.addWidget(number_button,0,5);
+    layout.addWidget(search_button,0,6);
+    layout.addWidget(switch_button,0,7);
+    connect(time_button, &QPushButton::clicked, this, &RecordPreview::set_time);
     connect(reroll_button, &QPushButton::clicked, this, &RecordPreview::reroll);
     connect(number_button, &QPushButton::clicked, this, &RecordPreview::input_number);
     connect(search_button, &QPushButton::clicked, this, &RecordPreview::search);
     connect(switch_button, &QPushButton::clicked, this, &RecordPreview::switch_with_next);
+    time_button->setIconSize(QSize(30,30));
     reroll_button->setIconSize(QSize(30,30));
     number_button->setIconSize(QSize(30,30));
     search_button->setIconSize(QSize(30,30));
     switch_button->setIconSize(QSize(30,30));
+}
+
+RecordPreview::~RecordPreview() {
+    delete reroll_button;
+    delete number_button;
+    delete search_button;
+    delete switch_button;
+    delete time_button;
 }
 
 void RecordPreview::reroll() {
@@ -202,6 +232,15 @@ void RecordPreview::switch_with_next() {
 
 void RecordPreview::search() {
     emit search_start(selected_records->indexOf(this));
+}
+
+void RecordPreview::set_time() {
+    QTime timeq = time.time();
+    TimeInputDialog dialog(timeq);
+    if (dialog.exec() == QDialog::Accepted) {
+        time.setTime(dialog.selectedTime());
+        time_button->setToolTip(time.time().toString());
+    }
 }
 
 void RecordPreview::clear() {
