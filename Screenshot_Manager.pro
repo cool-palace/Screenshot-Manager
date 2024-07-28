@@ -25,29 +25,29 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-        abstract_mode.cpp \
-        common.cpp \
-        hashtag_button.cpp \
-        journal_creation.cpp \
-        journal_reading.cpp \
+        src\abstract_mode.cpp \
+        src\common.cpp \
+        src\hashtag_button.cpp \
+        src\journal_creation.cpp \
+        src\journal_reading.cpp \
         main.cpp \
-        mainwindow.cpp \
-        record.cpp \
-        release_preparation.cpp \
-        text_reading.cpp \
-        vk_manager.cpp
+        src\mainwindow.cpp \
+        src\record.cpp \
+        src\release_preparation.cpp \
+        src\text_reading.cpp \
+        src\vk_manager.cpp
 
 HEADERS += \
-        abstract_mode.h \
-        common.h \
-        hashtag_button.h \
-        journal_creation.h \
-        journal_reading.h \
-        mainwindow.h \
-        record.h \
-        release_preparation.h \
-        text_reading.h \
-        vk_manager.h
+        include\abstract_mode.h \
+        include\common.h \
+        include\hashtag_button.h \
+        include\journal_creation.h \
+        include\journal_reading.h \
+        include\mainwindow.h \
+        include\record.h \
+        include\release_preparation.h \
+        include\text_reading.h \
+        include\vk_manager.h
 
 FORMS += \
         mainwindow.ui
