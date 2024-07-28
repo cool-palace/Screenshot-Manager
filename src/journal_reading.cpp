@@ -153,6 +153,7 @@ void JournalReading::ok_button() {
         if (pic_index + 1 == records.size()) {
             ui->ok->setEnabled(false);
             ui->save->setEnabled(true);
+            ui->exit_mode->setEnabled(false);
             return;
         }
     }
@@ -387,6 +388,7 @@ void JournalReading::display(int index) {
     bool reached_end = index + 1 >= records.size();
     bool listing_on = pic_end_index + 1 < records[index].pics.size();
     ui->save->setEnabled(!edited_ranges.empty());
+    ui->exit_mode->setEnabled(edited_ranges.empty());
     disconnect(ui->private_switch, &QAction::triggered, this, &JournalReading::set_edited);
     ui->private_switch->setChecked(!records[index].is_public);
     connect(ui->private_switch, &QAction::triggered, this, &JournalReading::set_edited);
@@ -433,9 +435,10 @@ void JournalReading::save_changes() {
         int end = pair.second;
         update_quote_file(start, end);
         save_title_journal(start, end);
-        record_edited = false;
-        ui->save->setEnabled(false);
     }
+    record_edited = false;
+    ui->save->setEnabled(false);
+    ui->exit_mode->setEnabled(true);
     edited_ranges.clear();
 }
 
@@ -468,7 +471,8 @@ void JournalReading::caption_success() {
 }
 
 void JournalReading::captcha_handling(const QString& captcha_id) {
-    ui->statusBar->showMessage(QString("Осталось подписать %1 фотографий").arg(captions_for_ids.size()));
+    int size = captions_for_ids.size();
+    ui->statusBar->showMessage(QString("Осталось подписать %1 %2").arg(size).arg(inflect(size, "фотографий")));
     bool ok;
     QString text = QInputDialog::getText(parent, tr("Капча"),
                                                tr("Введите капчу:"), QLineEdit::Normal,

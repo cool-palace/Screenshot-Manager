@@ -32,6 +32,8 @@ QStringList word_forms(const QString& word) {
         return QStringList() << "фильтру" << word << word;
     } else if (word == "дней") {
         return QStringList() << "день" << "дня" << word;
+    } else if (word == "фотографий") {
+        return QStringList() << "фотографию" << "фотографии" << word;
     } else return QStringList() << word << word << word;
 }
 
