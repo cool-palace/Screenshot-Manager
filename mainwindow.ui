@@ -438,8 +438,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1080</width>
-             <height>428</height>
+             <width>59</width>
+             <height>24</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -600,7 +600,7 @@ p, li { white-space: pre-wrap; }
              <x>0</x>
              <y>0</y>
              <width>1108</width>
-             <height>460</height>
+             <height>266</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -1102,8 +1102,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1080</width>
-             <height>443</height>
+             <width>59</width>
+             <height>24</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">
@@ -1197,6 +1197,9 @@ p, li { white-space: pre-wrap; }
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -1204,7 +1207,6 @@ p, li { white-space: pre-wrap; }
     <bool>false</bool>
    </attribute>
    <addaction name="exit_mode"/>
-   <addaction name="poll_preparation"/>
    <addaction name="separator"/>
    <addaction name="save"/>
    <addaction name="private_switch"/>
@@ -1216,6 +1218,7 @@ p, li { white-space: pre-wrap; }
    <addaction name="list_view"/>
    <addaction name="gallery_view"/>
    <addaction name="preview_view"/>
+   <addaction name="poll_preparation"/>
   </widget>
   <action name="journal_creation">
    <property name="icon">
@@ -1306,6 +1309,9 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Основной</string>
+   </property>
+   <property name="iconText">
+    <string>Основной вид</string>
    </property>
   </action>
   <action name="gallery_view">
@@ -1469,7 +1475,7 @@ p, li { white-space: pre-wrap; }
     <string>Сохранить файл</string>
    </property>
    <property name="iconText">
-    <string>Сохранить изменения</string>
+    <string>Сохранить</string>
    </property>
    <property name="toolTip">
     <string>Сохранить изменения</string>
@@ -1503,7 +1509,7 @@ p, li { white-space: pre-wrap; }
      <normaloff>:/images/icons8-source-code-80.png</normaloff>:/images/icons8-source-code-80.png</iconset>
    </property>
    <property name="text">
-    <string>Подгрузка субтитров</string>
+    <string>Субтитры</string>
    </property>
    <property name="toolTip">
     <string>Подгрузка субтитров</string>
@@ -1533,7 +1539,7 @@ p, li { white-space: pre-wrap; }
      <normaloff>:/images/icons8-tiles-80.png</normaloff>:/images/icons8-tiles-80.png</iconset>
    </property>
    <property name="text">
-    <string>Выбор материалов</string>
+    <string>Подготовка постов</string>
    </property>
    <property name="toolTip">
     <string>Выбор материалов</string>
@@ -1559,7 +1565,7 @@ p, li { white-space: pre-wrap; }
      <normaloff>:/images/icons8-poll-80.png</normaloff>:/images/icons8-poll-80.png</iconset>
    </property>
    <property name="text">
-    <string>Подготовка опроса</string>
+    <string>Опрос</string>
    </property>
   </action>
   <action name="title_view">
@@ -1571,7 +1577,7 @@ p, li { white-space: pre-wrap; }
      <normaloff>:/images/icons8-small-icons-80.png</normaloff>:/images/icons8-small-icons-80.png</iconset>
    </property>
    <property name="text">
-    <string>Выбор по тайтлам</string>
+    <string>Сериалы</string>
    </property>
    <property name="toolTip">
     <string>Выбор по тайтлам</string>
@@ -1611,7 +1617,7 @@ p, li { white-space: pre-wrap; }
      <normaloff>:/images/icons8-history-80.png</normaloff>:/images/icons8-history-80.png</iconset>
    </property>
    <property name="text">
-    <string>Логи публикаций</string>
+    <string>Логи</string>
    </property>
   </action>
   <action name="initialization">
@@ -1644,7 +1650,7 @@ p, li { white-space: pre-wrap; }
      <normaloff>:/images/icons8-exit-80.png</normaloff>:/images/icons8-exit-80.png</iconset>
    </property>
    <property name="text">
-    <string>Выход из режима</string>
+    <string>Выход</string>
    </property>
   </action>
  </widget>
