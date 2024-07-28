@@ -100,6 +100,7 @@ public:
 private:
     QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     QVBoxLayout layout;
+    QLabel label;
     QTimeEdit* time_edit;
 };
 

@@ -162,7 +162,8 @@ TimeInputDialog::TimeInputDialog(const QTime& initial_time, QWidget *parent = nu
     time_edit->setDisplayFormat("HH:mm");
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
-    layout.addWidget(new QLabel("Выберите время:"));
+    label.setText("Выберите время:");
+    layout.addWidget(&label);
     layout.addWidget(time_edit);
     layout.addWidget(buttons);
     setLayout(&layout);
