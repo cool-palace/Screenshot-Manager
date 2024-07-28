@@ -355,6 +355,7 @@ void ReleasePreparation::generate_release() {
 }
 
 void ReleasePreparation::generate_release(const QVector<int>& cycle) {
+    smart_tag_pairs.clear();
     QStringList tag_list = selected_hashtags.keys();
     remove_hashtag_filters();
     for (int i = 0; i < cycle.size() - 1; ++i) {
