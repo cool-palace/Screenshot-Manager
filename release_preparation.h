@@ -46,7 +46,7 @@ protected slots:
 
 private slots:
     bool open_public_journal();
-    void check_logs();
+    void check_logs(bool);
     void generate_button();
     void generate_release();
     void generate_release(const QVector<int>&);

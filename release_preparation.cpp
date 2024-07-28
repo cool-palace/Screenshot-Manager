@@ -321,10 +321,14 @@ bool ReleasePreparation::data_ready() {
     return open_public_journal();
 }
 
-void ReleasePreparation::check_logs() {
+void ReleasePreparation::check_logs(bool enable) {
     filter_event(logs);
     lay_previews();
-    set_view(LIST);
+    set_view(enable ? LIST : PREVIEW);
+    set_enabled(!enable);
+    ui->check_log->setEnabled(true);
+    ui->page_index->setEnabled(true);
+    ui->pics_per_page->setEnabled(true);
 }
 
 void ReleasePreparation::generate_button() {
@@ -761,7 +765,10 @@ void ReleasePreparation::update_logs() {
         object[QString().setNum(key)] = logs[key];
     }
     for (auto record : selected_records) {
-        record->update_log_info(records[record->get_index()].ids.first());
+        int index = record->get_index();
+        int id = records[index].ids.first();
+        record->update_log_info(id);
+        dynamic_cast<RecordItem*>(record_items[index])->include_log_info(logs.value(id));
     }
     auto message = save_json(object, file)
             ? "Логи публикаций обновлены."
