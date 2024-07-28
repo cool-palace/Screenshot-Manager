@@ -1,4 +1,4 @@
-#include "record.h"
+#include "include\record.h"
 
 QJsonObject Record::to_json() const {
     QJsonObject current_record;

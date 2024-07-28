@@ -1,6 +1,6 @@
 #ifndef TEXT_READING_H
 #define TEXT_READING_H
-#include "abstract_mode.h"
+#include "include\abstract_mode.h"
 
 class TextReading : public AbstractPreparationMode
 {

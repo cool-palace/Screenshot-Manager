@@ -1,4 +1,4 @@
-#include "text_reading.h"
+#include "include\text_reading.h"
 
 TextReading::TextReading(MainWindow* parent) : AbstractPreparationMode(parent) {
     connect(ui->load_subs, &QAction::triggered, this, &TextReading::load_subs);

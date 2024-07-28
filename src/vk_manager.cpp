@@ -1,4 +1,4 @@
-#include "vk_manager.h"
+#include "include\vk_manager.h"
 #include <QRegularExpression>
 
 VK_Manager::VK_Manager(const QString& access_token, const QString& group_id, const QString& public_id)

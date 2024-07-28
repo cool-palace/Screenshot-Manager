@@ -1,4 +1,4 @@
-#include "hashtag_button.h"
+#include "include\hashtag_button.h"
 
 Hashtag::Hashtag(const QString& name, const QJsonObject& object) : name(name) {
     rank = object["rank"].toInt();

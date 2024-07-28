@@ -11,8 +11,8 @@
 #include <QInputDialog>
 #include <QTimeEdit>
 #include <QDialogButtonBox>
-#include "vk_manager.h"
-#include "common.h"
+#include "include\vk_manager.h"
+#include "include\common.h"
 
 struct Record {
     Record(const QString& quote = QString()) : quote(quote) {}

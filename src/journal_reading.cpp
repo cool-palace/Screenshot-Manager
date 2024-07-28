@@ -1,4 +1,4 @@
-#include "journal_reading.h"
+#include "include\journal_reading.h"
 
 JournalReading::JournalReading(MainWindow *parent, bool all) : AbstractOperationMode(parent), record_edited(all)
 {

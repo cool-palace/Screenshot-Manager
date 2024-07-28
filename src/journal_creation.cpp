@@ -1,4 +1,4 @@
-#include "journal_creation.h"
+#include "include\journal_creation.h"
 
 JournalCreation::JournalCreation(MainWindow* parent) : AbstractPreparationMode(parent)
 {

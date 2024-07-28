@@ -1,7 +1,7 @@
 #ifndef RELEASE_PREPARATION_H
 #define RELEASE_PREPARATION_H
 #include <QObject>
-#include "abstract_mode.h"
+#include "include\abstract_mode.h"
 
 class ReleasePreparation : public AbstractOperationMode
 {

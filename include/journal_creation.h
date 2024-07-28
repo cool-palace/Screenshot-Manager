@@ -1,7 +1,7 @@
 #ifndef JOURNAL_CREATION_H
 #define JOURNAL_CREATION_H
 #include <QObject>
-#include "abstract_mode.h"
+#include "include\abstract_mode.h"
 
 class JournalCreation : public AbstractPreparationMode
 {

@@ -1,7 +1,7 @@
 #ifndef JOURNAL_READING_H
 #define JOURNAL_READING_H
 #include <QObject>
-#include "abstract_mode.h"
+#include "include\abstract_mode.h"
 
 class JournalReading : public AbstractOperationMode
 {

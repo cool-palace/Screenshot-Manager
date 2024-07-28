@@ -13,10 +13,10 @@
 #include <QRegularExpression>
 #include <QMessageBox>
 #include <QProgressDialog>
-#include "vk_manager.h"
-#include "hashtag_button.h"
-#include "record.h"
-#include "common.h"
+#include "include\vk_manager.h"
+#include "include\hashtag_button.h"
+#include "include\record.h"
+#include "include\common.h"
 
 namespace Ui {
 class MainWindow;

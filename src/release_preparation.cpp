@@ -1,7 +1,8 @@
-#include "release_preparation.h"
+#include "include\release_preparation.h"
 
 ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMode(parent)
 {
+    ui->main_view->setIcon(QIcon(":/images/icons8-hashtag-80.png"));
     connect(manager, &VK_Manager::posted_successfully, this, &ReleasePreparation::posting_success);
     connect(manager, &VK_Manager::post_failed, this, &ReleasePreparation::posting_fail);
     connect(manager, &VK_Manager::poll_ready, this, &ReleasePreparation::post_poll);

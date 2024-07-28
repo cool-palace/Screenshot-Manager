@@ -1,7 +1,7 @@
 #ifndef ABSTRACT_MODE_H
 #define ABSTRACT_MODE_H
 #include <QObject>
-#include "mainwindow.h"
+#include "include\mainwindow.h"
 #include "ui_mainwindow.h"
 
 enum View {

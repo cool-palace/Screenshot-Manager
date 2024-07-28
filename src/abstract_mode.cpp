@@ -1,4 +1,4 @@
-#include "abstract_mode.h"
+#include "include\abstract_mode.h"
 
 AbstractMode::AbstractMode(MainWindow* parent)
     : parent(parent), ui(parent->get_ui()), manager(parent->get_vk()), locations(parent->get_locations())
@@ -16,6 +16,7 @@ AbstractMode::AbstractMode(MainWindow* parent)
     connect(ui->back, &QPushButton::clicked, this, &AbstractMode::back_button);
     connect(ui->ok, &QPushButton::clicked, this, &AbstractMode::ok_button);
     ui->exit_mode->setEnabled(true);
+    ui->main_view->setIcon(QIcon(":/images/icons8-full-image-80.png"));
     ui->toolBar->show();
 }
 

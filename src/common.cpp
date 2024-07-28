@@ -1,4 +1,4 @@
-#include "common.h"
+#include "include\common.h"
 
 QJsonObject json_object(const QString& filepath) {
     QFile config(filepath);

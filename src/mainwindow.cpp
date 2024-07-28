@@ -1,10 +1,10 @@
-#include "mainwindow.h"
+#include "include\mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
-#include "journal_creation.h"
-#include "text_reading.h"
-#include "journal_reading.h"
-#include "release_preparation.h"
+#include "include\journal_creation.h"
+#include "include\text_reading.h"
+#include "include\journal_reading.h"
+#include "include\release_preparation.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
