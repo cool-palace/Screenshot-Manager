@@ -153,6 +153,7 @@ RecordFrame::RecordFrame(const QString& link, qreal k) {
         QImageReader reader(response);
         QImage loaded_image = reader.read();
         setPixmap(QPixmap::fromImage(loaded_image.scaled(QSize(400, 220)/k, Qt::KeepAspectRatio)));
+        disconnect(response, nullptr, this, nullptr);
     });
 }
 
@@ -207,6 +208,9 @@ RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& t
 }
 
 RecordPreview::~RecordPreview() {
+    for (auto image : images) {
+        delete image;
+    }
     disconnect(this, nullptr, nullptr, nullptr);
     disconnect(time_button, nullptr, nullptr, nullptr);
     disconnect(reroll_button, nullptr, nullptr, nullptr);
