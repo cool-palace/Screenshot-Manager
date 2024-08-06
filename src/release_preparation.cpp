@@ -583,11 +583,7 @@ QList<QVector<int> > ReleasePreparation::get_all_hamiltonian_cycles(const QList<
     path.append(start);
     visited.insert(start);
     find_hamiltonian_cycles(start, M, path, visited, cycles, start);
-    // Existing cycles are duplicated at this point because they include both directions for the same cycle
-    for (int i = 0, size = cycles.size() / 2; i < size; ++i) {
-        cycles.removeLast();
-    }
-    return cycles;
+    return remove_duplicate_cycles(cycles);
 }
 
 void ReleasePreparation::read_poll_logs() {

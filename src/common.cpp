@@ -48,3 +48,22 @@ QString inflect(int i, const QString& word) {
     }
     return forms[2];
 }
+
+QList<QVector<int>> remove_duplicate_cycles(const QList<QVector<int>>& cycles) {
+    QList<QVector<int>> unique_cycles;
+    for (const auto& cycle : cycles) {
+        QVector<int> reversed_cycle = cycle;
+        std::reverse(reversed_cycle.begin(), reversed_cycle.end());
+        bool is_duplicate = false;
+        for (const auto& unique_cycle : unique_cycles) {
+            if (cycle == unique_cycle || reversed_cycle == unique_cycle) {
+                is_duplicate = true;
+                break;
+            }
+        }
+        if (!is_duplicate) {
+            unique_cycles.append(cycle);
+        }
+    }
+    return unique_cycles;
+}
