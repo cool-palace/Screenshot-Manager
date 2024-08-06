@@ -801,11 +801,9 @@ QPair<int, int> ReleasePreparation::series_range(int index) {
 
 void ReleasePreparation::exclude_recently_posted_series(int days) {
     // Resetting recently_posted_series
-    for (const auto& title : recently_posted_series) {
-        dynamic_cast<RecordTitleItem*>(title_items_map[title])->set_checked(true);
-    }
-    recently_posted_series.clear();
+    emit ui->titles_check_all->clicked(true);
     // Finding series posted during last days
+    QSet<QString> recently_posted_series;
     QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
     for (auto it = series_last_used_times.begin(); it != series_last_used_times.end(); ++it) {
         int timestamp = it.value();
