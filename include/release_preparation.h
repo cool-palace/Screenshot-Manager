@@ -17,7 +17,6 @@ private:
     QMutex status_mutex;
     int post_counter = 0;
     QMap<QString, int> series_last_used_times;
-    QMap<QString, RecordBase*> title_items_map;
     QList<QList<int>> selected_tag_pairings;
     QList<QVector<int>> hamiltonian_cycles;
     QMap<QStringList, QList<int>> smart_tag_pairs;

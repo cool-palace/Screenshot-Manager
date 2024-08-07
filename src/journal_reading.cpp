@@ -345,7 +345,7 @@ void JournalReading::read_title_journal(const QJsonObject& json_file) {
         records.push_back(record);
     }
     int title_start_index = records.size() - records_array.size();
-    title_items.push_back(new RecordTitleItem(title, path(title_start_index) + records[title_start_index].pics[0], records_array.size(), title_start_index));
+    title_items.insert(title, new RecordTitleItem(title, path(title_start_index) + records[title_start_index].pics[0], records_array.size(), title_start_index));
     for (int i = title_start_index; i < records.size(); ++i) {
         record_items.push_back(new RecordItem(records[i], i, path(i)));
         connect(record_items[i], &RecordItem::selected, [this](int index){

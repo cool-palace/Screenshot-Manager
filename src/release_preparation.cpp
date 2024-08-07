@@ -251,9 +251,9 @@ bool ReleasePreparation::open_public_journal() {
     // Creating title items for series
     for (auto index : series_map.keys()) {
         int size = series_range(index).second - index + 1;
-        title_items.push_back(new RecordTitleItem(series_map.value(index), path(index) + records[index].pics[0], size, index));
-        title_items_map.insert(series_map.value(index), title_items.back());
-        ui->title_grid->addWidget(title_items.back());
+        QString title = series_map.value(index);
+        title_items.insert(title, new RecordTitleItem(title, path(index) + records[index].pics[0], size, index));
+        ui->title_grid->addWidget(title_items[title]);
     }
     // Creating record items
     for (int i = records.size() - records_array.size(); i < records.size(); ++i) {
@@ -812,7 +812,7 @@ void ReleasePreparation::exclude_recently_posted_series(int days) {
     }
     qDebug() << recently_posted_series;
     for (auto title : recently_posted_series) {
-        dynamic_cast<RecordTitleItem*>(title_items_map[title])->set_checked(false);
+        dynamic_cast<RecordTitleItem*>(title_items[title])->set_checked(false);
     }
     emit ui->titles_set_filter->clicked(true);
 }

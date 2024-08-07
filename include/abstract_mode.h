@@ -91,7 +91,7 @@ protected:
     QMap<QString, Hashtag> full_hashtags_map;
     QMap<int, RecordBase*> filtration_results;
     QMap<QString, FilterType> filters;
-    QList<RecordBase*> title_items;
+    QMap<QString, RecordBase*> title_items;
     QMap<QString, QString> title_captions;
     QMap<int, int> records_by_photo_ids;
     QMap<int, int> logs;

@@ -410,9 +410,11 @@ void AbstractOperationMode::set_view(View view) {
 }
 
 void AbstractOperationMode::lay_titles() {
-    for (int i = 0 ; i < title_items.size(); ++i) {
-        QtConcurrent::run(title_items[i], &RecordBase::load_thumbmnail);
-        ui->title_grid->addWidget(title_items[i], i/9, i%9);
+    int i = 0;
+    for (auto it = title_items.begin(); it != title_items.end(); ++it, ++i) {
+        auto title_item = it.value();
+        QtConcurrent::run(title_item, &RecordBase::load_thumbmnail);
+        ui->title_grid->addWidget(title_item, i/9, i%9);
     }
 }
 
