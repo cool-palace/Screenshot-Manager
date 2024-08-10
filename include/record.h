@@ -11,6 +11,7 @@
 #include <QInputDialog>
 #include <QTimeEdit>
 #include <QDialogButtonBox>
+#include <QSpinBox>
 #include "include\vk_manager.h"
 #include "include\common.h"
 
@@ -109,6 +110,7 @@ class RecordPreview : public RecordBase
     Q_OBJECT
 public:
     RecordPreview(const Record&, int, const QDateTime&);
+    RecordPreview(const Record&, const QDateTime&, const QStringList&, const QList<int>&);
     ~RecordPreview() override;
     void set_gallery_view() override {};
     void set_list_view() override;
@@ -122,15 +124,19 @@ signals:
     void search_start(int);
     void reroll_request(RecordPreview*);
 private:
+    RecordPreview(const Record&, int, const QDateTime&, bool);
     QList<RecordFrame*> images;
     QLabel log_info;
     QDateTime time;
     QGridLayout images_layout;
+    QStringList hashtags;
+    QList<int> record_variants;
     QPushButton* time_button = new QPushButton(QIcon(":/images/icons8-time-80.png"), "");
     QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
     QPushButton* number_button = new QPushButton(QIcon(":/images/icons8-12-80.png"), "");
     QPushButton* search_button = new QPushButton(QIcon(":/images/icons8-search-80.png"), "");
     QPushButton* switch_button = new QPushButton(QIcon(":/images/icons8-sort-down-80.png"), "");
+    QSpinBox* spinbox = new QSpinBox(this);
     void reroll();
     void input_number();
     void switch_with_next();

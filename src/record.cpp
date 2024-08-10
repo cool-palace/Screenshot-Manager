@@ -175,7 +175,7 @@ TimeInputDialog::~TimeInputDialog() {
     delete time_edit;
 }
 
-RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& time) :
+RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& time, bool smart_tags) :
     RecordBase(record, index), time(time)
 {
     log_info.setFont(text.font());
@@ -186,25 +186,43 @@ RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& t
     layout.addWidget(&text,0,2);
     layout.addWidget(&log_info,1,2);
     layout.addWidget(time_button,0,3);
-    layout.addWidget(reroll_button,0,4);
-    layout.addWidget(number_button,0,5);
     layout.addWidget(search_button,0,6);
     layout.addWidget(switch_button,0,7);
     connect(time_button, &QPushButton::clicked, this, &RecordPreview::set_time);
-    connect(reroll_button, &QPushButton::clicked, this, &RecordPreview::reroll);
-    connect(number_button, &QPushButton::clicked, this, &RecordPreview::input_number);
     connect(search_button, &QPushButton::clicked, this, &RecordPreview::search);
     connect(switch_button, &QPushButton::clicked, this, &RecordPreview::switch_with_next);
     time_button->setToolTip(QString("Время публикации: %1").arg(time.time().toString("hh:mm")));
-    reroll_button->setToolTip("Случайный выбор");
-    number_button->setToolTip("Выбор по номеру");
     search_button->setToolTip("Поиск по списку");
     switch_button->setToolTip("Сдвинуть вниз");
     time_button->setIconSize(QSize(30,30));
-    reroll_button->setIconSize(QSize(30,30));
-    number_button->setIconSize(QSize(30,30));
     search_button->setIconSize(QSize(30,30));
     switch_button->setIconSize(QSize(30,30));
+}
+
+RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& time) :
+    RecordPreview(record, index, time, false)
+{
+    layout.addWidget(reroll_button,0,4);
+    layout.addWidget(number_button,0,5);
+    connect(reroll_button, &QPushButton::clicked, this, &RecordPreview::reroll);
+    connect(number_button, &QPushButton::clicked, this, &RecordPreview::input_number);
+    reroll_button->setToolTip("Случайный выбор");
+    number_button->setToolTip("Выбор по номеру");
+    reroll_button->setIconSize(QSize(30,30));
+    number_button->setIconSize(QSize(30,30));
+}
+
+RecordPreview::RecordPreview(const Record& record, const QDateTime& time, const QStringList& tags, const QList<int>& record_set) :
+    RecordPreview(record, record_set.first(), time, false)
+{
+    hashtags = tags;
+    record_variants = record_set;
+    int size = record_variants.size();
+    layout.addWidget(spinbox,0,4);
+    spinbox->setMaximum(size);
+    spinbox->setSuffix(QString("/%1").arg(size));
+    spinbox->setFont(QFont("Sefoe UI", 12));
+    spinbox->setMaximumHeight(30);
 }
 
 RecordPreview::~RecordPreview() {
@@ -222,6 +240,7 @@ RecordPreview::~RecordPreview() {
     delete search_button;
     delete switch_button;
     delete time_button;
+    delete spinbox;
 }
 
 void RecordPreview::reroll() {
