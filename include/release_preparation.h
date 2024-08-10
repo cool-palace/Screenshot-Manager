@@ -19,7 +19,6 @@ private:
     QMap<QString, int> series_last_used_times;
     QList<QList<int>> selected_tag_pairings;
     QList<QVector<int>> hamiltonian_cycles;
-    QMap<QStringList, QList<int>> smart_tag_pairs;
 
 signals:
     void reroll_response(int);

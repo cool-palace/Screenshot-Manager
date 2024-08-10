@@ -366,8 +366,9 @@ void ReleasePreparation::generate_release() {
 }
 
 void ReleasePreparation::generate_release(const QVector<int>& cycle) {
-    smart_tag_pairs.clear();
+    QList<QPair<QStringList, QList<int>>> smart_tag_pairs;
     QStringList tag_list = selected_hashtags.keys();
+    QStringList cycle_tag_list;
     remove_hashtag_filters();
     // Collecting results for every tag pair
     for (int i = 0; i < cycle.size() - 1; ++i) {
@@ -375,21 +376,23 @@ void ReleasePreparation::generate_release(const QVector<int>& cycle) {
             hashtags[tag_list[cycle[i-1]]]->emit_filter_event();
         } else hashtags[tag_list[cycle[i]]]->emit_filter_event();
         QStringList tags = QStringList() << tag_list[cycle[i]] << tag_list[cycle[i+1]];
+        cycle_tag_list << tag_list[cycle[i]];
         hashtags[tags.last()]->emit_filter_event();
-        smart_tag_pairs.insert(tags, filtration_results.keys());
+        smart_tag_pairs.append(qMakePair(tags, filtration_results.keys()));
     }
     remove_hashtag_filters();
     qDebug() << smart_tag_pairs;
     ui->quantity->setValue(selected_hashtags.size());
-
+    // Clearing selected records
     for (auto record : selected_records) {
         delete record;
     }
     selected_records.clear();
+    // Generating posts
     QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
-    for (auto it = smart_tag_pairs.begin(); it != smart_tag_pairs.end(); ++it) {
-        QStringList tags = it.key();
-        QList<int> record_set = it.value();
+    for (int i = 0; i < smart_tag_pairs.size(); ++i) {
+        QStringList tags = smart_tag_pairs[i].first;
+        QList<int> record_set = smart_tag_pairs[i].second;
         int r_index = record_set.first();
         selected_records.push_back(new RecordPreview(records[r_index], time, tags, record_set));
         create_record_preview_connections(selected_records.back());
@@ -397,9 +400,8 @@ void ReleasePreparation::generate_release(const QVector<int>& cycle) {
         selected_records.back()->set_list_view();
         time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
     }
-    QTimer::singleShot(2000, this, [this](){
-        ui->cycles->setEnabled(true);
-    });
+    ui->statusBar->showMessage(QString("Цикл тегов: %1").arg(cycle_tag_list.join(", ")));
+    QTimer::singleShot(1000, this, [this](){ ui->cycles->setEnabled(true); });
 }
 
 void ReleasePreparation::generate_poll() {
@@ -613,11 +615,8 @@ void ReleasePreparation::create_record_preview_connections(RecordPreview* previe
     connect(preview, &RecordPreview::search_start, [this](int index){
         if (ui->hamiltonian_posts->isChecked()) {
             remove_hashtag_filters();
-            auto tags_in_record = hashtags_by_index[selected_records[index]->get_index()];
-            for (const auto& tag : selected_hashtags.keys()) {
-                if (tags_in_record.contains("#" + tag) || tags_in_record.contains("&" + tag)) {
-                    hashtags[tag]->emit_filter_event();
-                }
+            for (const auto& tag : selected_records[index]->tag_pair()) {
+                hashtags[tag]->emit_filter_event();
             }
         }
         pic_index = index;
@@ -625,6 +624,7 @@ void ReleasePreparation::create_record_preview_connections(RecordPreview* previe
     });
     connect(preview, &RecordPreview::reroll_request, [this](RecordPreview* preview){
         preview->set_index(random_index());
+        QTimer::singleShot(1000, preview, &RecordPreview::enable_reroll);
     });
 }
 

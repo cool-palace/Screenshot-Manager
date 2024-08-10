@@ -219,6 +219,7 @@ RecordPreview::RecordPreview(const Record& record, const QDateTime& time, const 
     record_variants = record_set;
     int size = record_variants.size();
     layout.addWidget(spinbox,0,4);
+    spinbox->setMinimum(1);
     spinbox->setMaximum(size);
     spinbox->setSuffix(QString("/%1").arg(size));
     spinbox->setFont(QFont("Sefoe UI", 12));

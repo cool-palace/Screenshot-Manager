@@ -120,6 +120,9 @@ public:
     int timestamp() { return time.toSecsSinceEpoch(); }
     void set_index(int);
     void update_log_info(int);
+    QStringList tag_pair() { return hashtags; }
+public slots:
+    void enable_reroll() { reroll_button->setEnabled(true); }
 signals:
     void search_start(int);
     void reroll_request(RecordPreview*);
