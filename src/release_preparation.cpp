@@ -3,6 +3,8 @@
 ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMode(parent)
 {
     ui->main_view->setIcon(QIcon(":/images/icons8-hashtag-80.png"));
+    ui->smart_poll_slider->hide();
+    ui->label_cycles->hide();
     connect(manager, &VK_Manager::posted_successfully, this, &ReleasePreparation::posting_success);
     connect(manager, &VK_Manager::post_failed, this, &ReleasePreparation::posting_fail);
     connect(manager, &VK_Manager::poll_ready, this, &ReleasePreparation::post_poll);
@@ -12,12 +14,20 @@ ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMo
     connect(ui->generate, &QPushButton::clicked, this, &ReleasePreparation::generate_button);
     connect(ui->post, &QPushButton::clicked, this, &ReleasePreparation::post_button);
     connect(ui->hamiltonian_posts, &QAction::triggered, [this](bool enable) {
+        ui->smart_poll_slider->setEnabled(enable);
         if (enable) {
+            ui->label_cycles->show();
+            ui->smart_poll_slider->show();
+            ui->smart_poll_slider->setMaximum(hamiltonian_cycles.size()-1);
             ui->poll_preparation->trigger();
             ui->time->setTime(QTime(10,0));
             generate_release(hamiltonian_cycles.first());
+        } else {
+            ui->label_cycles->hide();
+            ui->smart_poll_slider->hide();
         }
     });
+    connect(ui->smart_poll_slider, &QAbstractSlider::valueChanged, this, &ReleasePreparation::set_cycle);
     connect(ui->last_used_limit, &QCheckBox::stateChanged, [this](int state) {
         bool checked = static_cast<bool>(state);
         ui->last_used_days->setEnabled(checked);
@@ -384,6 +394,9 @@ void ReleasePreparation::generate_release(const QVector<int>& cycle) {
         selected_records.back()->set_list_view();
         time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
     }
+    QTimer::singleShot(2000, this, [this](){
+        ui->smart_poll_slider->setEnabled(true);
+    });
 }
 
 void ReleasePreparation::generate_poll() {
@@ -489,8 +502,10 @@ void ReleasePreparation::poll_preparation(bool poll_mode) {
     ui->size_limit->setEnabled(!poll_mode);
     ui->series_limit->setEnabled(!poll_mode);
     ui->series_limit_days->setEnabled(!poll_mode);
-    if (ui->hamiltonian_posts->isChecked() && !poll_mode) {
-        ui->time->setTime(QTime(10,0));
+    ui->label_cycles->setEnabled(!poll_mode);
+    ui->smart_poll_slider->setEnabled(!poll_mode);
+    if (ui->hamiltonian_posts->isChecked()) {
+        ui->time->setTime(poll_mode ? QTime(8,0) : QTime(10,0));
     }
     ui->quantity->setValue(poll_mode ? 6 : 7);
     ui->label_interval->setText(poll_mode ? "Конец опроса" : "Интервал");
@@ -538,52 +553,9 @@ void ReleasePreparation::tag_pairing_analysis() {
     ui->hamiltonian_posts->setEnabled(!hamiltonian_cycles.empty());
 }
 
-int ReleasePreparation::lowest_degree_vertex(const QList<QList<int>> &M){
-    int vertex = 0;
-    int lowest_vertex_degree = M.size() - 1;
-    for (int i = 0; i < M.size(); ++i) {
-        int current_vertex_degree = 0;
-        for (int j = 0; j < M[i].size(); ++j) {
-            if (i != j && M[i][j] > 0) ++current_vertex_degree;
-        }
-        if (current_vertex_degree < lowest_vertex_degree) {
-            lowest_vertex_degree = current_vertex_degree;
-            vertex = i;
-        }
-    }
-    return vertex;
-}
-
-void ReleasePreparation::find_hamiltonian_cycles(int current, const QList<QList<int>> &M, QVector<int> &path, QSet<int> &visited, QList<QVector<int>> &cycles, int start) {
-    // Adding cycle if the path contains all the vertices and there is an edge to the starting vertex
-    if (path.size() == M.size()) {
-        if (M[current][start] > 0) {
-            path.append(start);
-            cycles.append(path);
-            path.removeLast();
-        }
-        return;
-    }
-    for (int next = 0; next < M.size(); ++next) {
-        if (current != next && M[current][next] > 0 && !visited.contains(next)) {
-            visited.insert(next);
-            path.append(next);
-            find_hamiltonian_cycles(next, M, path, visited, cycles, start);
-            path.removeLast();
-            visited.remove(next);
-        }
-    }
-}
-
-QList<QVector<int> > ReleasePreparation::get_all_hamiltonian_cycles(const QList<QList<int>> &M) {
-    QList<QVector<int>> cycles;
-    QVector<int> path;
-    QSet<int> visited;
-    int start = lowest_degree_vertex(M);
-    path.append(start);
-    visited.insert(start);
-    find_hamiltonian_cycles(start, M, path, visited, cycles, start);
-    return remove_duplicate_cycles(cycles);
+void ReleasePreparation::set_cycle(int value) {
+    ui->smart_poll_slider->setEnabled(false);
+    generate_release(hamiltonian_cycles[value]);
 }
 
 void ReleasePreparation::read_poll_logs() {

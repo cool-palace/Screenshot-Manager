@@ -21,7 +21,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="page_7">
        <layout class="QGridLayout" name="gridLayout_14">
@@ -438,8 +438,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>59</width>
-             <height>24</height>
+             <width>1080</width>
+             <height>428</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -600,7 +600,7 @@ p, li { white-space: pre-wrap; }
              <x>0</x>
              <y>0</y>
              <width>1108</width>
-             <height>266</height>
+             <height>460</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -1026,6 +1026,34 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
+              <item row="5" column="3" colspan="3">
+               <widget class="QSlider" name="smart_poll_slider">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="pageStep">
+                 <number>1</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="2">
+               <widget class="QLabel" name="label_cycles">
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Циклы тегов</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
            </layout>
@@ -1036,6 +1064,20 @@ p, li { white-space: pre-wrap; }
       </widget>
       <widget class="QWidget" name="page_6">
        <layout class="QGridLayout" name="gridLayout_9">
+        <item row="0" column="0">
+         <widget class="QPushButton" name="titles_check_all">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Выбрать все</string>
+          </property>
+          <property name="icon">
+           <iconset resource="icons.qrc">
+            <normaloff>:/images/icons8-checked-checkbox-80.png</normaloff>:/images/icons8-checked-checkbox-80.png</iconset>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="2">
          <widget class="QPushButton" name="titles_set_filter">
           <property name="enabled">
@@ -1064,20 +1106,6 @@ p, li { white-space: pre-wrap; }
           </property>
          </widget>
         </item>
-        <item row="0" column="0">
-         <widget class="QPushButton" name="titles_check_all">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Выбрать все</string>
-          </property>
-          <property name="icon">
-           <iconset resource="icons.qrc">
-            <normaloff>:/images/icons8-checked-checkbox-80.png</normaloff>:/images/icons8-checked-checkbox-80.png</iconset>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="3">
          <widget class="QPushButton" name="titles_reset_filter">
           <property name="enabled">
@@ -1102,8 +1130,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>59</width>
-             <height>24</height>
+             <width>1080</width>
+             <height>443</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">

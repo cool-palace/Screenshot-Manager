@@ -57,9 +57,7 @@ private slots:
     void poll_posting_fail(const QString&);
     void poll_preparation(bool);
     void tag_pairing_analysis();
-    int lowest_degree_vertex(const QList<QList<int>>& M);
-    void find_hamiltonian_cycles(int current, const QList<QList<int>>& M, QVector<int>& path, QSet<int>& visited, QList<QVector<int>>& cycles, int start);
-    QList<QVector<int>> get_all_hamiltonian_cycles(const QList<QList<int>>& M);
+    void set_cycle(int);
 
 private:
     void read_poll_logs();
