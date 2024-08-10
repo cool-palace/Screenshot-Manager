@@ -239,6 +239,7 @@ RecordPreview::~RecordPreview() {
     disconnect(number_button, nullptr, nullptr, nullptr);
     disconnect(search_button, nullptr, nullptr, nullptr);
     disconnect(switch_button, nullptr, nullptr, nullptr);
+    disconnect(spinbox, nullptr, nullptr, nullptr);
     delete reroll_button;
     delete number_button;
     delete search_button;
