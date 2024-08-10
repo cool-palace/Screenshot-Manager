@@ -49,6 +49,54 @@ QString inflect(int i, const QString& word) {
     return forms[2];
 }
 
+int lowest_degree_vertex(const QList<QList<int>> &M){
+    int vertex = 0;
+    int lowest_vertex_degree = M.size() - 1;
+    for (int i = 0; i < M.size(); ++i) {
+        int current_vertex_degree = 0;
+        for (int j = 0; j < M[i].size(); ++j) {
+            if (i != j && M[i][j] > 0) ++current_vertex_degree;
+        }
+        if (current_vertex_degree < lowest_vertex_degree) {
+            lowest_vertex_degree = current_vertex_degree;
+            vertex = i;
+        }
+    }
+    return vertex;
+}
+
+void find_hamiltonian_cycles(int current, const QList<QList<int>> &M, QVector<int> &path, QSet<int> &visited, QList<QVector<int>> &cycles, int start) {
+    // Adding cycle if the path contains all the vertices and there is an edge to the starting vertex
+    if (path.size() == M.size()) {
+        if (M[current][start] > 0) {
+            path.append(start);
+            cycles.append(path);
+            path.removeLast();
+        }
+        return;
+    }
+    for (int next = 0; next < M.size(); ++next) {
+        if (current != next && M[current][next] > 0 && !visited.contains(next)) {
+            visited.insert(next);
+            path.append(next);
+            find_hamiltonian_cycles(next, M, path, visited, cycles, start);
+            path.removeLast();
+            visited.remove(next);
+        }
+    }
+}
+
+QList<QVector<int>> get_all_hamiltonian_cycles(const QList<QList<int>> &M) {
+    QList<QVector<int>> cycles;
+    QVector<int> path;
+    QSet<int> visited;
+    int start = lowest_degree_vertex(M);
+    path.append(start);
+    visited.insert(start);
+    find_hamiltonian_cycles(start, M, path, visited, cycles, start);
+    return remove_duplicate_cycles(cycles);
+}
+
 QList<QVector<int>> remove_duplicate_cycles(const QList<QVector<int>>& cycles) {
     QList<QVector<int>> unique_cycles;
     for (const auto& cycle : cycles) {
