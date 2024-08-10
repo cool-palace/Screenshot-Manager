@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     initialize();
+    ui->stacked_view->setCurrentIndex(0);
     ui->toolBar->hide();
 
     connect(ui->journal_creation, &QAction::triggered, this, &MainWindow::journal_creation);
