@@ -197,6 +197,7 @@ RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& t
     time_button->setIconSize(QSize(30,30));
     search_button->setIconSize(QSize(30,30));
     switch_button->setIconSize(QSize(30,30));
+    spinbox->hide();
 }
 
 RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& time) :
@@ -224,6 +225,8 @@ RecordPreview::RecordPreview(const Record& record, const QDateTime& time, const 
     spinbox->setSuffix(QString("/%1").arg(size));
     spinbox->setFont(QFont("Sefoe UI", 12));
     spinbox->setMaximumHeight(30);
+    spinbox->show();
+    connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value){ set_index(record_variants[value-1]); });
 }
 
 RecordPreview::~RecordPreview() {
