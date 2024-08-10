@@ -3,7 +3,7 @@
 ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMode(parent)
 {
     ui->main_view->setIcon(QIcon(":/images/icons8-hashtag-80.png"));
-    ui->smart_poll_slider->hide();
+    ui->cycles->hide();
     ui->label_cycles->hide();
     connect(manager, &VK_Manager::posted_successfully, this, &ReleasePreparation::posting_success);
     connect(manager, &VK_Manager::post_failed, this, &ReleasePreparation::posting_fail);
@@ -14,20 +14,21 @@ ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMo
     connect(ui->generate, &QPushButton::clicked, this, &ReleasePreparation::generate_button);
     connect(ui->post, &QPushButton::clicked, this, &ReleasePreparation::post_button);
     connect(ui->hamiltonian_posts, &QAction::triggered, [this](bool enable) {
-        ui->smart_poll_slider->setEnabled(enable);
+        ui->cycles->setEnabled(enable);
         if (enable) {
             ui->label_cycles->show();
-            ui->smart_poll_slider->show();
-            ui->smart_poll_slider->setMaximum(hamiltonian_cycles.size()-1);
+            ui->cycles->show();
+            ui->cycles->setMaximum(hamiltonian_cycles.size());
+            ui->cycles->setSuffix(QString("/%1").arg(hamiltonian_cycles.size()));
             ui->poll_preparation->trigger();
             ui->time->setTime(QTime(10,0));
             generate_release(hamiltonian_cycles.first());
         } else {
             ui->label_cycles->hide();
-            ui->smart_poll_slider->hide();
+            ui->cycles->hide();
         }
     });
-    connect(ui->smart_poll_slider, &QAbstractSlider::valueChanged, this, &ReleasePreparation::set_cycle);
+    connect(ui->cycles, QOverload<int>::of(&QSpinBox::valueChanged), this, &ReleasePreparation::set_cycle);
     connect(ui->last_used_limit, &QCheckBox::stateChanged, [this](int state) {
         bool checked = static_cast<bool>(state);
         ui->last_used_days->setEnabled(checked);
@@ -368,6 +369,7 @@ void ReleasePreparation::generate_release(const QVector<int>& cycle) {
     smart_tag_pairs.clear();
     QStringList tag_list = selected_hashtags.keys();
     remove_hashtag_filters();
+    // Collecting results for every tag pair
     for (int i = 0; i < cycle.size() - 1; ++i) {
         if (i > 0) {
             hashtags[tag_list[cycle[i-1]]]->emit_filter_event();
@@ -385,17 +387,18 @@ void ReleasePreparation::generate_release(const QVector<int>& cycle) {
     }
     selected_records.clear();
     QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
-    auto record_sets = smart_tag_pairs.values();
-    for (int i = 0; i < ui->quantity->value(); ++i) {
-        int r_index = record_sets[i].first();
-        selected_records.push_back(new RecordPreview(records[r_index], r_index, time));
+    for (auto it = smart_tag_pairs.begin(); it != smart_tag_pairs.end(); ++it) {
+        QStringList tags = it.key();
+        QList<int> record_set = it.value();
+        int r_index = record_set.first();
+        selected_records.push_back(new RecordPreview(records[r_index], time, tags, record_set));
         create_record_preview_connections(selected_records.back());
         ui->preview_grid->addWidget(selected_records.back());
         selected_records.back()->set_list_view();
         time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
     }
     QTimer::singleShot(2000, this, [this](){
-        ui->smart_poll_slider->setEnabled(true);
+        ui->cycles->setEnabled(true);
     });
 }
 
@@ -503,7 +506,7 @@ void ReleasePreparation::poll_preparation(bool poll_mode) {
     ui->series_limit->setEnabled(!poll_mode);
     ui->series_limit_days->setEnabled(!poll_mode);
     ui->label_cycles->setEnabled(!poll_mode);
-    ui->smart_poll_slider->setEnabled(!poll_mode);
+    ui->cycles->setEnabled(!poll_mode);
     if (ui->hamiltonian_posts->isChecked()) {
         ui->time->setTime(poll_mode ? QTime(8,0) : QTime(10,0));
     }
@@ -554,8 +557,8 @@ void ReleasePreparation::tag_pairing_analysis() {
 }
 
 void ReleasePreparation::set_cycle(int value) {
-    ui->smart_poll_slider->setEnabled(false);
-    generate_release(hamiltonian_cycles[value]);
+    ui->cycles->setEnabled(false);
+    generate_release(hamiltonian_cycles[value-1]);
 }
 
 void ReleasePreparation::read_poll_logs() {

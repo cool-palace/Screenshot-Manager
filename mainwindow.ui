@@ -599,7 +599,7 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1108</width>
+             <width>1116</width>
              <height>460</height>
             </rect>
            </property>
@@ -1026,20 +1026,7 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
-              <item row="5" column="3" colspan="3">
-               <widget class="QSlider" name="smart_poll_slider">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="pageStep">
-                 <number>1</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="2">
+              <item row="5" column="6">
                <widget class="QLabel" name="label_cycles">
                 <property name="font">
                  <font>
@@ -1051,6 +1038,21 @@ p, li { white-space: pre-wrap; }
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="7">
+               <widget class="QSpinBox" name="cycles">
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>1</number>
                 </property>
                </widget>
               </item>
