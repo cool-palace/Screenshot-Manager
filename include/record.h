@@ -117,12 +117,15 @@ public:
     static QVector<Record>* records;
     static QMap<int, int>* logs;
     static QList<RecordPreview*>* selected_records;
-    int timestamp() { return time.toSecsSinceEpoch(); }
+    int timestamp() const { return time.toSecsSinceEpoch(); }
     void set_index(int);
+    void set_tags(const QStringList&, const QList<int>&);
     void update_log_info(int);
-    QStringList tag_pair() { return hashtags; }
+    QStringList tag_pair() const { return hashtags; }
+    QPair<QStringList, QList<int>> get_tags() const { return qMakePair(hashtags, record_variants); }
 public slots:
     void enable_reroll() { reroll_button->setEnabled(true); }
+    void spinbox_changed(int value) { set_index(record_variants[value-1]); }
 signals:
     void search_start(int);
     void reroll_request(RecordPreview*);

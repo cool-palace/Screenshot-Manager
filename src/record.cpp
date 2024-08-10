@@ -223,10 +223,10 @@ RecordPreview::RecordPreview(const Record& record, const QDateTime& time, const 
     spinbox->setMinimum(1);
     spinbox->setMaximum(size);
     spinbox->setSuffix(QString("/%1").arg(size));
-    spinbox->setFont(QFont("Sefoe UI", 12));
+    spinbox->setFont(QFont("Segoe UI", 12));
     spinbox->setMaximumHeight(30);
     spinbox->show();
-    connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value){ set_index(record_variants[value-1]); });
+    connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), this, &RecordPreview::spinbox_changed);
 }
 
 RecordPreview::~RecordPreview() {
@@ -269,6 +269,10 @@ void RecordPreview::switch_with_next() {
     int next_index = next->get_index();
     next->set_index(this_index);
     set_index(next_index);
+    auto this_tag_pair = get_tags();
+    auto next_tag_pair = next->get_tags();
+    next->set_tags(this_tag_pair.first, this_tag_pair.second);
+    set_tags(next_tag_pair.first, next_tag_pair.second);
 }
 
 void RecordPreview::search() {
@@ -301,6 +305,17 @@ void RecordPreview::set_index(int i) {
     update_text(record.quote);
     update_images(record.links);
     update_log_info(record.ids.first());
+}
+
+void RecordPreview::set_tags(const QStringList& tags, const QList<int>& records) {
+    hashtags = tags;
+    record_variants = records;
+    int size = records.size();
+    disconnect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), this, &RecordPreview::spinbox_changed);
+    spinbox->setValue(record_variants.indexOf(index)+1);
+    spinbox->setMaximum(size);
+    spinbox->setSuffix(QString("/%1").arg(size));
+    connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), this, &RecordPreview::spinbox_changed);
 }
 
 void RecordPreview::update_log_info(int id) {
