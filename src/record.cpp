@@ -312,8 +312,8 @@ void RecordPreview::set_tags(const QStringList& tags, const QList<int>& records)
     record_variants = records;
     int size = records.size();
     disconnect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), this, &RecordPreview::spinbox_changed);
-    spinbox->setValue(record_variants.indexOf(index)+1);
     spinbox->setMaximum(size);
+    spinbox->setValue(record_variants.indexOf(index)+1);
     spinbox->setSuffix(QString("/%1").arg(size));
     connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), this, &RecordPreview::spinbox_changed);
 }
