@@ -239,6 +239,30 @@ void AbstractOperationMode::load_hashtag_info() {
     }
 }
 
+void AbstractOperationMode::filter_event(bool publ) {
+    FilterType type = publ ? FilterType::PUBLIC : FilterType::HIDDEN;
+    // Public filters
+    if (filters.contains("public") && filters["public"] != type) {
+        filters.remove("public");
+        apply_filters();
+    }
+    update_filters(type, "public");
+    if (filters.empty()) {
+        exit_filtering();
+        return;
+    }
+    // Disabling all buttons
+    for (auto button : hashtags) {
+        button->setDisabled(true);
+    }
+    // Handling the filter not used in the config
+    if (filtration_results.isEmpty()) {
+        ui->back->setDisabled(true);
+        ui->ok->setDisabled(true);
+    } else show_filtering_results();
+    show_status();
+}
+
 void AbstractOperationMode::filter_event(const QString& text) {
     // Filters for text search
     if (filters.contains(text) && filters.find(text).value() == FilterType::TEXT) {

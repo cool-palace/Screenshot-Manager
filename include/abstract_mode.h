@@ -98,6 +98,7 @@ protected:
     QMap<int, QString> series_map;
 
 public slots:
+    void filter_event(bool);                        // Public filters
     void filter_event(const QString&);              // Text filters
     void filter_event(FilterType, const QString&);  // Tag filters
     void filter_event(RecordTitleItem*, bool);      // Title filters
