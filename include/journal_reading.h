@@ -15,6 +15,7 @@ private:
     QStringList current_hashtags;
     QSet<QPair<int, int>> edited_ranges;
     QMap<int, QString> captions_for_ids;
+    CaptchaDialog* dialog;
 
 public slots:
     virtual void start() override;
@@ -50,7 +51,7 @@ private:
     void show_private(bool);
     void add_caption(const QString& captcha_sid = "", const QString& captcha_key = "");
     void caption_success();
-    void captcha_handling(const QString&);
+    void captcha_handling(const QString&, const QString&);
     QString preprocessed(const QString&) const;
     void load_hashtag_info();
     void update_hashtag_info();

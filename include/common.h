@@ -3,6 +3,26 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QFile>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QLineEdit>
+
+class CaptchaDialog : public QDialog {
+    Q_OBJECT
+public:
+    CaptchaDialog(QWidget* parent = nullptr);
+    ~CaptchaDialog();
+    QString text() const { return line_edit.text(); }
+public slots:
+    void set_captcha_image(const QImage&);
+private:
+    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    QVBoxLayout layout;
+    QLabel captcha;
+    QLineEdit line_edit;
+};
 
 QJsonObject json_object(const QString& filepath);
 bool save_json(const QJsonObject& object, QFile& file);

@@ -1,5 +1,30 @@
 #include "include\common.h"
 
+CaptchaDialog::CaptchaDialog(QWidget* parent) : QDialog(parent) {
+    setWindowTitle("Введите капчу");
+    setMinimumSize(QSize(300,200));
+    setModal(true);
+    captcha.setScaledContents(true);
+    connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    captcha.setPixmap(QPixmap::fromImage(QImage(":/images/icons8-full-image-80.png")));
+    captcha.show();
+    layout.addWidget(&captcha);
+    layout.addWidget(&line_edit);
+    layout.addWidget(buttons);
+    setLayout(&layout);
+    hide();
+}
+
+CaptchaDialog::~CaptchaDialog() {
+    delete buttons;
+}
+
+void CaptchaDialog::set_captcha_image(const QImage & image) {
+    captcha.setPixmap(QPixmap::fromImage(image));
+    line_edit.clear();
+}
+
 QJsonObject json_object(const QString& filepath) {
     QFile config(filepath);
     if (!config.open(QIODevice::ReadOnly | QIODevice::Text)) {

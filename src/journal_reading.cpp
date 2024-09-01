@@ -467,19 +467,22 @@ void JournalReading::caption_success() {
         add_caption();
     } else {
         ui->statusBar->showMessage("Добавление подписей прошло успешно.");
+        delete dialog;
     }
 }
 
-void JournalReading::captcha_handling(const QString& captcha_id) {
+void JournalReading::captcha_handling(const QString& captcha_id, const QString& url) {
+    if (!dialog) dialog = new CaptchaDialog();
     int size = captions_for_ids.size();
     ui->statusBar->showMessage(QString("Осталось подписать %1 %2").arg(size).arg(inflect(size, "фотографий")));
-    bool ok;
-    QString text = QInputDialog::getText(parent, tr("Капча"),
-                                               tr("Введите капчу:"), QLineEdit::Normal,
-                                               "", &ok);
-    if (ok && !text.isEmpty()) {
-        add_caption(captcha_id, text);
-    }
+    connect(manager, &VK_Manager::captcha_image_ready, [this, captcha_id](const QImage& image) {
+        dialog->set_captcha_image(image);
+        if (dialog->exec() == QDialog::Accepted) {
+            add_caption(captcha_id, dialog->text());
+        }
+        disconnect(manager, &VK_Manager::captcha_image_ready, nullptr, nullptr);
+    });
+    manager->get_captcha(url);
     for (int i = 0; i < records.size(); ++i) {
         if (records[i].ids.contains(captions_for_ids.firstKey())) {
             display(i);

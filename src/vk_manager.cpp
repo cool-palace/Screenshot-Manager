@@ -62,6 +62,11 @@ void VK_Manager::get_image(const QString& url) {
     get_url(url);
 }
 
+void VK_Manager::get_captcha(const QString &url) {
+    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_captcha);
+    get_url(url);
+}
+
 void VK_Manager::get_albums() {
     QString url = "https://api.vk.com/method/photos.getAlbums?v=5.131"
                   "&access_token=" + access_token
@@ -144,9 +149,7 @@ void VK_Manager::edit_photo_caption(int photo_id, const QString& caption, const 
         response->deleteLater();
         if (reply.contains("error")) {
             auto error = reply["error"].toObject();
-            qDebug() << error;
-            get_image(error["captcha_img"].toString());
-            emit captcha_error(error["captcha_sid"].toString());
+            emit captcha_error(error["captcha_sid"].toString(), error["captcha_img"].toString());
         } else {
             emit caption_passed();
         }
@@ -186,4 +189,9 @@ void VK_Manager::got_photo_ids(QNetworkReply *response) {
 void VK_Manager::got_image(QNetworkReply *response) {
     disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_image);
     emit image_ready(image(response));
+}
+
+void VK_Manager::got_captcha(QNetworkReply *response) {
+    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_captcha);
+    emit captcha_image_ready(image(response));
 }

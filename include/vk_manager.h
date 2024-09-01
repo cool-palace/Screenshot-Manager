@@ -28,7 +28,8 @@ signals:
     void poll_post_failed(const QString&);
     void poll_ready(int);
     void caption_passed();
-    void captcha_error(const QString&);
+    void captcha_error(const QString&, const QString&);
+    void captcha_image_ready(const QImage&);
 
 public slots:
     QNetworkReply* get_url(const QString& url);
@@ -39,6 +40,7 @@ public slots:
     void post(const QString&, int, int);
     void get_poll(const QString&, int);
     void edit_photo_caption(int, const QString&, const QString& captcha_sid = "", const QString& captcha_key = "");
+    void get_captcha(const QString& url);
 
 private slots:
     QJsonObject reply_json(QNetworkReply *response);
@@ -47,6 +49,7 @@ private slots:
     void got_albums(QNetworkReply *);
     void got_photo_ids(QNetworkReply *);
     void got_image(QNetworkReply *);
+    void got_captcha(QNetworkReply *);
 
 private:
     const QString access_token;
