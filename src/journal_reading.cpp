@@ -467,7 +467,7 @@ void JournalReading::caption_success() {
         add_caption();
     } else {
         ui->statusBar->showMessage("Добавление подписей прошло успешно.");
-        delete dialog;
+        if (dialog) delete dialog;
     }
 }
 
