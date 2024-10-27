@@ -8,6 +8,8 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QProgressBar>
+#include <QPushButton>
 
 class CaptchaDialog : public QDialog {
     Q_OBJECT
@@ -23,6 +25,22 @@ private:
     QLabel captcha;
     QLineEdit line_edit;
 };
+
+class ProgressDialog : public QDialog {
+    Q_OBJECT
+public:
+    ProgressDialog(QWidget *parent = nullptr);
+    ~ProgressDialog();
+public slots:
+    void update_progress(int value, const QString& text);
+
+private:
+    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Abort);
+    QVBoxLayout layout;
+    QProgressBar progress;
+    QLabel text;
+};
+
 
 QJsonObject json_object(const QString& filepath);
 bool save_json(const QJsonObject& object, QFile& file);

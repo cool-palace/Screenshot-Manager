@@ -29,6 +29,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->exit_mode, &QAction::triggered, this, &MainWindow::exit_mode);
     connect(ui->initialization, &QAction::triggered, this, &MainWindow::initialize);
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_journals);
+    connect(ui->compile_to_db, &QAction::triggered, [this]() {
+        progress_dialog = new ProgressDialog();
+        progress_dialog->show();
+        QtConcurrent::run(this, &MainWindow::compile_journals_to_db);
+    });
     connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
 //    connect(ui->add_hashtag, &QAction::triggered, this, &MainWindow::add_hashtag);
 
@@ -74,12 +79,14 @@ bool MainWindow::initialize() {
     locations[SCREENSHOTS_NEW] = locations[SCREENSHOTS] + "Новые кадры\\";
     locations[QUOTES] = json_file.value("docs").toString();
     locations[SUBS] = json_file.value("subs").toString();
+    locations[SUBS] = locations[SUBS] + "Новые кадры\\";
     locations[JOURNALS] = json_file.value("configs").toString();
     locations[HASHTAGS] = json_file.value("hashtags").toString();
     locations[LOGS_FILE] = json_file.value("logs").toString();
     locations[POLL_LOGS] = json_file.value("poll_logs").toString();
     locations[PUBLIC_RECORDS] = json_file.value("public_records").toString();
     locations[HIDDEN_RECORDS] = json_file.value("hidden_records").toString();
+    locations[DATABASE] = "C:\\Users\\User\\Documents\\Screenshot-Manager\\your_database.db";
     QString access_token = json_file.value("access_token").toString();
     QString group_id = json_file.value("group_id").toString();
     QString public_id = json_file.value("public_id").toString();
@@ -236,6 +243,42 @@ void MainWindow::compile_journals() {
     ui->statusBar->showMessage(message);
 }
 
+void MainWindow::compile_journals_to_db() {
+    QDir dir = QDir(locations[JOURNALS]);
+    dir.setNameFilters(QStringList("*.json"));
+    auto configs = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+    if (configs.contains(".test.json")) {
+        configs.removeAt(configs.indexOf(".test.json"));
+    }
+
+    // Открытие или создание базы данных
+    QFile db_file(locations[DATABASE]);
+    if (db_file.exists()) {
+        // Если база данных уже существует, создаём резервную копию
+        QFile::copy(locations[DATABASE], locations[DATABASE] + QString(".backup_%1").arg(QDate::currentDate().toString()));
+    }
+
+    // Подключение к базе данных
+    Database& db = Database::instance(locations[DATABASE]);
+    QSqlQuery query;
+
+    db.reset_hashtag_table(query);
+    QJsonObject hashtags_json = json_object(locations[HASHTAGS]);
+    db.add_hashtags_data(query, hashtags_json);
+
+    // Очистка таблиц, если они существуют
+    db.reset_main_tables(query);
+
+    // Проход по всем json-конфигам
+    for (int i = 0; i < configs.size(); ++i) {
+        const auto& config = configs[i];
+        QMetaObject::invokeMethod(progress_dialog, "update_progress", Q_ARG(int, i*100 / configs.size()), Q_ARG(const QString&, QString("Обработка файла: %1").arg(config)));
+        auto object = json_object(locations[JOURNALS] + config);
+        db.add_journal_data(query, object);
+    }
+    QMetaObject::invokeMethod(progress_dialog, "update_progress", Q_ARG(int, 100), Q_ARG(const QString&, "База данных создана успешно."));
+}
+
 void MainWindow::export_text() {
     QFile file("exported_text.txt");
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
@@ -277,3 +320,4 @@ QJsonObject MainWindow::reverse_index(const QJsonArray& array) {
     }
     return result;
 }
+

@@ -438,8 +438,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1080</width>
-             <height>428</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -1132,8 +1132,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1080</width>
-             <height>443</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">
@@ -1174,6 +1174,7 @@ p, li { white-space: pre-wrap; }
      <string>Действия</string>
     </property>
     <addaction name="compile"/>
+    <addaction name="compile_to_db"/>
     <addaction name="decompile"/>
     <addaction name="export_text"/>
     <addaction name="separator"/>
@@ -1681,6 +1682,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Выход</string>
+   </property>
+  </action>
+  <action name="compile_to_db">
+   <property name="text">
+    <string>Компилировать в базу данных</string>
    </property>
   </action>
  </widget>

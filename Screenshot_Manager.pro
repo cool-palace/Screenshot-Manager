@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network concurrent
+QT       += core gui sql network concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -25,6 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        src\database.cpp \
         src\abstract_mode.cpp \
         src\common.cpp \
         src\hashtag_button.cpp \
@@ -38,6 +39,7 @@ SOURCES += \
         src\vk_manager.cpp
 
 HEADERS += \
+        include\database.h \
         include\abstract_mode.h \
         include\common.h \
         include\hashtag_button.h \

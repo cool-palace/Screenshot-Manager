@@ -25,6 +25,34 @@ void CaptchaDialog::set_captcha_image(const QImage & image) {
     line_edit.clear();
 }
 
+ProgressDialog::ProgressDialog(QWidget* parent) : QDialog(parent) {
+    setWindowTitle("Компиляция журналов в базу данных");
+    setFixedSize(QSize(500,120));
+    setModal(true);
+    setAttribute(Qt::WA_DeleteOnClose);
+    connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    buttons->button(QDialogButtonBox::Ok)->setEnabled(false);
+    progress.setRange(0,100);
+    layout.addWidget(&text);
+    layout.addWidget(&progress);
+    layout.addWidget(buttons);
+    setLayout(&layout);
+}
+
+ProgressDialog::~ProgressDialog() {
+    delete buttons;
+}
+
+void ProgressDialog::update_progress(int value, const QString &description) {
+    progress.setValue(value);
+    text.setText(description);
+    if (value == 100) {
+        buttons->button(QDialogButtonBox::Ok)->setEnabled(true);
+        buttons->button(QDialogButtonBox::Abort)->setEnabled(false);
+    }
+}
+
 QJsonObject json_object(const QString& filepath) {
     QFile config(filepath);
     if (!config.open(QIODevice::ReadOnly | QIODevice::Text)) {

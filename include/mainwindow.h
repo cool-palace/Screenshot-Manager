@@ -17,6 +17,7 @@
 #include "include\hashtag_button.h"
 #include "include\record.h"
 #include "include\common.h"
+#include "include\database.h"
 
 namespace Ui {
 class MainWindow;
@@ -34,11 +35,13 @@ enum Directories {
     SCREENSHOTS_NEW,
     QUOTES,
     SUBS,
+    SUBS_NEW,
     HASHTAGS,
     LOGS_FILE,
     POLL_LOGS,
     PUBLIC_RECORDS,
-    HIDDEN_RECORDS
+    HIDDEN_RECORDS,
+    DATABASE
 };
 
 class MainWindow : public QMainWindow
@@ -83,6 +86,7 @@ private:
     QMap<Directories, QString> locations;
     AbstractMode* mode = nullptr;
     Mode current_mode = IDLE;
+    ProgressDialog* progress_dialog;
 
     // Setup functions
     bool initialize();
@@ -92,11 +96,10 @@ private:
     void keyReleaseEvent(QKeyEvent*) override;
     void exit_mode();
 
-    // Hashtag management and filtering
-
     // Screenshot management
     void read_descriptions(const QJsonObject&);
     void compile_journals();
+    void compile_journals_to_db();
     void export_text();
     QJsonObject reverse_index(const QJsonArray&);
     void refactor_journals();
