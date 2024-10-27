@@ -11,7 +11,7 @@ public:
 
 private:
     QStringList subs;
-    QRegularExpression line_regex = QRegularExpression("Dialogue: \\d+,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,0+,0+,0+,,({.+?})?(.+)");
+    QRegularExpression line_regex = QRegularExpression("Dialogue: \\d+,(\\d:\\d\\d:\\d\\d\\.\\d\\d),(\\d:\\d\\d:\\d\\d\\.\\d\\d),.+,0+,0+,0+,[^,]*,({.+?})?(.+)");
     QRegularExpression timestamp_regex = QRegularExpression("(.*)?-(\\d-\\d\\d-\\d\\d-\\d{3})");
 
 public slots:
