@@ -114,6 +114,7 @@ void TextReading::show_text(int index) {
     if (quotes.size() <= index && subs.empty()) return;
     bool subtitles_on = !subs.empty();
     ui->text->setText(subtitles_on ? subs[index] : quotes[index]);
+    ui->text->setAlignment(Qt::AlignHCenter);
 }
 
 void TextReading::show_status() {
