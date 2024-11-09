@@ -227,20 +227,24 @@ bool ReleasePreparation::open_public_journal() {
         return false;
     }
     auto records_array = json_file.value("records").toArray();
+    records.reserve(records_array.size());
     for (QJsonValueRef r : records_array) {
         Record record;
         auto object = r.toObject();
         record.quote = object["caption"].toString(); // -preprocessed
         record.is_public = object["public"].toBool();
         auto filename_array = object["filenames"].toArray();
+        record.pics.reserve(filename_array.size());
         for (QJsonValueRef name : filename_array) {
             record.pics.push_back(name.toString());
         }
         auto id_array = object["photo_ids"].toArray();
+        record.ids.reserve(id_array.size());
         for (QJsonValueRef id : id_array) {
             record.ids.push_back(id.toInt());
         }
         auto link_array = object["links"].toArray();
+        record.links.reserve(link_array.size());
         for (QJsonValueRef link : link_array) {
             record.links.push_back(link.toString());
         }
@@ -353,6 +357,7 @@ void ReleasePreparation::generate_release() {
         delete record;
     }
     selected_records.clear();
+    selected_records.reserve(ui->quantity->value());
     QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
     for (int i = 0; i < ui->quantity->value(); ++i) {
         int r_index = random_index();
