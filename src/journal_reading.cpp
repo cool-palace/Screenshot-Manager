@@ -540,7 +540,6 @@ void JournalReading::highlight_current_hashtags(bool enable) {
             qDebug() << "Unexpected tag: " << hashtag;
             create_hashtag_button(hashtag);
             hashtags[hashtag]->highlight_unregistered();
-            ranked_hashtags.last().append(hashtag);
             update_hashtag_grid();
         }
         auto button = hashtags.value(hashtag);

@@ -175,11 +175,7 @@ void AbstractOperationMode::get_hashtags() {
         if (rank > max_rank) {
             max_rank = rank;
         } else if (rank < min_rank) min_rank = rank;
-        while (rank >= ranked_hashtags.size()) {
-            ranked_hashtags.append(QStringList());
-        }
         full_hashtags_map[key] = Hashtag(key, object);
-        ranked_hashtags[rank].append(key);
         create_hashtag_button(key);
     }
     ui->hashtag_rank_min->setMaximum(max_rank);

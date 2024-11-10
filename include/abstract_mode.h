@@ -86,7 +86,6 @@ public:
 
 protected:
     QMap<QString, HashtagButton*> hashtags;
-    QList<QStringList> ranked_hashtags;
     QMap<int, QStringList> hashtags_by_index;
     QMap<QString, Hashtag> full_hashtags_map;
     QMap<int, RecordBase*> filtration_results;
