@@ -147,6 +147,7 @@ void ReleasePreparation::set_view(View view) {
     case MAIN:
         ui->stacked_view->setCurrentIndex(1);
         ui->stackedWidget->setCurrentIndex(1);
+        update_hashtag_grid();
         break;
     case LIST: case GALLERY:
         ui->stacked_view->setCurrentIndex(2);

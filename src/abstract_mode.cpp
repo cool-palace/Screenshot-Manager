@@ -138,6 +138,9 @@ AbstractOperationMode::AbstractOperationMode(MainWindow *parent) : AbstractMode(
     });
 }
 
+uint8_t AbstractOperationMode::current_tag_columns = 0;
+uint8_t AbstractOperationMode::current_title_columns = 0;
+
 AbstractOperationMode::~AbstractOperationMode() {
     clear_grid(ui->tag_grid);
     for (auto item : hashtags) {
@@ -158,6 +161,14 @@ AbstractOperationMode::~AbstractOperationMode() {
     disconnect(ui->titles_set_filter, nullptr, this, nullptr);
     disconnect(ui->titles_reset_filter, nullptr, this, nullptr);
     disconnect(ui->titles_order, nullptr, this, nullptr);
+}
+
+void AbstractOperationMode::resize_event(QResizeEvent *event) {
+    if (current_view == MAIN && ui->stackedWidget->currentIndex() == 1) {
+        update_hashtag_grid(event);
+    } else if (current_view == TITLES) {
+        lay_titles();
+    }
 }
 
 QRegularExpressionMatchIterator AbstractOperationMode::hashtag_match(const QString& text) const {
@@ -187,6 +198,7 @@ void AbstractOperationMode::get_hashtags() {
 void AbstractOperationMode::update_hashtag_grid() {
     int button_width = 130;
     int columns = std::max(1, (ui->tag_scroll_area->width() - 100) / button_width);
+    current_tag_columns = columns;
     clear_grid(ui->tag_grid);
     using Iterator = QMap<QString, Hashtag>::const_iterator;
     QVector<Iterator> iters;
@@ -219,6 +231,24 @@ void AbstractOperationMode::update_hashtag_grid() {
         const auto button = hashtags.value(iter.key());
         ui->tag_grid->addWidget(button, i / columns, i % columns);
         button->show();
+        ++i;
+    }
+}
+
+void AbstractOperationMode::update_hashtag_grid(QResizeEvent *event) {
+    int button_width = 130;
+    int columns = std::max(1, (ui->tag_scroll_area->width() - 100) / button_width);
+    if (columns == current_tag_columns) return;
+    current_tag_columns = columns;
+    QVector<QLayoutItem*> items;
+    items.resize(ui->tag_grid->children().size());
+    QLayoutItem* child;
+    while ((child = ui->tag_grid->takeAt(0))) {
+        items.push_back(child);
+    }
+    int i = 0;
+    for (const auto item : items) {
+        ui->tag_grid->addItem(item, i / columns, i % columns);
         ++i;
     }
 }
@@ -447,6 +477,7 @@ void AbstractOperationMode::set_view(View view) {
 void AbstractOperationMode::lay_titles() {
     int title_width = 192;
     int columns = std::max(1, (ui->titles_scroll_area->width() - 100) / title_width);
+    current_title_columns = columns;
     clear_grid(ui->title_grid);
     using Iterator = QMap<QString, RecordBase*>::const_iterator;
     QVector<Iterator> iters;
@@ -478,6 +509,24 @@ void AbstractOperationMode::lay_titles() {
         QtConcurrent::run(title_item, &RecordBase::load_thumbmnail);
         ui->title_grid->addWidget(title_item, i/columns, i%columns, Qt::AlignCenter);
         title_item->show();
+        ++i;
+    }
+}
+
+void AbstractOperationMode::lay_titles(QResizeEvent * event) {
+    int title_width = 192;
+    int columns = (ui->titles_scroll_area->width() - 100) / title_width;
+    if (columns == current_title_columns) return;
+    current_title_columns = columns;
+    QVector<QLayoutItem*> items;
+    items.resize(ui->title_grid->children().size());
+    QLayoutItem* child;
+    while ((child = ui->title_grid->takeAt(0))) {
+        items.push_back(child);
+    }
+    int i = 0;
+    for (const auto item : items) {
+        ui->title_grid->addItem(item, i / columns, i % columns);
         ++i;
     }
 }

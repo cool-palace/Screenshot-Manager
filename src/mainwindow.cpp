@@ -62,12 +62,13 @@ void MainWindow::exit_mode() {
 void MainWindow::resizeEvent(QResizeEvent *event) {
     QMainWindow::resizeEvent(event);
     auto pic = ui->label->pixmap();
-    if (!pic) return;
-    ui->image->setPixmap(pic->scaled(ui->image->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
-//    auto operation_mode = dynamic_cast<AbstractOperationMode*>(mode);
-//    if (operation_mode) {
-//        operation_mode->update_hashtag_grid();
-//    }
+    if (pic) {
+        ui->image->setPixmap(pic->scaled(ui->image->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
+    }
+    auto operation_mode = dynamic_cast<AbstractOperationMode*>(mode);
+    if (operation_mode) {
+        operation_mode->resize_event(event);
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {

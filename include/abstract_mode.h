@@ -95,8 +95,11 @@ protected:
     QMap<int, int> records_by_photo_ids;
     QMap<int, int> logs;
     QMap<int, QString> series_map;
+    static uint8_t current_tag_columns;
+    static uint8_t current_title_columns;
 
 public slots:
+    void resize_event(QResizeEvent *event);
     void filter_event(bool);                        // Public filters
     void filter_event(const QString&);              // Text filters
     void filter_event(FilterType, const QString&);  // Tag filters
@@ -109,11 +112,13 @@ protected slots:
     virtual void set_view(View) override;
     virtual void create_hashtag_button(const QString&) = 0;
     void lay_titles();
+    void lay_titles(QResizeEvent*);
 
 protected:
     QRegularExpressionMatchIterator hashtag_match(const QString&) const;
     void get_hashtags();
     void update_hashtag_grid();
+    void update_hashtag_grid(QResizeEvent *event);
     void load_hashtag_info();
     void update_filters(FilterType, const QString&);
     void apply_first_filter();
