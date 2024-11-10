@@ -35,7 +35,7 @@ public:
     void update_text(const QString&);
     virtual void set_gallery_view() = 0;
     virtual void set_list_view() = 0;
-    int get_index() const { return index; };
+    int get_index() const { return index; }
     virtual void load_thumbmnail();
 signals:
     void selected(int);

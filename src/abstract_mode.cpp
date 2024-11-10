@@ -167,7 +167,7 @@ void AbstractOperationMode::resize_event(QResizeEvent *event) {
     if (current_view == MAIN && ui->stackedWidget->currentIndex() == 1) {
         update_hashtag_grid(event);
     } else if (current_view == TITLES) {
-        lay_titles();
+        lay_titles(event);
     }
 }
 
@@ -189,6 +189,8 @@ void AbstractOperationMode::get_hashtags() {
         full_hashtags_map[key] = Hashtag(key, object);
         create_hashtag_button(key);
     }
+    ui->hashtag_rank_min->setMinimum(min_rank);
+    ui->hashtag_rank_max->setMinimum(min_rank);
     ui->hashtag_rank_min->setMaximum(max_rank);
     ui->hashtag_rank_max->setMaximum(max_rank);
     ui->hashtag_rank_max->setValue(max_rank);
