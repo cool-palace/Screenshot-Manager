@@ -101,6 +101,7 @@ RecordTitleItem::RecordTitleItem(const QString& title, const QString& pic_path, 
 {
     path = pic_path;
     pic_size = QSize(192, 108);
+    image.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     index = i;
     for (int i = index; i < index + size; ++i) {
         title_indices.insert(i);
@@ -109,9 +110,12 @@ RecordTitleItem::RecordTitleItem(const QString& title, const QString& pic_path, 
     font.setPointSize(10);
     text.setFont(font);
     text.setText(title);
+    text.setMaximumWidth(pic_size.width());
+    text.setMaximumHeight(50);
+    text.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Maximum);
     box.setText("Записей: " + QString().setNum(size));
-    box.setMinimumHeight(15);
-    box.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    box.setMinimumHeight(20);
+    box.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     box.setChecked(true);
     layout.addWidget(&text,0,0);
     layout.addWidget(&image,1,0);

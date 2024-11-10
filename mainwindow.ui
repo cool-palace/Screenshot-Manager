@@ -21,7 +21,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>1</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="page_7">
        <layout class="QGridLayout" name="gridLayout_14">
@@ -1188,6 +1188,20 @@ p, li { white-space: pre-wrap; }
           </property>
          </widget>
         </item>
+        <item row="0" column="1">
+         <widget class="QPushButton" name="titles_uncheck_all">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Снять все</string>
+          </property>
+          <property name="icon">
+           <iconset resource="icons.qrc">
+            <normaloff>:/images/icons8-unchecked-checkbox-80.png</normaloff>:/images/icons8-unchecked-checkbox-80.png</iconset>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="2">
          <widget class="QPushButton" name="titles_set_filter">
           <property name="enabled">
@@ -1202,17 +1216,13 @@ p, li { white-space: pre-wrap; }
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
-         <widget class="QPushButton" name="titles_uncheck_all">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
+        <item row="0" column="4">
+         <widget class="QLabel" name="label_14">
           <property name="text">
-           <string>Снять все</string>
+           <string>Сортировка</string>
           </property>
-          <property name="icon">
-           <iconset resource="icons.qrc">
-            <normaloff>:/images/icons8-unchecked-checkbox-80.png</normaloff>:/images/icons8-unchecked-checkbox-80.png</iconset>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
         </item>
@@ -1230,8 +1240,27 @@ p, li { white-space: pre-wrap; }
           </property>
          </widget>
         </item>
-        <item row="1" column="0" colspan="4">
-         <widget class="QScrollArea" name="scrollArea_3">
+        <item row="0" column="5">
+         <widget class="QComboBox" name="titles_order">
+          <item>
+           <property name="text">
+            <string>По алфавиту</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>По выбранным</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>По количеству кадров</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="6">
+         <widget class="QScrollArea" name="titles_scroll_area">
           <property name="widgetResizable">
            <bool>true</bool>
           </property>
@@ -1241,7 +1270,7 @@ p, li { white-space: pre-wrap; }
              <x>0</x>
              <y>0</y>
              <width>1080</width>
-             <height>443</height>
+             <height>442</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">

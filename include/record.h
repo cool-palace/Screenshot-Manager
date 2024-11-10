@@ -77,6 +77,7 @@ public:
     void set_checked(bool);
     bool is_checked() const { return box.isChecked(); }
     QSet<int> indices() const { return title_indices; }
+    int title_records_size() const { return size; }
 private:
     int size;
     QCheckBox box;

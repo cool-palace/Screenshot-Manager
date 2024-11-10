@@ -132,7 +132,6 @@ AbstractOperationMode::AbstractOperationMode(MainWindow *parent) : AbstractMode(
     connect(ui->hashtag_order, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() {
         update_hashtag_grid();
     });
-
     connect(ui->hashtag_rank_min, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         ui->hashtag_rank_max->setMinimum(value);
         update_hashtag_grid();
@@ -140,6 +139,9 @@ AbstractOperationMode::AbstractOperationMode(MainWindow *parent) : AbstractMode(
     connect(ui->hashtag_rank_max, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
         ui->hashtag_rank_min->setMaximum(value);
         update_hashtag_grid();
+    });
+    connect(ui->titles_order, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() {
+        lay_titles();
     });
     connect(ui->titles_check_all, &QPushButton::clicked, [this]() { check_titles(true); });
     connect(ui->titles_uncheck_all, &QPushButton::clicked, [this]() { check_titles(false); });
@@ -233,8 +235,8 @@ void AbstractOperationMode::update_hashtag_grid() {
         std::sort(iters.begin(), iters.end(), popular_sort);
     }
     int i = 0;
-    for (auto iter : iters) {
-        auto button = hashtags[iter.key()];
+    for (const auto iter : iters) {
+        const auto button = hashtags.value(iter.key());
         ui->tag_grid->addWidget(button, i / columns, i % columns);
         button->show();
         ++i;
@@ -463,11 +465,40 @@ void AbstractOperationMode::set_view(View view) {
 }
 
 void AbstractOperationMode::lay_titles() {
+    int title_width = 192;
+    int columns = std::max(1, (ui->titles_scroll_area->width() - 100) / title_width);
+    clear_grid(ui->title_grid);
+    using Iterator = QMap<QString, RecordBase*>::const_iterator;
+    QVector<Iterator> iters;
+    iters.reserve(title_items.size());
+    for (auto it = title_items.cbegin(); it != title_items.cend(); ++it) {
+        iters.push_back(it);
+    }
+    static auto checked_title_sort = [](const Iterator& it1, const Iterator& it2){
+        auto title1 = dynamic_cast<RecordTitleItem*>(it1.value());
+        auto title2 = dynamic_cast<RecordTitleItem*>(it2.value());
+        if (title1->is_checked() != title2->is_checked()) {
+            return title1->is_checked() > title2->is_checked();
+        }
+        return it1.key() < it2.key();
+    };
+    static auto title_size_sort = [this](const Iterator& it1, const Iterator& it2){
+        auto title1 = dynamic_cast<RecordTitleItem*>(it1.value());
+        auto title2 = dynamic_cast<RecordTitleItem*>(it2.value());
+        return title1->title_records_size() > title2->title_records_size();
+    };
+    if (ui->titles_order->currentIndex() == 1) {
+        std::sort(iters.begin(), iters.end(), checked_title_sort);
+    } else if (ui->titles_order->currentIndex() == 2) {
+        std::sort(iters.begin(), iters.end(), title_size_sort);
+    }
     int i = 0;
-    for (auto it = title_items.begin(); it != title_items.end(); ++it, ++i) {
-        auto title_item = it.value();
+    for (const auto iter : iters) {
+        auto title_item = title_items[iter.key()];
         QtConcurrent::run(title_item, &RecordBase::load_thumbmnail);
-        ui->title_grid->addWidget(title_item, i/9, i%9);
+        ui->title_grid->addWidget(title_item, i/columns, i%columns, Qt::AlignCenter);
+        title_item->show();
+        ++i;
     }
 }
 
