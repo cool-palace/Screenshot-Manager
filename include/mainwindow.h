@@ -64,6 +64,7 @@ public:
     QMap<Directories, QString> get_locations() { return locations; };
 
 protected:
+    void resizeEvent(QResizeEvent *event) override;
     void closeEvent(QCloseEvent*) override;
 
 signals:

@@ -59,6 +59,17 @@ void MainWindow::exit_mode() {
     ui->toolBar->hide();
 }
 
+void MainWindow::resizeEvent(QResizeEvent *event) {
+    QMainWindow::resizeEvent(event);
+    auto pic = ui->label->pixmap();
+    if (!pic) return;
+    ui->image->setPixmap(pic->scaled(ui->image->size(), Qt::KeepAspectRatio, Qt::FastTransformation));
+//    auto operation_mode = dynamic_cast<AbstractOperationMode*>(mode);
+//    if (operation_mode) {
+//        operation_mode->update_hashtag_grid();
+//    }
+}
+
 void MainWindow::closeEvent(QCloseEvent *event) {
     emit close_event(event);
 }

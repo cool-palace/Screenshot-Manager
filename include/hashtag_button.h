@@ -35,6 +35,7 @@ public:
     QString option() const;
     QString description() const { return descr; }
     QString tag() const { return name; }
+    int rank_index() const { return rank; }
     QDateTime last_poll() const { return poll; }
     QJsonObject to_json() const;
     void set_description(const QString& new_descr) { descr = new_descr; }

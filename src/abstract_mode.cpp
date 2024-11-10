@@ -15,6 +15,7 @@ AbstractMode::AbstractMode(MainWindow* parent)
     connect(ui->add, &QPushButton::clicked, this, &AbstractMode::add_button);
     connect(ui->back, &QPushButton::clicked, this, &AbstractMode::back_button);
     connect(ui->ok, &QPushButton::clicked, this, &AbstractMode::ok_button);
+//    ui->image->setScaledContents(true);
     ui->exit_mode->setEnabled(true);
     ui->main_view->setIcon(QIcon(":/images/icons8-full-image-80.png"));
     ui->toolBar->show();
@@ -128,10 +129,27 @@ AbstractOperationMode::AbstractOperationMode(MainWindow *parent) : AbstractMode(
         ui->hashtags_full->setChecked(!ui->hashtags_newest->isChecked());
         update_hashtag_grid();
     });
+    connect(ui->hashtag_order, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() {
+        update_hashtag_grid();
+    });
+
+    connect(ui->hashtag_rank_min, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        ui->hashtag_rank_max->setMinimum(value);
+        update_hashtag_grid();
+    });
+    connect(ui->hashtag_rank_max, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        ui->hashtag_rank_min->setMaximum(value);
+        update_hashtag_grid();
+    });
     connect(ui->titles_check_all, &QPushButton::clicked, [this]() { check_titles(true); });
     connect(ui->titles_uncheck_all, &QPushButton::clicked, [this]() { check_titles(false); });
-    connect(ui->titles_set_filter, &QPushButton::clicked, [this]() { filter_event(nullptr, true); }); // Check type
-    connect(ui->titles_reset_filter, &QPushButton::clicked, [this]() { filter_event(nullptr, false); }); // Check type
+    connect(ui->titles_set_filter, &QPushButton::clicked, [this]() {
+        filter_event(nullptr, true);  // Check type
+    });
+    connect(ui->titles_reset_filter, &QPushButton::clicked, [this]() {
+//        if (ui->series_limit->isChecked()) ui->series_limit->setChecked(false);
+        filter_event(nullptr, false); // Check type
+    });
 }
 
 AbstractOperationMode::~AbstractOperationMode() {
@@ -162,10 +180,15 @@ QRegularExpressionMatchIterator AbstractOperationMode::hashtag_match(const QStri
 }
 
 void AbstractOperationMode::get_hashtags() {
+    int max_rank = 0;
+    int min_rank = 0;
     QJsonObject hashtags_json = json_object(locations[HASHTAGS]);
     for (const auto& key : hashtags_json.keys()) {
         auto object = hashtags_json[key].toObject();
         int rank = object["rank"].toInt();
+        if (rank > max_rank) {
+            max_rank = rank;
+        } else if (rank < min_rank) min_rank = rank;
         while (rank >= ranked_hashtags.size()) {
             ranked_hashtags.append(QStringList());
         }
@@ -173,44 +196,48 @@ void AbstractOperationMode::get_hashtags() {
         ranked_hashtags[rank].append(key);
         create_hashtag_button(key);
     }
+    ui->hashtag_rank_min->setMaximum(max_rank);
+    ui->hashtag_rank_max->setMaximum(max_rank);
+    ui->hashtag_rank_max->setValue(max_rank);
     update_hashtag_grid();
 }
 
 void AbstractOperationMode::update_hashtag_grid() {
+    int button_width = 130;
+    int columns = std::max(1, (ui->tag_scroll_area->width() - 100) / button_width);
     clear_grid(ui->tag_grid);
+    using Iterator = QMap<QString, Hashtag>::const_iterator;
+    QVector<Iterator> iters;
+    iters.reserve(full_hashtags_map.size());
+    for (auto it = full_hashtags_map.cbegin(); it != full_hashtags_map.cend(); ++it) {
+        int rank = it.value().rank_index();
+        if (rank >= ui->hashtag_rank_min->value() && rank <= ui->hashtag_rank_max->value()) {
+            iters.push_back(it);
+        }
+    }
+    static auto ranked_sort = [](const Iterator& it1, const Iterator& it2){
+        if (it1->rank_index() != it2->rank_index()) {
+            return it1->rank_index() < it2->rank_index();
+        }
+        return it1.key() < it2.key();
+    };
+    static auto popular_sort = [this](const Iterator& it1, const Iterator& it2){
+        return hashtags.value(it1.key())->current_count() > hashtags.value(it2.key())->current_count();
+    };
+//    static auto alphabet_sort = [](const Iterator& it1, const Iterator& it2){
+//        return it1->text() < it2->text();
+//    };
+    if (ui->hashtag_order->currentIndex() == 1) {
+        std::sort(iters.begin(), iters.end(), ranked_sort);
+    } else if (ui->hashtag_order->currentIndex() == 2) {
+        std::sort(iters.begin(), iters.end(), popular_sort);
+    }
     int i = 0;
-    if (ui->alphabet_order->isChecked()) {
-        if (ui->hashtags_full->isChecked()) {
-            // Displaying all buttons in alphabet order
-            for (auto button : hashtags) {
-                ui->tag_grid->addWidget(button, i / 14, i % 14);
-                button->show();
-                ++i;
-            }
-        } else if (ui->hashtags_newest->isChecked()) {
-            // Sorting newest buttons to display them in alphabet order
-            QMap<QString, HashtagButton*> tags;
-            for (int index = 1; index < ranked_hashtags.size(); ++index) {
-                for (const auto& text : ranked_hashtags[index]) {
-                    tags.insert(text, hashtags[text]);
-                }
-            }
-            for (auto button : tags) {
-                ui->tag_grid->addWidget(button, i / 10, i % 10);
-                button->show();
-                ++i;
-            }
-        }
-    } else if (ui->addition_order->isChecked()) {
-        // Displaying buttons in addition order
-        int columns_count = ui->hashtags_full->isChecked() ? 14 : 10;
-        for (int index = ui->hashtags_full->isChecked() ? 0 : 1; index < ranked_hashtags.size(); ++index) {
-            for (const auto& text : ranked_hashtags[index]) {
-                ui->tag_grid->addWidget(hashtags[text], i / columns_count, i % columns_count);
-                hashtags[text]->show();
-                ++i;
-            }
-        }
+    for (auto iter : iters) {
+        auto button = hashtags[iter.key()];
+        ui->tag_grid->addWidget(button, i / columns, i % columns);
+        button->show();
+        ++i;
     }
 }
 
