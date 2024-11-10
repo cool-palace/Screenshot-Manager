@@ -113,22 +113,6 @@ AbstractOperationMode::AbstractOperationMode(MainWindow *parent) : AbstractMode(
         filter_event(ui->search_bar->text());
         lay_previews();
     });
-    connect(ui->alphabet_order, &QAction::triggered, [this]() {
-        ui->addition_order->setChecked(!ui->alphabet_order->isChecked());
-        update_hashtag_grid();
-    });
-    connect(ui->addition_order, &QAction::triggered, [this]() {
-        ui->alphabet_order->setChecked(!ui->addition_order->isChecked());
-        update_hashtag_grid();
-    });
-    connect(ui->hashtags_full, &QAction::triggered, [this]() {
-        ui->hashtags_newest->setChecked(!ui->hashtags_full->isChecked());
-        update_hashtag_grid();
-    });
-    connect(ui->hashtags_newest, &QAction::triggered, [this]() {
-        ui->hashtags_full->setChecked(!ui->hashtags_newest->isChecked());
-        update_hashtag_grid();
-    });
     connect(ui->hashtag_order, QOverload<int>::of(&QComboBox::currentIndexChanged), [this]() {
         update_hashtag_grid();
     });
@@ -166,14 +150,14 @@ AbstractOperationMode::~AbstractOperationMode() {
     disconnect(ui->search_bar, nullptr, this, nullptr);
     disconnect(ui->word_search_button, nullptr, this, nullptr);
     disconnect(ui->word_search_reset, nullptr, this, nullptr);
-    disconnect(ui->alphabet_order, nullptr, this, nullptr);
-    disconnect(ui->addition_order, nullptr, this, nullptr);
-    disconnect(ui->hashtags_full, nullptr, this, nullptr);
-    disconnect(ui->hashtags_newest, nullptr, this, nullptr);
+    disconnect(ui->hashtag_order, nullptr, this, nullptr);
+    disconnect(ui->hashtag_rank_min, nullptr, this, nullptr);
+    disconnect(ui->hashtag_rank_max, nullptr, this, nullptr);
     disconnect(ui->titles_check_all, nullptr, this, nullptr);
     disconnect(ui->titles_uncheck_all, nullptr, this, nullptr);
     disconnect(ui->titles_set_filter, nullptr, this, nullptr);
     disconnect(ui->titles_reset_filter, nullptr, this, nullptr);
+    disconnect(ui->titles_order, nullptr, this, nullptr);
 }
 
 QRegularExpressionMatchIterator AbstractOperationMode::hashtag_match(const QString& text) const {

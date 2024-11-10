@@ -1331,30 +1331,8 @@ p, li { white-space: pre-wrap; }
     <addaction name="offline"/>
     <addaction name="hamiltonian_posts"/>
    </widget>
-   <widget class="QMenu" name="menu_3">
-    <property name="title">
-     <string>Хэштеги</string>
-    </property>
-    <widget class="QMenu" name="menu_5">
-     <property name="title">
-      <string>Сортировать</string>
-     </property>
-     <addaction name="alphabet_order"/>
-     <addaction name="addition_order"/>
-    </widget>
-    <widget class="QMenu" name="menu_6">
-     <property name="title">
-      <string>Показать</string>
-     </property>
-     <addaction name="hashtags_full"/>
-     <addaction name="hashtags_newest"/>
-    </widget>
-    <addaction name="menu_5"/>
-    <addaction name="menu_6"/>
-   </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
-   <addaction name="menu_3"/>
    <addaction name="menu_4"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -1523,59 +1501,6 @@ p, li { white-space: pre-wrap; }
   <action name="decompile">
    <property name="text">
     <string>Декомпилировать</string>
-   </property>
-  </action>
-  <action name="alphabet_order">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>По алфавиту</string>
-   </property>
-  </action>
-  <action name="addition_order">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>false</bool>
-   </property>
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>По новизне</string>
-   </property>
-  </action>
-  <action name="hashtags_full">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Все</string>
-   </property>
-  </action>
-  <action name="hashtags_newest">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Только новые</string>
    </property>
   </action>
   <action name="text_reading">

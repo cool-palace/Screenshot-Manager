@@ -95,12 +95,6 @@ void JournalReading::keyReleaseEvent(QKeyEvent * event) {
     case Qt::Key_F5:
         emit hashtags["тема_объект"]->hashtagEvent('#',"тема_объект");
         break;
-    case Qt::Key_Home:
-        ui->alphabet_order->trigger();
-        break;
-    case Qt::Key_End:
-        ui->hashtags_full->trigger();
-        break;
     default:
         break;
     }
@@ -186,19 +180,19 @@ void JournalReading::set_enabled(bool enable) {
     ui->search_bar->setEnabled(enable);
     ui->word_search_button->setEnabled(enable);
     ui->word_search_reset->setEnabled(enable);
+    ui->hashtag_order->setEnabled(enable);
+    ui->hashtag_rank_min->setEnabled(enable);
+    ui->hashtag_rank_max->setEnabled(enable);
     ui->titles_check_all->setEnabled(enable);
     ui->titles_reset_filter->setEnabled(enable);
     ui->titles_set_filter->setEnabled(enable);
     ui->titles_uncheck_all->setEnabled(enable);
+    ui->titles_order->setEnabled(enable);
     ui->show_public->setEnabled(enable);
     ui->show_private->setEnabled(enable);
     ui->add_caption->setEnabled(enable);
     ui->export_captions_by_ids->setEnabled(enable);
     ui->export_info_by_ids->setEnabled(enable);
-    ui->alphabet_order->setEnabled(enable);
-    ui->addition_order->setEnabled(enable);
-    ui->hashtags_full->setEnabled(enable);
-    ui->hashtags_newest->setEnabled(enable);
 }
 
 void JournalReading::set_view(View view) {
