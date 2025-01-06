@@ -16,11 +16,10 @@ QJsonObject Record::to_json() const {
     return current_record;
 }
 
-RecordBase::RecordBase(const Record& record, int index) :
-    QWidget(),
-    index(index)
-{
-    update_text(record.quote);
+RecordBase::RecordBase(const Record& record, int index) : RecordBase(record.quote, index) { }
+
+RecordBase::RecordBase(const QString& quote, int index) : QWidget(), index(index) {
+    update_text(quote);
     text.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     text.setMaximumHeight(120);
     text.setWordWrap(true);
@@ -97,15 +96,20 @@ void RecordItem::set_list_view() {
 }
 
 RecordTitleItem::RecordTitleItem(const QString& title, const QString& pic_path, int size, int i) :
-    RecordBase(), size(size)
+    RecordTitleItem(title, pic_path, size)
 {
-    path = pic_path;
-    pic_size = QSize(192, 108);
-    image.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     index = i;
     for (int i = index; i < index + size; ++i) {
         title_indices.insert(i);
     }
+}
+
+RecordTitleItem::RecordTitleItem(const QString& title, const QString& pic_path, int size) :
+        RecordBase(), size(size)
+{
+    path = pic_path;
+    pic_size = QSize(192, 108);
+    image.setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     auto font = text.font();
     font.setPointSize(10);
     text.setFont(font);
@@ -127,13 +131,6 @@ void RecordTitleItem::set_checked(bool enable) {
     box.setChecked(enable);
 }
 
-void RecordPreview::set_list_view() {
-    number.show();
-    text.show();
-    log_info.show();
-    show();
-}
-
 void RecordBase::update_text(const QString& caption) {
     QRegularExpression regex("(.*?)?([#&])(.*)?$");
     auto i = regex.globalMatch(caption);
@@ -142,207 +139,4 @@ void RecordBase::update_text(const QString& caption) {
         text.setText(match.captured(1) + '\n' + match.captured(2) + match.captured(3));
     } else text.setText(caption);
     image.setToolTip(caption);
-}
-
-VK_Manager* RecordFrame::manager;
-QVector<Record>* RecordPreview::records;
-QMap<int, int>* RecordPreview::logs;
-QList<RecordPreview*>* RecordPreview::selected_records;
-
-RecordFrame::RecordFrame(const QString& link, qreal k) {
-    auto response = manager->get_url(link);
-    connect(response, &QNetworkReply::finished, [this, response, k](){
-        response->deleteLater();
-        if (response->error() != QNetworkReply::NoError) return;
-        QImageReader reader(response);
-        QImage loaded_image = reader.read();
-        setPixmap(QPixmap::fromImage(loaded_image.scaled(QSize(400, 220)/k, Qt::KeepAspectRatio)));
-        disconnect(response, nullptr, this, nullptr);
-    });
-}
-
-TimeInputDialog::TimeInputDialog(const QTime& initial_time, QWidget *parent = nullptr) : QDialog(parent) {
-    setWindowTitle("Редактирование времени");
-    time_edit = new QTimeEdit(initial_time);
-    time_edit->setDisplayFormat("HH:mm");
-    connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
-    label.setText("Выберите время:");
-    layout.addWidget(&label);
-    layout.addWidget(time_edit);
-    layout.addWidget(buttons);
-    setLayout(&layout);
-}
-
-TimeInputDialog::~TimeInputDialog() {
-    delete buttons;
-    delete time_edit;
-}
-
-RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& time, bool smart_tags) :
-    RecordBase(record, index), time(time)
-{
-    log_info.setFont(text.font());
-    update_images(record.links);
-    update_log_info(record.ids.first());
-    layout.addWidget(&number,0,0);
-    layout.addLayout(&images_layout,0,1);
-    layout.addWidget(&text,0,2);
-    layout.addWidget(&log_info,1,2);
-    layout.addWidget(time_button,0,3);
-    layout.addWidget(search_button,0,6);
-    layout.addWidget(switch_button,0,7);
-    connect(time_button, &QPushButton::clicked, this, &RecordPreview::set_time);
-    connect(search_button, &QPushButton::clicked, this, &RecordPreview::search);
-    connect(switch_button, &QPushButton::clicked, this, &RecordPreview::switch_with_next);
-    time_button->setToolTip(QString("Время публикации: %1").arg(time.time().toString("hh:mm")));
-    search_button->setToolTip("Поиск по списку");
-    switch_button->setToolTip("Сдвинуть вниз");
-    time_button->setIconSize(QSize(30,30));
-    search_button->setIconSize(QSize(30,30));
-    switch_button->setIconSize(QSize(30,30));
-    spinbox->hide();
-}
-
-RecordPreview::RecordPreview(const Record& record, int index, const QDateTime& time) :
-    RecordPreview(record, index, time, false)
-{
-    layout.addWidget(reroll_button,0,4);
-    layout.addWidget(number_button,0,5);
-    connect(reroll_button, &QPushButton::clicked, this, &RecordPreview::reroll);
-    connect(number_button, &QPushButton::clicked, this, &RecordPreview::input_number);
-    reroll_button->setToolTip("Случайный выбор");
-    number_button->setToolTip("Выбор по номеру");
-    reroll_button->setIconSize(QSize(30,30));
-    number_button->setIconSize(QSize(30,30));
-}
-
-RecordPreview::RecordPreview(const Record& record, const QDateTime& time, const QStringList& tags, const QList<int>& record_set) :
-    RecordPreview(record, record_set.first(), time, false)
-{
-    hashtags = tags;
-    record_variants = record_set;
-    int size = record_variants.size();
-    layout.addWidget(spinbox,0,4);
-    spinbox->setMinimum(1);
-    spinbox->setMaximum(size);
-    spinbox->setSuffix(QString("/%1").arg(size));
-    spinbox->setFont(QFont("Segoe UI", 12));
-    spinbox->setMaximumHeight(30);
-    spinbox->show();
-    connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), this, &RecordPreview::spinbox_changed);
-}
-
-RecordPreview::~RecordPreview() {
-    for (auto image : images) {
-        delete image;
-    }
-    disconnect(this, nullptr, nullptr, nullptr);
-    disconnect(time_button, nullptr, nullptr, nullptr);
-    disconnect(reroll_button, nullptr, nullptr, nullptr);
-    disconnect(number_button, nullptr, nullptr, nullptr);
-    disconnect(search_button, nullptr, nullptr, nullptr);
-    disconnect(switch_button, nullptr, nullptr, nullptr);
-    disconnect(spinbox, nullptr, nullptr, nullptr);
-    delete reroll_button;
-    delete number_button;
-    delete search_button;
-    delete switch_button;
-    delete time_button;
-    delete spinbox;
-}
-
-void RecordPreview::reroll() {
-    emit reroll_request(this);
-}
-
-void RecordPreview::input_number() {
-    int max = RecordPreview::records->size();
-    bool ok;
-    int random_index = QInputDialog::getInt(this, tr("Номер записи"),
-                                 tr("Введите номер записи от 1 до %1").arg(max), index+1, 1, max, 1, &ok) - 1;
-    if (!ok) return;
-    set_index(random_index);
-}
-
-void RecordPreview::switch_with_next() {
-    int pos = selected_records->indexOf(this);
-    if (pos + 1 == selected_records->size()) return;
-    RecordPreview* next = selected_records->operator[](pos+1);
-    int this_index = index;
-    int next_index = next->get_index();
-    next->set_index(this_index);
-    set_index(next_index);
-    auto this_tag_pair = get_tags();
-    auto next_tag_pair = next->get_tags();
-    next->set_tags(this_tag_pair.first, this_tag_pair.second);
-    set_tags(next_tag_pair.first, next_tag_pair.second);
-}
-
-void RecordPreview::search() {
-    emit search_start(selected_records->indexOf(this));
-}
-
-void RecordPreview::set_time() {
-    TimeInputDialog dialog(time.time());
-    if (dialog.exec() == QDialog::Accepted) {
-        time.setTime(dialog.selectedTime());
-        time_button->setToolTip(QString("Время публикации: %1").arg(time.time().toString("hh:mm")));
-    }
-}
-
-void RecordPreview::clear() {
-    while (images_layout.takeAt(0) != nullptr) {
-        // Clearing items from the grid
-    }
-    for (auto frame : images) {
-        delete frame;
-    }
-    images.clear();
-}
-
-void RecordPreview::set_index(int i) {
-    clear();
-    index = i;
-    number.setText(QString().setNum(index + 1));
-    auto record = RecordPreview::records->at(index);
-    update_text(record.quote);
-    update_images(record.links);
-    update_log_info(record.ids.first());
-}
-
-void RecordPreview::set_tags(const QStringList& tags, const QList<int>& records) {
-    hashtags = tags;
-    record_variants = records;
-    int size = records.size();
-    disconnect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), this, &RecordPreview::spinbox_changed);
-    spinbox->setMaximum(size);
-    spinbox->setValue(record_variants.indexOf(index)+1);
-    spinbox->setSuffix(QString("/%1").arg(size));
-    connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged), this, &RecordPreview::spinbox_changed);
-}
-
-void RecordPreview::update_log_info(int id) {
-    auto font = log_info.font();
-    if (logs->contains(id)) {
-        QDateTime last = QDateTime::fromSecsSinceEpoch(logs->value(id), Qt::LocalTime);
-        int days = last.daysTo(time);
-        log_info.setText(QString("Публиковалось %1 %2 назад").arg(days).arg(inflect(days, "дней")));
-        font.setBold(true);
-        font.setItalic(false);
-    } else {
-        log_info.setText(QString("Раньше не публиковалось"));
-        font.setBold(false);
-        font.setItalic(true);
-    }
-    log_info.setFont(font);
-}
-
-void RecordPreview::update_images(const QStringList& links) {
-    qreal k = links.size() == 1 ? 1 : links.size() == 2 || links.size() == 4 ? 1.2 : 1.5;
-    int grid_size = links.size() == 4 ? 2 : 3;
-    for (int i = 0; i < links.size(); ++i) {
-        images.push_back(new RecordFrame(links[i], k));
-        images_layout.addWidget(images.back(),i/grid_size,i%grid_size);
-    }
 }

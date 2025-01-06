@@ -12,6 +12,7 @@
 #include <QTimeEdit>
 #include <QDialogButtonBox>
 #include <QSpinBox>
+#include <QScrollArea>
 #include "include\vk_manager.h"
 #include "include\common.h"
 
@@ -30,6 +31,7 @@ class RecordBase : public QWidget
     Q_OBJECT
 public:
     RecordBase(const Record& rec = Record(), int i = 0);
+    RecordBase(const QString&, int);
     ~RecordBase() override;
     void mouseDoubleClickEvent(QMouseEvent*) override;
     void update_text(const QString&);
@@ -71,6 +73,7 @@ class RecordTitleItem : public RecordBase
     Q_OBJECT
 public:
     RecordTitleItem(const QString&, const QString&, int, int);
+    RecordTitleItem(const QString&, const QString&, int);
     ~RecordTitleItem() override {}
     void set_gallery_view() override {};
     void set_list_view() override {};
@@ -82,75 +85,6 @@ private:
     int size;
     QCheckBox box;
     QSet<int> title_indices;
-};
-
-class RecordFrame : public QLabel
-{
-    Q_OBJECT
-public:
-    RecordFrame(const QString&, qreal k = 1);
-    ~RecordFrame() override {}
-    static VK_Manager* manager;
-};
-
-class TimeInputDialog : public QDialog {
-    Q_OBJECT
-public:
-    TimeInputDialog(const QTime&, QWidget*);
-    ~TimeInputDialog();
-    QTime selectedTime() const { return time_edit->time(); }
-private:
-    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-    QVBoxLayout layout;
-    QLabel label;
-    QTimeEdit* time_edit;
-};
-
-class RecordPreview : public RecordBase
-{
-    Q_OBJECT
-public:
-    RecordPreview(const Record&, int, const QDateTime&);
-    RecordPreview(const Record&, const QDateTime&, const QStringList&, const QList<int>&);
-    ~RecordPreview() override;
-    void set_gallery_view() override {};
-    void set_list_view() override;
-    static QVector<Record>* records;
-    static QMap<int, int>* logs;
-    static QList<RecordPreview*>* selected_records;
-    int timestamp() const { return time.toSecsSinceEpoch(); }
-    void set_index(int);
-    void set_tags(const QStringList&, const QList<int>&);
-    void update_log_info(int);
-    QStringList tag_pair() const { return hashtags; }
-    QPair<QStringList, QList<int>> get_tags() const { return qMakePair(hashtags, record_variants); }
-public slots:
-    void enable_reroll() { reroll_button->setEnabled(true); }
-    void spinbox_changed(int value) { set_index(record_variants[value-1]); }
-signals:
-    void search_start(int);
-    void reroll_request(RecordPreview*);
-private:
-    RecordPreview(const Record&, int, const QDateTime&, bool);
-    QList<RecordFrame*> images;
-    QLabel log_info;
-    QDateTime time;
-    QGridLayout images_layout;
-    QStringList hashtags;
-    QList<int> record_variants;
-    QPushButton* time_button = new QPushButton(QIcon(":/images/icons8-time-80.png"), "");
-    QPushButton* reroll_button = new QPushButton(QIcon(":/images/icons8-available-updates-80.png"), "");
-    QPushButton* number_button = new QPushButton(QIcon(":/images/icons8-12-80.png"), "");
-    QPushButton* search_button = new QPushButton(QIcon(":/images/icons8-search-80.png"), "");
-    QPushButton* switch_button = new QPushButton(QIcon(":/images/icons8-sort-down-80.png"), "");
-    QSpinBox* spinbox = new QSpinBox(this);
-    void reroll();
-    void input_number();
-    void switch_with_next();
-    void search();
-    void set_time();
-    void clear();
-    void update_images(const QStringList&);
 };
 
 #endif // RECORD_ITEMS_H

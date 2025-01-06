@@ -16,6 +16,7 @@
 #include "include\vk_manager.h"
 #include "include\hashtag_button.h"
 #include "include\record.h"
+#include "include\recordpreview.h"
 #include "include\common.h"
 #include "include\database.h"
 

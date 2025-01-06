@@ -25,6 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        src\recordpreview.cpp \
         src\database.cpp \
         src\abstract_mode.cpp \
         src\common.cpp \
@@ -49,10 +50,12 @@ HEADERS += \
         include\record.h \
         include\release_preparation.h \
         include\text_reading.h \
-        include\vk_manager.h
+        include\vk_manager.h \
+        include\recordpreview.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+        recordpreview.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
