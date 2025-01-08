@@ -738,7 +738,9 @@ QString AbstractOperationMode::filtration_indices() const {
 }
 
 QString AbstractOperationMode::path(int index) {
-    return locations[SCREENSHOTS] + title_name(index) + QDir::separator();
+    QString result = locations[SCREENSHOTS] + title_name(index) + QDir::separator();
+    if (QDir(result).exists()) return result;
+    return locations[SCREENSHOTS_NEW] + title_name(index) + QDir::separator();
 }
 
 QString AbstractOperationMode::series_name(int index) {
