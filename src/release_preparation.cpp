@@ -23,12 +23,14 @@ ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMo
             ui->poll_preparation->trigger();
             ui->time->setTime(QTime(10,0));
             ui->quantity->setValue(selected_hashtags.size());
+            ui->generate->setEnabled(false);
             prepare_tag_map();
             clear_selected_records();
             generate_release(hamiltonian_cycles.first());
         } else {
             ui->label_cycles->hide();
             ui->cycles->hide();
+            ui->generate->setEnabled(true);
         }
     });
     connect(ui->cycles, QOverload<int>::of(&QSpinBox::valueChanged), this, &ReleasePreparation::set_cycle);
@@ -433,12 +435,12 @@ void ReleasePreparation::generate_release(const QVector<int>& cycle) {
         int r_index = record_set.first();
         if (selected_records.size() <= i) {
             selected_records.push_back(new RecordPreview(records[r_index], time, tags, record_set));
+            create_record_preview_connections(selected_records.back());
+            ui->preview_grid->addWidget(selected_records.back());
+            time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
         } else {
             selected_records[i]->set_tagged_record(r_index, tags, record_set);
         }
-        create_record_preview_connections(selected_records.back());
-        ui->preview_grid->addWidget(selected_records.back());
-        time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
     }
     ui->statusBar->showMessage(QString("Цикл тегов: %1").arg(cycle_tag_list.join(", ")));
     QTimer::singleShot(1000, this, [this](){ ui->cycles->setEnabled(true); });
@@ -679,10 +681,10 @@ void ReleasePreparation::change_selected_hashtag(const QString& tag, HashtagPrev
 }
 
 void ReleasePreparation::create_record_preview_connections(RecordPreview* preview) {
-    connect(preview, &RecordPreview::search_start, [this](int index){
+    connect(preview, &RecordPreview::search_start, [this, preview](int index){
         if (ui->hamiltonian_posts->isChecked()) {
             remove_hashtag_filters();
-            for (const auto& tag : selected_records[index]->tag_pair()) {
+            for (const auto& tag : preview->tag_pair()) {
                 hashtags[tag]->emit_filter_event();
             }
         }
