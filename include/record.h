@@ -43,7 +43,6 @@ signals:
     void selected(int);
 protected:
     int index;
-    Record record;
     QString pic;
     QLabel image;
     QLabel text;
