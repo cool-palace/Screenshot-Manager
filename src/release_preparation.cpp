@@ -22,6 +22,9 @@ ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMo
             ui->cycles->setSuffix(QString("/%1").arg(hamiltonian_cycles.size()));
             ui->poll_preparation->trigger();
             ui->time->setTime(QTime(10,0));
+            ui->quantity->setValue(selected_hashtags.size());
+            prepare_tag_map();
+            clear_selected_records();
             generate_release(hamiltonian_cycles.first());
         } else {
             ui->label_cycles->hide();
@@ -70,6 +73,9 @@ ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMo
         ui->series_limit_days->setSuffix(" " + inflect(days, "дней"));
         emit ui->titles_reset_filter->clicked(true);
         exclude_recently_posted_series(days);
+    });
+    connect(ui->read_db, &QAction::triggered, [this](bool enable) {
+        open_database();
     });
 }
 
@@ -246,15 +252,15 @@ bool ReleasePreparation::open_public_journal() {
         records.push_back(record);
     }
     auto reverse = json_file.value("reverse_index").toObject();
-    for (auto index : reverse.keys()) {
+    for (const auto& index : reverse.keys()) {
         records_by_photo_ids[index.toInt()] = reverse[index].toInt();
     }
     auto titles = json_file.value("title_map").toObject();
-    for (auto index : titles.keys()) {
+    for (const auto& index : titles.keys()) {
         title_map[index.toInt()] = titles[index].toString();
     }
     auto series = json_file.value("series_map").toObject();
-    for (auto index : series.keys()) {
+    for (const auto& index : series.keys()) {
         series_map[index.toInt()] = series[index].toString();
     }
     read_logs();
@@ -277,6 +283,53 @@ bool ReleasePreparation::open_public_journal() {
             set_view(PREVIEW);
         });
     }
+    return !records.empty();
+}
+
+bool ReleasePreparation::open_database() {
+    Database& db = Database::instance(locations[DATABASE]);
+    QSqlQuery query;
+
+//    read_logs();
+    // Creating title items for series
+    db.select_series_previews(query);
+    while (query.next()) {
+        QString series = query.value("series_name").toString();
+        QString title = query.value("title_name").toString();
+        QString filename = locations[SCREENSHOTS] + title + QDir::separator() + query.value("filename").toString();
+        int size = query.value("record_count").toInt();
+//        title_items.insert(series, new RecordTitleItem(title, filename, size, size));
+//        ui->title_grid->addWidget(title_items[title]);
+//        qDebug() << "Series Name:" << title << ", Filename:" << filename << ", Size: " << size;
+    }
+
+    // Creating record items
+    qDebug() << QDateTime::currentDateTime();
+    db.select_record_info(query);
+    qDebug() << QDateTime::currentDateTime();
+    while (query.next()) {
+        QString quote = query.value("quote").toString();
+        QString tag_string = query.value("tag_string").toString();
+        QString filename = locations[SCREENSHOTS] + query.value("title_name").toString() + QDir::separator() + query.value("filename").toString();
+        int size = query.value("pics_count").toInt();
+        bool is_public = query.value("is_public").toBool();
+        auto date = query.value("date").toDateTime();
+//        title_items.insert(series, new RecordTitleItem(title, filename, size, size));
+//        ui->title_grid->addWidget(title_items[title]);
+//        qDebug() << "Quote:" << quote + ' ' + tag_string << ", Filename:" << filename << ", Size: " << size << ", Public: " << is_public << ", Date: " << date;
+    }
+    qDebug() << QDateTime::currentDateTime();
+//    for (int i = records.size() - records_array.size(); i < records.size(); ++i) {
+//        record_items.push_back(new RecordItem(records[i], i, path(i)));
+//        if (logs.contains(records[i].ids[0])) {
+//            dynamic_cast<RecordItem*>(record_items.back())->include_log_info(logs.value(records[i].ids[0]));
+//        }
+//        ui->view_grid->addWidget(record_items.back());
+//        connect(record_items[i], &RecordItem::selected, [this](int index){
+//            selected_records[pic_index]->set_index(index);
+//            set_view(PREVIEW);
+//        });
+//    }
     return !records.empty();
 }
 
@@ -343,23 +396,20 @@ void ReleasePreparation::check_logs(bool enable) {
 }
 
 void ReleasePreparation::generate_button() {
+//    ui->generate->setEnabled(false);
     clear_grid(ui->preview_grid);
     ui->poll_preparation->isChecked() ? generate_poll() : generate_release();
+//    QTimer::singleShot(1000, this, [this](){ ui->generate->setEnabled(true); });
 }
 
 void ReleasePreparation::generate_release() {
-    for (auto record : selected_records) {
-        delete record;
-    }
-    selected_records.clear();
-    selected_records.reserve(ui->quantity->value());
+    clear_selected_records();
     QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
     for (int i = 0; i < ui->quantity->value(); ++i) {
         int r_index = random_index();
         selected_records.push_back(new RecordPreview(records[r_index], r_index, time));
         create_record_preview_connections(selected_records.back());
         ui->preview_grid->addWidget(selected_records.back());
-        selected_records.back()->set_list_view();
         time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
     }
     RecordPreview::selected_records = &selected_records;
@@ -372,32 +422,22 @@ void ReleasePreparation::generate_release(const QVector<int>& cycle) {
     remove_hashtag_filters();
     // Collecting results for every tag pair
     for (int i = 0; i < cycle.size() - 1; ++i) {
-        if (i > 0) {
-            hashtags[tag_list[cycle[i-1]]]->emit_filter_event();
-        } else hashtags[tag_list[cycle[i]]]->emit_filter_event();
-        QStringList tags = QStringList() << tag_list[cycle[i]] << tag_list[cycle[i+1]];
         cycle_tag_list << tag_list[cycle[i]];
-        hashtags[tags.last()]->emit_filter_event();
-        smart_tag_pairs.append(qMakePair(tags, filtration_results.keys()));
     }
-    remove_hashtag_filters();
-    qDebug() << smart_tag_pairs;
-    ui->quantity->setValue(selected_hashtags.size());
-    // Clearing selected records
-    for (auto record : selected_records) {
-        delete record;
-    }
-    selected_records.clear();
     // Generating posts
     QDateTime time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime);
-    for (int i = 0; i < smart_tag_pairs.size(); ++i) {
-        QStringList tags = smart_tag_pairs[i].first;
-        QList<int> record_set = smart_tag_pairs[i].second;
+    for (int i = 0; i < ui->quantity->value(); ++i) {
+        auto it = smart_tag_map.find(QStringList() << tag_list[cycle[i]] << tag_list[cycle[i+1]]);
+        QStringList tags = it.key();
+        QList<int> record_set = it.value();
         int r_index = record_set.first();
-        selected_records.push_back(new RecordPreview(records[r_index], time, tags, record_set));
+        if (selected_records.size() <= i) {
+            selected_records.push_back(new RecordPreview(records[r_index], time, tags, record_set));
+        } else {
+            selected_records[i]->set_tagged_record(r_index, tags, record_set);
+        }
         create_record_preview_connections(selected_records.back());
         ui->preview_grid->addWidget(selected_records.back());
-        selected_records.back()->set_list_view();
         time = time.addSecs(ui->interval->time().hour()*3600 + ui->interval->time().minute()*60);
     }
     ui->statusBar->showMessage(QString("Цикл тегов: %1").arg(cycle_tag_list.join(", ")));
@@ -561,6 +601,33 @@ void ReleasePreparation::tag_pairing_analysis() {
 void ReleasePreparation::set_cycle(int value) {
     ui->cycles->setEnabled(false);
     generate_release(hamiltonian_cycles[value-1]);
+}
+
+void ReleasePreparation::prepare_tag_map() {
+    for (const auto& cycle : hamiltonian_cycles) {
+        QStringList tag_list = selected_hashtags.keys();
+        remove_hashtag_filters();
+        // Collecting results for every tag pair
+        for (int i = 0; i < cycle.size() - 1; ++i) {
+            QStringList tags = QStringList() << tag_list[cycle[i]] << tag_list[cycle[i+1]];
+            if (i > 0) {
+                hashtags[tag_list[cycle[i-1]]]->emit_filter_event();
+            } else hashtags[tag_list[cycle[i]]]->emit_filter_event();
+            hashtags[tags.last()]->emit_filter_event();
+            if (!smart_tag_map.contains(tags)) {
+                smart_tag_map.insert(tags, filtration_results.keys());
+            }
+        }
+        remove_hashtag_filters();
+    }
+}
+
+void ReleasePreparation::clear_selected_records() {
+    for (auto record : selected_records) {
+        delete record;
+    }
+    selected_records.clear();
+    selected_records.reserve(ui->quantity->value());
 }
 
 void ReleasePreparation::read_poll_logs() {

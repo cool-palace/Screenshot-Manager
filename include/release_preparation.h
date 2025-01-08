@@ -19,6 +19,7 @@ private:
     QMap<QString, int> series_last_used_times;
     QList<QList<int>> selected_tag_pairings;
     QList<QVector<int>> hamiltonian_cycles;
+    QMap<QStringList, QList<int>> smart_tag_map;
 
 signals:
     void reroll_response(int);
@@ -43,6 +44,7 @@ protected slots:
 
 private slots:
     bool open_public_journal();
+    bool open_database();
     void check_logs(bool);
     void generate_button();
     void generate_release();
@@ -57,8 +59,10 @@ private slots:
     void poll_preparation(bool);
     void tag_pairing_analysis();
     void set_cycle(int);
+    void prepare_tag_map();
 
 private:
+    void clear_selected_records();
     void read_poll_logs();
     void update_poll_logs();
     void update_hashtag_file();
