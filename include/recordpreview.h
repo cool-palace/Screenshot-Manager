@@ -25,7 +25,8 @@ class RecordFrame : public QLabel
     Q_OBJECT
 public:
     RecordFrame(const QString&);
-    ~RecordFrame() override {}
+    ~RecordFrame() override { qDebug() << "deleting " << pixmap(); }
+    void set_image(const QString&);
     static VK_Manager* manager;
 };
 
@@ -49,6 +50,9 @@ public:
 public slots:
     void enable_reroll() { reroll_button->setEnabled(true); }
     void spinbox_changed(int value) { set_index(record_variants[value-1]); }
+    void set_index(int);
+    void update_log_info(int);
+    void set_tagged_record(int, const QStringList&, const QList<int>&);
 
 private slots:
     void reroll();
@@ -59,9 +63,7 @@ private slots:
     void clear();
     void update_images(const QStringList&);
     void update_text(const QString&);
-    void set_index(int);
     void set_tags(const QStringList&, const QList<int>&);
-    void update_log_info(int);
 
 signals:
     void search_start(int);
@@ -70,7 +72,7 @@ signals:
 private:
     RecordPreview(const Record&, int, const QDateTime&, bool);
     int index;
-    QList<RecordFrame*> images;
+    QList<QSharedPointer<RecordFrame>> images;
     QDateTime time;
     QStringList hashtags;
     QList<int> record_variants;

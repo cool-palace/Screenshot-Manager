@@ -6,7 +6,12 @@ QList<RecordPreview*>* RecordPreview::selected_records;
 VK_Manager* RecordFrame::manager;
 
 RecordFrame::RecordFrame(const QString& link) {
+    set_image(link);
+}
+
+void RecordFrame::set_image(const QString& link) {
     auto response = manager->get_url(link);
+    connect(this, &QObject::destroyed, response, &QNetworkReply::abort);
     connect(response, &QNetworkReply::finished, [this, response](){
         response->deleteLater();
         if (response->error() != QNetworkReply::NoError) return;
@@ -75,9 +80,6 @@ RecordPreview::RecordPreview(const Record& record, const QDateTime& time, const 
 }
 
 RecordPreview::~RecordPreview() {
-    for (auto image : images) {
-        delete image;
-    }
     disconnect(this, nullptr, nullptr, nullptr);
     disconnect(time_button, nullptr, nullptr, nullptr);
     disconnect(reroll_button, nullptr, nullptr, nullptr);
@@ -142,13 +144,10 @@ void RecordPreview::set_time() {
 }
 
 void RecordPreview::clear() {
-    while (images_layout->takeAt(0) != nullptr) {
-        // Clearing items from the grid
-    }
-    for (auto frame : images) {
-        delete frame;
-    }
-    images.clear();
+//    while (images_layout->takeAt(0) != nullptr) {
+//        // Clearing items from the grid
+//    }
+//    images.clear();
 }
 
 void RecordPreview::set_index(int i) {
@@ -188,10 +187,24 @@ void RecordPreview::update_log_info(int id) {
     log_info->setFont(font);
 }
 
+void RecordPreview::set_tagged_record(int index, const QStringList & tags, const QList<int> & record_set) {
+    set_index(index);
+    set_tags(tags, record_set);
+}
+
 void RecordPreview::update_images(const QStringList& links) {
+    // Removing images from the end if images.size() > links.size()
+    for (int j = images.size(); j > links.size(); --j) {
+        images.pop_back();
+    }
     for (int i = 0; i < links.size(); ++i) {
-        images.push_back(new RecordFrame(links[i]));
-        images_layout->addWidget(images.back());
+        if (images.size() <= i) {
+            // Adding new image
+            images.push_back(QSharedPointer<RecordFrame>(new RecordFrame(links[i])));
+            images_layout->addWidget(images.back().get());
+        } else {
+            images[i].data()->set_image(links[i]);
+        }
     }
     images_layout->setAlignment(links.size() > 1 ? Qt::AlignLeft : Qt::AlignHCenter);
 }
