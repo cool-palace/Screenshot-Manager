@@ -153,6 +153,32 @@ QMultiMap<QString, QTime> TextReading::timestamps_multimap() {
     return timestamps_for_filenames;
 }
 
+void TextReading::generate_combinations(const QString& input, int index, QString current, QStringList& results) const {
+    if (index == input.length()) {
+        results.push_back(current);
+        return;
+    }
+    if (input[index] == '_') {
+        // Заменяем "_" на "." и добавляем в комбинации
+        generate_combinations(input, index + 1, current + '.', results);
+    }
+    // Оставляем "_" как есть
+    generate_combinations(input, index + 1, current + input[index], results);
+}
+
+QString TextReading::subs_filename(const QString& filename, const QString& title) const {
+    QStringList combinations;
+    generate_combinations(filename, 0, "", combinations);
+    qDebug() << combinations;
+    for (const QString& combination : combinations) {
+        QString subs_path = QDir::toNativeSeparators(locations[SUBS]) + title + QDir::separator() + combination + ".ass";
+        if (QFile::exists(subs_path)) {
+            return subs_path;
+        } else qDebug() << "Subs file does not exist: " << subs_path;
+    }
+    return QString();
+}
+
 bool TextReading::find_lines_by_timestamps(const QMultiMap<QString, QTime>& timestamps_for_filenames) {
     // The following lines are to be used when pic names and keys in multimap are sorted differently
 //    auto keys = timestamps_for_filenames.uniqueKeys();
@@ -162,7 +188,7 @@ bool TextReading::find_lines_by_timestamps(const QMultiMap<QString, QTime>& time
 //    }
 //    auto filenames = first + second;
     for (const auto& filename : timestamps_for_filenames.uniqueKeys()) {
-        auto path = QDir::toNativeSeparators(locations[SUBS]) + title_name() + QDir::separator() + filename + ".ass";
+        auto path = subs_filename(filename, title_name());
         QFile file(path);
         if (!file.open(QIODevice::ReadOnly)) {
             QString message = "Ошибка при чтении субтитров: не удалось открыть файл " + file.fileName();
@@ -207,7 +233,7 @@ bool TextReading::get_subs_for_pic() {
             filename = match.captured(1);
         } else return false;
     }
-    auto path = QDir::toNativeSeparators(locations[SUBS]) + QDir::separator() + title_name() + QDir::separator() + filename + ".ass";
+    auto path = subs_filename(filename, title_name());
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly)) {
         QString message = "Ошибка при чтении субтитров: не удалось открыть файл " + file.fileName();

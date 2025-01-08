@@ -34,6 +34,8 @@ protected slots:
 
 private:
     QMultiMap<QString, QTime> timestamps_multimap();
+    void generate_combinations(const QString&, int, QString, QStringList&) const;
+    QString subs_filename(const QString&, const QString&) const;
     bool find_lines_by_timestamps(const QMultiMap<QString, QTime>&);
     bool get_subs_for_pic();
     void load_subs();
