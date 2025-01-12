@@ -7,6 +7,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMenu>
 
 enum FilterType {
     INCLUDE = 0,
@@ -26,6 +27,21 @@ enum FilterType {
     MULTIPLE = SINGLE | EXCLUDE,
     LOGS = 1 << 8,
 };
+
+inline FilterType operator|(FilterType a, FilterType b) {
+    return static_cast<FilterType>(
+        static_cast<int>(a) | static_cast<int>(b)
+    );
+}
+
+inline FilterType& operator|=(FilterType& a, FilterType b) {
+    a = a | b;
+    return a;
+}
+
+inline bool operator&(FilterType a, FilterType b) {
+    return static_cast<int>(a) & static_cast<int>(b);
+}
 
 class Hashtag {
 public:
@@ -117,8 +133,11 @@ signals:
 private:
     QString text;
     QMap<QChar, QSet<int>> record_indices;
+    QMenu menu;
+    bool action_selected = false;
     static int records_size;
     static HashtagPreview* preview_to_change;
+    void select_action(QAction*);
 };
 
 #endif // HASHTAGBUTTON_H

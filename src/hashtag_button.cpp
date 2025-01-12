@@ -115,6 +115,42 @@ HashtagButton::HashtagButton(const QString& text) :
     QPushButton(text),
     text(text)
 {
+    QAction * action_include_all = menu.addAction("Выбрать все записи");
+    QAction * action_include_hash = menu.addAction("Выбрать со знаком #");
+    QAction * action_include_amp = menu.addAction("Выбрать со знаком &&");
+    QAction * action_exclude_all = menu.addAction("Исключить все записи");
+    QAction * action_exclude_hash = menu.addAction("Исключить со знаком #");
+    QAction * action_exclude_amp = menu.addAction("Исключить со знаком &&");
+    action_include_all->setCheckable(true);
+    action_include_hash->setCheckable(true);
+    action_include_amp->setCheckable(true);
+    action_exclude_all->setCheckable(true);
+    action_exclude_hash->setCheckable(true);
+    action_exclude_amp->setCheckable(true);
+    connect(action_include_all, &QAction::triggered, [this, action_include_all, text]() {
+        select_action(action_include_all);
+        emit filterEvent(FilterType::ANY_TAG, text);
+    });
+    connect(action_include_hash, &QAction::triggered, [this, action_include_hash, text]() {
+        select_action(action_include_hash);
+        emit filterEvent(FilterType::HASHTAG, text);
+    });
+    connect(action_include_amp, &QAction::triggered, [this, action_include_amp, text]() {
+        select_action(action_include_amp);
+        emit filterEvent(FilterType::AMPTAG, text);
+    });
+    connect(action_exclude_all, &QAction::triggered, [this, action_exclude_all, text]() {
+        select_action(action_exclude_all);
+        emit filterEvent(FilterType::ANY_TAG_EXCLUDE, text);
+    });
+    connect(action_exclude_hash, &QAction::triggered, [this, action_exclude_hash, text]() {
+        select_action(action_exclude_hash);
+        emit filterEvent(FilterType::HASHTAG_EXCLUDE, text);
+    });
+    connect(action_exclude_amp, &QAction::triggered, [this, action_exclude_amp, text]() {
+        select_action(action_exclude_amp);
+        emit filterEvent(FilterType::AMPTAG_EXCLUDE, text);
+    });
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setToolTip(text);
     setCheckable(true);
@@ -128,29 +164,13 @@ void HashtagButton::mousePressEvent(QMouseEvent * e) {
     if (preview_to_change) return;
     switch (e->button()) {
     case Qt::LeftButton:
-        if (e->modifiers() & Qt::ShiftModifier) {
-            emit filterEvent(FilterType::HASHTAG, text);
-        } else if (e->modifiers() & Qt::AltModifier) {
-            emit filterEvent(FilterType::HASHTAG_EXCLUDE, text);
-        } else {
-            emit hashtagEvent('#', text);
-        }
+        emit hashtagEvent('#', text);
         break;
     case Qt::RightButton:
-        if (e->modifiers() & Qt::ShiftModifier) {
-            emit filterEvent(FilterType::AMPTAG, text);
-        } else if (e->modifiers() & Qt::AltModifier) {
-            emit filterEvent(FilterType::AMPTAG_EXCLUDE, text);
-        } else {
-            emit hashtagEvent('&', text);
-        }
+        menu.exec(e->globalPos());
         break;
     case Qt::MiddleButton:
-        if (e->modifiers() & Qt::AltModifier) {
-            emit filterEvent(FilterType::ANY_TAG_EXCLUDE, text);
-        } else {
-            emit filterEvent(FilterType::ANY_TAG, text);
-        }
+        emit filterEvent(FilterType::ANY_TAG, text);
         break;
     default:
         break;
@@ -263,4 +283,13 @@ HashtagPreview* HashtagButton::current_preview_to_change() {
 
 void HashtagButton::emit_filter_event() {
     emit filterEvent(FilterType::ANY_TAG, text);
+}
+
+void HashtagButton::select_action(QAction * action) {
+    action_selected = !action_selected;
+    for (auto act : menu.actions()) {
+        act->setDisabled(action_selected);
+    }
+    action->setEnabled(true);
+    action->setChecked(action_selected);
 }
