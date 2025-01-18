@@ -77,6 +77,7 @@ void VK_Manager::get_albums() {
 
 void VK_Manager::post(int index, const QString& attachments, int date) {
     QString url = "https://api.vk.com/method/wall.post?v=5.131&from_group=1&signed=0"
+                  "&primary_attachments_mode=carousel"
                   "&access_token=" + access_token
                 + "&owner_id=-" + public_id
                 + "&attachments=" + attachments
