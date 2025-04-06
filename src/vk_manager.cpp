@@ -100,7 +100,7 @@ void VK_Manager::get_poll(const QString& options, int end_date) {
                   "&access_token=" + access_token
                 + "&owner_id=-" + public_id
                 + "&question=" + "Тема пятничных постов"
-                + "&is_anonymous=1&is_multiple=1&background_id=4"
+                + "&is_anonymous=1&is_multiple=1&background_id=1"
                 + "&add_answers=" + options
                 + "&end_date=" + QString().setNum(end_date);
     auto response = get_url(url);
