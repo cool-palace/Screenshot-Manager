@@ -294,7 +294,7 @@ bool ReleasePreparation::open_database() {
 
 //    read_logs();
     // Creating title items for series
-    db.select_series_previews(query);
+//    db.select_series_previews(query);
     while (query.next()) {
         QString series = query.value("series_name").toString();
         QString title = query.value("title_name").toString();
@@ -307,7 +307,7 @@ bool ReleasePreparation::open_database() {
 
     // Creating record items
     qDebug() << QDateTime::currentDateTime();
-    db.select_record_info(query);
+//    db.select_record_info(query);
     qDebug() << QDateTime::currentDateTime();
     while (query.next()) {
         QString quote = query.value("quote").toString();
