@@ -115,18 +115,24 @@ HashtagButton::HashtagButton(const QString& text) :
     QPushButton(text),
     text(text)
 {
+    QAction * action_add_amp = menu.addAction("Добавить со знаком &&");
     QAction * action_include_all = menu.addAction("Выбрать все записи");
     QAction * action_include_hash = menu.addAction("Выбрать со знаком #");
     QAction * action_include_amp = menu.addAction("Выбрать со знаком &&");
     QAction * action_exclude_all = menu.addAction("Исключить все записи");
     QAction * action_exclude_hash = menu.addAction("Исключить со знаком #");
     QAction * action_exclude_amp = menu.addAction("Исключить со знаком &&");
+    action_add_amp->setCheckable(true);
     action_include_all->setCheckable(true);
     action_include_hash->setCheckable(true);
     action_include_amp->setCheckable(true);
     action_exclude_all->setCheckable(true);
     action_exclude_hash->setCheckable(true);
     action_exclude_amp->setCheckable(true);
+    connect(action_add_amp, &QAction::triggered, [this, action_add_amp, text]() {
+        select_action(action_add_amp);
+        emit hashtagEvent('&', text);
+    });
     connect(action_include_all, &QAction::triggered, [this, action_include_all, text]() {
         select_action(action_include_all);
         emit filterEvent(FilterType::ANY_TAG, text);
