@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->text_reading, &QAction::triggered, this, &MainWindow::text_reading);
     connect(ui->descriptions_reading, &QAction::triggered, this, &MainWindow::descriptions_reading);
     connect(ui->release_preparation, &QAction::triggered, this, &MainWindow::release_preparation);
+    connect(ui->text_labeling, &QAction::triggered, this, &MainWindow::text_labeling);
 
     connect(ui->journal_creation_button, &QPushButton::clicked, this, &MainWindow::journal_creation);
     connect(ui->journal_reading_button, &QPushButton::clicked, this, &MainWindow::journal_reading);
@@ -175,6 +176,12 @@ void MainWindow::release_preparation() {
     } else mode = new ReleasePreparation(this);
     qDebug() << mode;
     mode->start();
+}
+
+void MainWindow::text_labeling() {
+    qDebug() << "text labeling";
+    ui->stacked_view->setCurrentIndex(5);
+    ui->labeling_widget->start();
 }
 
 void MainWindow::read_descriptions(const QJsonObject& json_file) {

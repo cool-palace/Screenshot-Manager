@@ -21,7 +21,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>1</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="page_7">
        <layout class="QGridLayout" name="gridLayout_14">
@@ -202,7 +202,7 @@
             </size>
            </property>
            <property name="currentIndex">
-            <number>1</number>
+            <number>0</number>
            </property>
            <widget class="QWidget" name="page">
             <layout class="QGridLayout" name="gridLayout">
@@ -446,7 +446,7 @@
             </layout>
            </widget>
           </widget>
-          <widget class="QWidget" name="">
+          <widget class="QWidget" name="layoutWidget">
            <layout class="QHBoxLayout" name="horizontalLayout_main">
             <property name="sizeConstraint">
              <enum>QLayout::SetNoConstraint</enum>
@@ -1293,6 +1293,13 @@ p, li { white-space: pre-wrap; }
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="page_8">
+       <layout class="QGridLayout" name="gridLayout_17">
+        <item row="0" column="0">
+         <widget class="TextLabeling" name="labeling_widget" native="true"/>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -1315,6 +1322,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="journal_creation"/>
     <addaction name="journal_reading"/>
     <addaction name="journal_reading_all"/>
+    <addaction name="text_labeling"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -1768,8 +1776,21 @@ p, li { white-space: pre-wrap; }
     <string>Чтение базы данных</string>
    </property>
   </action>
+  <action name="text_labeling">
+   <property name="text">
+    <string>Разметка кадров</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>TextLabeling</class>
+   <extends>QWidget</extends>
+   <header>text_labeling.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="icons.qrc"/>
  </resources>

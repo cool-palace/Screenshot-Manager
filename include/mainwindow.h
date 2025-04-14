@@ -19,6 +19,7 @@
 #include "include\recordpreview.h"
 #include "include\common.h"
 #include "include\database.h"
+#include "text_labeling.h"
 
 namespace Ui {
 class MainWindow;
@@ -81,6 +82,7 @@ public slots:
     void text_reading();
     void descriptions_reading();
     void release_preparation();
+    void text_labeling();
 
 private:
     Ui::MainWindow *ui;

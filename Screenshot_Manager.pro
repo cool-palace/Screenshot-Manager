@@ -37,7 +37,8 @@ SOURCES += \
         src\record.cpp \
         src\release_preparation.cpp \
         src\text_reading.cpp \
-        src\vk_manager.cpp
+        src\vk_manager.cpp \
+        text_labeling.cpp
 
 HEADERS += \
         include\database.h \
@@ -51,11 +52,13 @@ HEADERS += \
         include\release_preparation.h \
         include\text_reading.h \
         include\vk_manager.h \
-        include\recordpreview.h
+        include\recordpreview.h \
+        text_labeling.h
 
 FORMS += \
         mainwindow.ui \
-        recordpreview.ui
+        recordpreview.ui \
+        text_labeling.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
