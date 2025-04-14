@@ -1,4 +1,5 @@
 #include "include\common.h"
+#include <QtMath>
 
 CaptchaDialog::CaptchaDialog(QWidget* parent) : QDialog(parent) {
     setWindowTitle("Введите капчу");
@@ -167,4 +168,9 @@ QList<QVector<int>> remove_duplicate_cycles(const QList<QVector<int>>& cycles) {
         }
     }
     return unique_cycles;
+}
+
+double roundTo(double value, int decimals) {
+    double factor = qPow(10.0, decimals);
+    return qRound(value * factor) / factor;
 }
