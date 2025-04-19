@@ -52,7 +52,7 @@ protected:
     int pic_index;
     QString title;
     QList<LineStyle> m_styles;
-    QList<QList<XLabel>> m_labels; // Индекс соответствует pic_index, пары хранят X и индекс стиля
+    QList<QList<XLabel>> m_labels; // Индекс соответствует pic_index
 
 protected:
     QPixmap scaled_with_box(QImage source) const;
@@ -81,12 +81,11 @@ protected slots:
     virtual bool data_ready();
     void enable_x(bool);
     void update_style(int);
-    void set_enabled();
+    void set_enabled(bool);
     void load_labels(const QJsonObject&);
     void save_labels();
+    void clear_all();
 
-private slots:
-    void on_actionOk_triggered();
 };
 
 #endif // TEXT_LABELING_H

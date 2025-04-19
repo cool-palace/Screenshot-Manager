@@ -8,6 +8,8 @@
 #define SCREENSHOTS 0
 #define LABELS 1
 
+
+
 TextLabeling::TextLabeling(QWidget *parent) : QWidget(parent) {
     setupUi(this);
 
@@ -93,12 +95,19 @@ QString TextLabeling::title_name(int index) {
 void TextLabeling::start() {
     QDir dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
                                                     locations[SCREENSHOTS]));
+    if (dir.isEmpty()) return;
+
+    clear_all();
+
     pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
     m_labels.reserve(pics.size());
     for (int i = 0; i < pics.size(); ++i) {
         m_labels.append(QList<XLabel>());
     }
     slider->setMaximum(pics.size() - 1);
+    slider->blockSignals(false);
+    rbLines->blockSignals(false);
+    rbStyle->blockSignals(false);
     title = dir.dirName();
 
     QString filepath = locations[LABELS] + title + ".json";
@@ -106,13 +115,20 @@ void TextLabeling::start() {
     if (file.exists()) {
         load_labels(json_object(filepath));
     }
-    set_enabled();
+    set_enabled(true);
     draw(pic_index = 0);
 }
 
 void TextLabeling::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_F1) {
+    switch (event->key()) {
+    case Qt::Key_F1:
         pbOk->click();
+        break;
+    case Qt::Key_F2:
+        pbAddLine->click();
+        break;
+    default:
+        break;
     }
 }
 
@@ -150,11 +166,17 @@ void TextLabeling::ok_button() {
         return;
 
     if (chbX->isChecked()) {
+        // Добавляем новую разметку для кадра
         int style_index = cbLines->currentIndex();
         XLabel current_label = XLabel(dsbX->value(), style_index);
         m_labels[pic_index].append(current_label);
     }
-
+    int current_size = m_labels[pic_index].size();
+    int current_style = cbLines->currentIndex();
+    // Если на предыдущем кадре было несколько строк, то удобно при переходе к новому кадру найти стиль нижней строки
+    if (current_size > 1 && current_style >= current_size - 1) {
+        cbLines->setCurrentIndex(current_style - current_size + 1);
+    }
     if (pic_index + 1 < pics.size()) {
         slider->setValue(++pic_index);
     } else {
@@ -219,7 +241,7 @@ void TextLabeling::add_style(double y, double h) {
 
 void TextLabeling::switch_mode() {
     update_style(cbLines->currentIndex());
-    set_enabled();
+    set_enabled(true);
 }
 
 void TextLabeling::draw(int index = 0) {
@@ -251,17 +273,17 @@ void TextLabeling::update_style(int index) {
     box_change();
 }
 
-void TextLabeling::set_enabled() {
+void TextLabeling::set_enabled(bool enable) {
     bool style_mode = rbStyle->isChecked();
-    dsbY->setEnabled(style_mode);
-    dsbHeight->setEnabled(style_mode);
-    pbAddStyle->setEnabled(style_mode);
-    pbEditStlye->setEnabled(style_mode && m_styles.size());
+    dsbY->setEnabled(enable && style_mode);
+    dsbHeight->setEnabled(enable && style_mode);
+    pbAddStyle->setEnabled(enable && style_mode);
+    pbEditStlye->setEnabled(enable && style_mode && m_styles.size());
 
-    cbLines->setEnabled(!style_mode);
-    pbOk->setEnabled(!style_mode);
-    dsbX->setEnabled(!style_mode);
-    pbAddLine->setEnabled(!style_mode);
+    cbLines->setEnabled(enable && !style_mode);
+    pbOk->setEnabled(enable && !style_mode);
+    dsbX->setEnabled(enable && !style_mode);
+    pbAddLine->setEnabled(enable && !style_mode);
 }
 
 void TextLabeling::load_labels(const QJsonObject& json_file) {
@@ -315,14 +337,32 @@ void TextLabeling::save_labels() {
 
     QFile file(locations[LABELS] + title_name() + ".json");
     auto message = save_json(object, file)
-            ? "Журнал скриншотов сохранён."
+            ? "Файл с разметкой сохранён."
             : QString("Не удалось сохранить файл: %1").arg(file.fileName());
     QMessageBox msgBox;
+    msgBox.setWindowTitle(title);
     msgBox.setText(message);
+    msgBox.setIcon(QMessageBox::Information);
+    QPushButton* openFolderBtn = msgBox.addButton("Открыть другую папку", QMessageBox::ActionRole);
+    QPushButton* continueBtn = msgBox.addButton("Продолжить работу", QMessageBox::AcceptRole);
     msgBox.exec();
+    // Проверяем, что нажал пользователь
+    if (msgBox.clickedButton() == openFolderBtn) {
+        start();
+    }
 }
 
-void TextLabeling::on_actionOk_triggered() {
-    pbOk->click();
+void TextLabeling::clear_all() {
+    pics.clear();
+    title.clear();
+    m_styles.clear();
+    m_labels.clear();
+    cbLines->blockSignals(true);
+    cbLines->clear();
+    slider->blockSignals(true);
+    slider->setValue(pic_index = 0);
+    rbLines->blockSignals(true);
+    rbLines->setDisabled(true);
+    rbStyle->blockSignals(true);
+    rbStyle->setChecked(true);
 }
-
