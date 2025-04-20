@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->journal_reading_button, &QPushButton::clicked, this, &MainWindow::journal_reading);
     connect(ui->text_reading_button, &QPushButton::clicked, this, &MainWindow::text_reading);
     connect(ui->release_preparation_button, &QPushButton::clicked, this, &MainWindow::release_preparation);
+    connect(ui->text_labeling_button, &QPushButton::clicked, this, &MainWindow::text_labeling);
     connect(ui->exit_mode, &QAction::triggered, this, &MainWindow::exit_mode);
     connect(ui->initialization, &QAction::triggered, this, &MainWindow::initialize);
     connect(ui->compile, &QAction::triggered, this, &MainWindow::compile_journals);
@@ -179,7 +180,6 @@ void MainWindow::release_preparation() {
 }
 
 void MainWindow::text_labeling() {
-    qDebug() << "text labeling";
     ui->stacked_view->setCurrentIndex(5);
     ui->labeling_widget->start();
 }

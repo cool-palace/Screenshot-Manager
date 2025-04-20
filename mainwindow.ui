@@ -21,20 +21,13 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>5</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page_7">
        <layout class="QGridLayout" name="gridLayout_14">
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_10">
-          <item row="0" column="3">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QPushButton" name="journal_reading_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
@@ -54,7 +47,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Открыть журнал</string>
+             <string>Чтение журналов</string>
             </property>
             <property name="icon">
              <iconset resource="icons.qrc">
@@ -65,13 +58,6 @@
               <width>80</width>
               <height>80</height>
              </size>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string/>
             </property>
            </widget>
           </item>
@@ -95,7 +81,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Создать журнал</string>
+             <string>Создание журнала</string>
             </property>
             <property name="icon">
              <iconset resource="icons.qrc">
@@ -109,41 +95,7 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="text_reading_button">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>300</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Извлечь текст</string>
-            </property>
-            <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/images/icons8-document-80.png</normaloff>:/images/icons8-document-80.png</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>80</width>
-              <height>80</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QPushButton" name="release_preparation_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
@@ -163,11 +115,87 @@
              </font>
             </property>
             <property name="text">
-             <string>Публиковать посты</string>
+             <string>Публикация постов</string>
             </property>
             <property name="icon">
              <iconset resource="icons.qrc">
               <normaloff>:/images/icons8-cloud-80.png</normaloff>:/images/icons8-cloud-80.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>80</width>
+              <height>80</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="text_reading_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Извлечение текста</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/images/icons8-document-80.png</normaloff>:/images/icons8-document-80.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>80</width>
+              <height>80</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="text_labeling_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Разметка текста</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/images/icons8-ocr-80.png</normaloff>:/images/icons8-ocr-80.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -425,8 +453,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>1066</width>
-                    <height>296</height>
+                    <width>67</width>
+                    <height>24</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_15">
