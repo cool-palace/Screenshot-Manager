@@ -328,7 +328,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pbEditStlye">
+        <widget class="QPushButton" name="pbEditStyle">
          <property name="enabled">
           <bool>false</bool>
          </property>
@@ -339,6 +339,21 @@
          </property>
          <property name="text">
           <string>Ред. стиль</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="sbAddCount">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>1</number>
          </property>
         </widget>
        </item>

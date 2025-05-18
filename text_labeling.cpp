@@ -20,7 +20,7 @@ TextLabeling::TextLabeling(QWidget *parent) : QWidget(parent) {
     connect(pbOk, &QPushButton::clicked, this, &TextLabeling::ok_button);
     connect(pbSkip, &QPushButton::clicked, this, &TextLabeling::skip_button);
     connect(pbRemoveLine, &QPushButton::clicked, this, &TextLabeling::remove_line_button);
-    connect(pbEditStlye, &QPushButton::clicked, this, &TextLabeling::edit_style_button);
+    connect(pbEditStyle, &QPushButton::clicked, this, &TextLabeling::edit_style_button);
     connect(chbX, &QCheckBox::clicked, this, &TextLabeling::enable_x);
     connect(dsbX, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &TextLabeling::box_change);
     connect(dsbY, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &TextLabeling::box_change);
@@ -58,7 +58,7 @@ QPixmap TextLabeling::scaled_with_box(QImage source) const {
 
             QRectF bbox(x * imgWidth, m_styles[index].y * imgHeight, w * imgWidth, m_styles[index].h * imgHeight);
 
-            QPen pen(Qt::green, 3);
+            QPen pen(Qt::green, 2);
             painter.setPen(pen);
             painter.drawRect(bbox);
         }
@@ -81,7 +81,7 @@ QPixmap TextLabeling::scaled_with_box(QImage source) const {
 
         QRectF bbox(x * imgWidth, y * imgHeight, w * imgWidth, h * imgHeight);
 
-        QPen pen(Qt::red, 3, Qt::DashDotDotLine);
+        QPen pen(Qt::red, 2, Qt::DashDotDotLine);
         painter.setPen(pen);
         painter.drawRect(bbox);
     }
@@ -143,6 +143,9 @@ void TextLabeling::slider_change(int value) {
 }
 
 void TextLabeling::box_change() {
+    if (rbStyle->isChecked()) {
+        sbAddCount->setMaximum(dsbHeight->value() / dsbHeight->minimum());
+    }
     draw(pic_index);
 }
 
@@ -225,7 +228,12 @@ void TextLabeling::add_line() {
 }
 
 void TextLabeling::add_style(bool b) {
-    add_style(dsbY->value(), dsbHeight->value());
+    double y = dsbY->value();
+    double h = dsbHeight->value() / sbAddCount->value();
+    // Стили нужно добавлять снизу вверх, поэтому нужно уменьшающееся смещение
+    for (int i = sbAddCount->value() - 1; i >= 0; --i) {
+        add_style(y + i * h, h);
+    }
     cbLines->setCurrentIndex(cbLines->count() - 1);
 }
 
@@ -278,7 +286,8 @@ void TextLabeling::set_enabled(bool enable) {
     dsbY->setEnabled(enable && style_mode);
     dsbHeight->setEnabled(enable && style_mode);
     pbAddStyle->setEnabled(enable && style_mode);
-    pbEditStlye->setEnabled(enable && style_mode && m_styles.size());
+    pbEditStyle->setEnabled(enable && style_mode && m_styles.size());
+    sbAddCount->setEnabled(enable && style_mode);
 
     cbLines->setEnabled(enable && !style_mode);
     pbOk->setEnabled(enable && !style_mode);
