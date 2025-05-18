@@ -51,7 +51,7 @@ void VK_Manager::get_photo_ids(int album_id, const QString& photo_ids) {
                   "&access_token=" + access_token
                 + "&owner_id=-" + group_id
                 + "&album_id=" + QString().setNum(album_id)
-                + "&count=400"
+                + "&count=500"
                 + (!photo_ids.isEmpty() ? "&photo_ids=" : "") + photo_ids;
     get_url(url);
     connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_photo_ids);
