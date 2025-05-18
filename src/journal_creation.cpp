@@ -117,7 +117,7 @@ void JournalCreation::draw(int index = 0) {
         auto image = QImage(dir_path + pics[index]);
         if (image.isNull()) {
             // Checking the reserve screenshot folder
-            image = QImage(locations[SCREENSHOTS_NEW] + title_name() + QDir::separator());
+            image = QImage(locations[SCREENSHOTS_NEW] + title_name() + QDir::separator() + pics[index]);
         }
         ui->image->setPixmap(scaled(image));
     }
