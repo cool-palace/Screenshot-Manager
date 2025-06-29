@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->journal_reading_button, &QPushButton::clicked, this, &MainWindow::journal_reading);
     connect(ui->text_reading_button, &QPushButton::clicked, this, &MainWindow::text_reading);
     connect(ui->release_preparation_button, &QPushButton::clicked, this, &MainWindow::release_preparation);
+    connect(ui->release_preparation_db_button, &QPushButton::clicked, this, &MainWindow::release_preparation_db);
     connect(ui->text_labeling_button, &QPushButton::clicked, this, &MainWindow::text_labeling);
     connect(ui->exit_mode, &QAction::triggered, this, &MainWindow::exit_mode);
     connect(ui->initialization, &QAction::triggered, this, &MainWindow::initialize);
@@ -43,7 +44,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {
     delete ui;
-    delete manager;
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event) {
@@ -104,8 +104,7 @@ bool MainWindow::initialize() {
     QString access_token = json_file.value("access_token").toString();
     QString group_id = json_file.value("group_id").toString();
     QString public_id = json_file.value("public_id").toString();
-    manager = new VK_Manager(access_token, group_id, public_id);
-    RecordFrame::manager = manager;
+    VK_Manager::instance().init(access_token, group_id, public_id);
     if (!QDir(locations[SCREENSHOTS]).exists() || !QDir(locations[JOURNALS]).exists()) {
         ui->statusBar->showMessage("Указаны несуществующие директории. Перепроверьте конфигурационный файл.");
         return false;
@@ -177,6 +176,11 @@ void MainWindow::release_preparation() {
     } else mode = new ReleasePreparation(this);
     qDebug() << mode;
     mode->start();
+}
+
+void MainWindow::release_preparation_db() {
+    ui->stacked_view->setCurrentIndex(6);
+    ui->wReleasePreparation->start();
 }
 
 void MainWindow::text_labeling() {

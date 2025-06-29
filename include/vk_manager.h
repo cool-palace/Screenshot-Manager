@@ -13,10 +13,16 @@
 class VK_Manager : public QNetworkAccessManager
 {
     Q_OBJECT
+private:
+    VK_Manager();
 public:
-    VK_Manager(const QString&, const QString&, const QString&);
-    QString prefix() const { return QString("photo-%1_").arg(group_id); };
-    QString poll_attachment(int id) const { return QString("poll-%1_%2").arg(public_id).arg(id); };
+    static VK_Manager& instance();
+    VK_Manager(const VK_Manager&) = delete;
+    VK_Manager& operator=(const VK_Manager&) = delete;
+    ~VK_Manager();
+    void init(const QString& access_token, const QString& group_id, const QString& public_id);
+    QString prefix() const { return QString("photo-%1_").arg(m_group_id); };
+    QString poll_attachment(int id) const { return QString("poll-%1_%2").arg(m_public_id).arg(id); };
 
 signals:
     void albums_ready(const QMap<QString, int>&);
@@ -52,9 +58,9 @@ private slots:
     void got_captcha(QNetworkReply *);
 
 private:
-    const QString access_token;
-    const QString group_id;
-    const QString public_id;
+    QString m_access_token;
+    QString m_group_id;
+    QString m_public_id;
 };
 
 #endif // VK_MANAGER_H

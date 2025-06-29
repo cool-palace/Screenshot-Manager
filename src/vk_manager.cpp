@@ -1,11 +1,21 @@
 #include "include\vk_manager.h"
 #include <QRegularExpression>
 
-VK_Manager::VK_Manager(const QString& access_token, const QString& group_id, const QString& public_id)
-    : QNetworkAccessManager()
-    , access_token(access_token)
-    , group_id(group_id)
-    , public_id(public_id) {}
+VK_Manager::VK_Manager()
+    : QNetworkAccessManager() {}
+
+VK_Manager::~VK_Manager() {}
+
+void VK_Manager::init(const QString &access_token, const QString &group_id, const QString &public_id) {
+    m_access_token = access_token;
+    m_group_id = group_id;
+    m_public_id = public_id;
+}
+
+VK_Manager &VK_Manager::instance() {
+    static VK_Manager instance;
+    return instance;
+}
 
 QJsonObject VK_Manager::reply_json(QNetworkReply *response) {
     response->deleteLater();
@@ -48,8 +58,8 @@ QNetworkReply* VK_Manager::get_url(const QString& url) {
 
 void VK_Manager::get_photo_ids(int album_id, const QString& photo_ids) {
     QString url = "https://api.vk.com/method/photos.get?v=5.131"
-                  "&access_token=" + access_token
-                + "&owner_id=-" + group_id
+                  "&access_token=" + m_access_token
+                + "&owner_id=-" + m_group_id
                 + "&album_id=" + QString().setNum(album_id)
                 + "&count=500"
                 + (!photo_ids.isEmpty() ? "&photo_ids=" : "") + photo_ids;
@@ -69,8 +79,8 @@ void VK_Manager::get_captcha(const QString &url) {
 
 void VK_Manager::get_albums() {
     QString url = "https://api.vk.com/method/photos.getAlbums?v=5.131"
-                  "&access_token=" + access_token
-                + "&owner_id=-" + group_id;
+                  "&access_token=" + m_access_token
+                + "&owner_id=-" + m_group_id;
     get_url(url);
     connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_albums);
 }
@@ -78,8 +88,8 @@ void VK_Manager::get_albums() {
 void VK_Manager::post(int index, const QString& attachments, int date) {
     QString url = "https://api.vk.com/method/wall.post?v=5.131&from_group=1&signed=0"
                   "&primary_attachments_mode=carousel"
-                  "&access_token=" + access_token
-                + "&owner_id=-" + public_id
+                  "&access_token=" + m_access_token
+                + "&owner_id=-" + m_public_id
                 + "&attachments=" + attachments
                 + "&publish_date=" + QString().setNum(date);
     auto response = get_url(url);
@@ -97,8 +107,8 @@ void VK_Manager::post(int index, const QString& attachments, int date) {
 
 void VK_Manager::get_poll(const QString& options, int end_date) {
     QString url = "https://api.vk.com/method/polls.create?v=5.199&from_group=1&signed=0"
-                  "&access_token=" + access_token
-                + "&owner_id=-" + public_id
+                  "&access_token=" + m_access_token
+                + "&owner_id=-" + m_public_id
                 + "&question=" + "Тема пятничных постов"
                 + "&is_anonymous=1&is_multiple=1&background_id=1"
                 + "&add_answers=" + options
@@ -118,8 +128,8 @@ void VK_Manager::get_poll(const QString& options, int end_date) {
 
 void VK_Manager::post(const QString& message, int poll_id, int date) {
     QString url = "https://api.vk.com/method/wall.post?v=5.199&from_group=1&signed=0"
-                  "&access_token=" + access_token
-                + "&owner_id=-" + public_id
+                  "&access_token=" + m_access_token
+                + "&owner_id=-" + m_public_id
                 + "&message=" + message
                 + "&attachments=" + poll_attachment(poll_id)
                 + "&publish_date=" + QString().setNum(date);
@@ -137,8 +147,8 @@ void VK_Manager::post(const QString& message, int poll_id, int date) {
 
 void VK_Manager::edit_photo_caption(int photo_id, const QString& caption, const QString& captcha_sid, const QString& captcha_key) {
     QString url = "https://api.vk.com/method/photos.edit?v=5.131"
-                  "&access_token=" + access_token
-                + "&owner_id=-" + group_id
+                  "&access_token=" + m_access_token
+                + "&owner_id=-" + m_group_id
                 + "&photo_id=" + QString().setNum(photo_id)
                 + "&caption=" + caption;
     if (!captcha_sid.isEmpty()) {

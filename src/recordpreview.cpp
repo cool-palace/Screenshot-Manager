@@ -3,14 +3,13 @@
 QVector<Record>* RecordPreview::records;
 QMap<int, int>* RecordPreview::logs;
 QList<RecordPreview*>* RecordPreview::selected_records;
-VK_Manager* RecordFrame::manager;
 
 RecordFrame::RecordFrame(const QString& link) {
     set_image(link);
 }
 
 void RecordFrame::set_image(const QString& link) {
-    auto response = manager->get_url(link);
+    auto response = VK_Manager::instance().get_url(link);
     connect(this, &QObject::destroyed, response, &QNetworkReply::abort);
     connect(response, &QNetworkReply::finished, [this, response](){
         response->deleteLater();

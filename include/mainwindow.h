@@ -62,7 +62,6 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     Ui::MainWindow* get_ui() { return ui; }
-    VK_Manager* get_vk() { return manager; }
     QMap<Directories, QString> get_locations() { return locations; };
 
 protected:
@@ -82,11 +81,11 @@ public slots:
     void text_reading();
     void descriptions_reading();
     void release_preparation();
+    void release_preparation_db();
     void text_labeling();
 
 private:
     Ui::MainWindow *ui;
-    VK_Manager* manager;
     QMap<Directories, QString> locations;
     AbstractMode* mode = nullptr;
     Mode current_mode = IDLE;

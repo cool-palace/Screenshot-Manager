@@ -27,7 +27,6 @@ public:
     RecordFrame(const QString&);
     ~RecordFrame() override { qDebug() << "deleting " << pixmap(); }
     void set_image(const QString&);
-    static VK_Manager* manager;
 };
 
 class RecordPreview : public QWidget, public Ui::RecordPreview

@@ -1,9 +1,10 @@
 #include "include\abstract_mode.h"
+#include "include\vk_manager.h"
 
 AbstractMode::AbstractMode(MainWindow* parent)
-    : parent(parent), ui(parent->get_ui()), manager(parent->get_vk()), locations(parent->get_locations())
+    : parent(parent), ui(parent->get_ui()), locations(parent->get_locations())
 {
-    connect(manager, &VK_Manager::image_ready, this, &AbstractMode::set_loaded_image);
+    connect(&VK_Manager::instance(), &VK_Manager::image_ready, this, &AbstractMode::set_loaded_image);
     connect(ui->slider, &QAbstractSlider::valueChanged, this, &AbstractMode::slider_change);
     connect(ui->page_index, QOverload<int>::of(&QSpinBox::valueChanged), this, &AbstractMode::lay_previews);
     connect(ui->main_view, &QAction::triggered, [this]() { set_view(MAIN); });
@@ -26,7 +27,7 @@ AbstractMode::~AbstractMode() {
     for (auto item : record_items) {
         delete item;
     }
-    disconnect(manager, nullptr, this, nullptr);
+    disconnect(&VK_Manager::instance(), nullptr, this, nullptr);
     disconnect(ui->slider, nullptr, this, nullptr);
     disconnect(ui->page_index, nullptr, this, nullptr);
     disconnect(ui->main_view, nullptr, this, nullptr);

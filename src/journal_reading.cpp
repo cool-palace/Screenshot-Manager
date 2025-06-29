@@ -2,8 +2,8 @@
 
 JournalReading::JournalReading(MainWindow *parent, bool all) : AbstractOperationMode(parent), record_edited(all)
 {
-    connect(manager, &VK_Manager::caption_passed, this, &JournalReading::caption_success);
-    connect(manager, &VK_Manager::captcha_error, this, &JournalReading::captcha_handling);
+    connect(&VK_Manager::instance(), &VK_Manager::caption_passed, this, &JournalReading::caption_success);
+    connect(&VK_Manager::instance(), &VK_Manager::captcha_error, this, &JournalReading::captcha_handling);
     connect(ui->save, &QAction::triggered, this, &JournalReading::save_changes);
     connect(ui->export_captions_by_ids, &QAction::triggered, this, &JournalReading::export_captions_by_ids);
     connect(ui->export_info_by_ids, &QAction::triggered, this, &JournalReading::export_info_by_ids);
@@ -370,7 +370,7 @@ void JournalReading::save_title_journal(int start, int end) {
 
 void JournalReading::display(int index) {
     if (!ui->offline->isChecked()) {
-        manager->get_image(records[index].links[pic_end_index]);
+        VK_Manager::instance().get_image(records[index].links[pic_end_index]);
     } else {
         auto image = QImage(path(index) + records[index].pics[pic_end_index]);
         if (image.isNull()) image = QImage(QString(path(index) + records[index].pics[pic_end_index]).chopped(3) + "jpg");
@@ -451,7 +451,7 @@ void JournalReading::show_private(bool checked) {
 }
 
 void JournalReading::add_caption(const QString& captcha_sid, const QString& captcha_key) {
-    manager->edit_photo_caption(captions_for_ids.firstKey(), captions_for_ids.first(), captcha_sid, captcha_key);
+    VK_Manager::instance().edit_photo_caption(captions_for_ids.firstKey(), captions_for_ids.first(), captcha_sid, captcha_key);
 }
 
 void JournalReading::caption_success() {
@@ -469,14 +469,14 @@ void JournalReading::captcha_handling(const QString& captcha_id, const QString& 
     if (!dialog) dialog = new CaptchaDialog();
     int size = captions_for_ids.size();
     ui->statusBar->showMessage(QString("Осталось подписать %1 %2").arg(size).arg(inflect(size, "фотографий")));
-    connect(manager, &VK_Manager::captcha_image_ready, [this, captcha_id](const QImage& image) {
+    connect(&VK_Manager::instance(), &VK_Manager::captcha_image_ready, [this, captcha_id](const QImage& image) {
         dialog->set_captcha_image(image);
         if (dialog->exec() == QDialog::Accepted) {
             add_caption(captcha_id, dialog->text());
         }
-        disconnect(manager, &VK_Manager::captcha_image_ready, nullptr, nullptr);
+        disconnect(&VK_Manager::instance(), &VK_Manager::captcha_image_ready, nullptr, nullptr);
     });
-    manager->get_captcha(url);
+    VK_Manager::instance().get_captcha(url);
     for (int i = 0; i < records.size(); ++i) {
         if (records[i].ids.contains(captions_for_ids.firstKey())) {
             display(i);

@@ -23,7 +23,6 @@ public:
 protected:
     MainWindow* parent;
     Ui::MainWindow *ui;
-    VK_Manager* manager;
     View current_view = START;
     QMap<Directories, QString> locations;
     QMap<QString, int> album_ids;

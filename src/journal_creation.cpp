@@ -2,8 +2,8 @@
 
 JournalCreation::JournalCreation(MainWindow* parent) : AbstractPreparationMode(parent)
 {
-    connect(manager, &VK_Manager::albums_ready, this, &JournalCreation::set_albums);
-    connect(manager, &VK_Manager::photo_ids_ready, this, &JournalCreation::set_photo_ids);
+    connect(&VK_Manager::instance(), &VK_Manager::albums_ready, this, &JournalCreation::set_albums);
+    connect(&VK_Manager::instance(), &VK_Manager::photo_ids_ready, this, &JournalCreation::set_photo_ids);
     connect(parent, &MainWindow::key_press, this, &JournalCreation::keyPressEvent);
     connect(parent, &MainWindow::key_release, this, &JournalCreation::keyReleaseEvent);
     QDir dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
@@ -20,7 +20,7 @@ JournalCreation::~JournalCreation() {
 }
 
 void JournalCreation::start() {
-    manager->get_albums();
+    VK_Manager::instance().get_albums();
 }
 
 void JournalCreation::keyPressEvent(QKeyEvent* event) {
@@ -111,7 +111,7 @@ void JournalCreation::set_enabled(bool enable) {
 
 void JournalCreation::draw(int index = 0) {
     if (!ui->offline->isChecked()) {
-        manager->get_image(links[index]);
+        VK_Manager::instance().get_image(links[index]);
     } else {
         auto dir_path = locations[SCREENSHOTS] + title_name() + QDir::separator();
         auto image = QImage(dir_path + pics[index]);
@@ -174,7 +174,7 @@ void JournalCreation::set_albums(const QMap<QString, int>& ids) {
     if (album_ids.empty()) {
         ui->offline->setChecked(true);
         ui->statusBar->showMessage("Не удалось загрузить альбомы. Попробуйте авторизироваться вручную или продолжите работу оффлайн.");
-    } else manager->get_photo_ids(album_ids[title_name()]);
+    } else VK_Manager::instance().get_photo_ids(album_ids[title_name()]);
 }
 
 void JournalCreation::set_photo_ids(const QVector<int>& ids, const QStringList& urls) {

@@ -5,11 +5,11 @@ ReleasePreparation::ReleasePreparation(MainWindow* parent) : AbstractOperationMo
     ui->main_view->setIcon(QIcon(":/images/icons8-hashtag-80.png"));
     ui->cycles->hide();
     ui->label_cycles->hide();
-    connect(manager, &VK_Manager::posted_successfully, this, &ReleasePreparation::posting_success);
-    connect(manager, &VK_Manager::post_failed, this, &ReleasePreparation::posting_fail);
-    connect(manager, &VK_Manager::poll_ready, this, &ReleasePreparation::post_poll);
-    connect(manager, &VK_Manager::poll_posted_successfully, this, &ReleasePreparation::poll_posting_success);
-    connect(manager, &VK_Manager::poll_post_failed, this, &ReleasePreparation::poll_posting_fail);
+    connect(&VK_Manager::instance(), &VK_Manager::posted_successfully, this, &ReleasePreparation::posting_success);
+    connect(&VK_Manager::instance(), &VK_Manager::post_failed, this, &ReleasePreparation::posting_fail);
+    connect(&VK_Manager::instance(), &VK_Manager::poll_ready, this, &ReleasePreparation::post_poll);
+    connect(&VK_Manager::instance(), &VK_Manager::poll_posted_successfully, this, &ReleasePreparation::poll_posting_success);
+    connect(&VK_Manager::instance(), &VK_Manager::poll_post_failed, this, &ReleasePreparation::poll_posting_fail);
     connect(ui->poll_preparation, &QAction::triggered, this, &ReleasePreparation::poll_preparation);
     connect(ui->generate, &QPushButton::clicked, this, &ReleasePreparation::generate_button);
     connect(ui->post, &QPushButton::clicked, this, &ReleasePreparation::post_button);
@@ -474,10 +474,10 @@ void ReleasePreparation::post_button() {
         post_counter = selected_records.size();
         for (auto record : selected_records) {
             int index = record->get_index();
-            manager->post(index, attachments(index), record->timestamp());
+            VK_Manager::instance().post(index, attachments(index), record->timestamp());
         }
     } else {
-        manager->get_poll(options(), ui->poll_end_time->dateTime().toSecsSinceEpoch());
+        VK_Manager::instance().get_poll(options(), ui->poll_end_time->dateTime().toSecsSinceEpoch());
     }
 }
 
@@ -511,7 +511,7 @@ void ReleasePreparation::posting_fail(int index, const QString& reply) {
 
 void ReleasePreparation::post_poll(int id) {
     int time = QDateTime(ui->date->date(), ui->time->time(), Qt::LocalTime).toSecsSinceEpoch();
-    manager->post(poll_message(), id, time);
+    VK_Manager::instance().post(poll_message(), id, time);
 }
 
 void ReleasePreparation::poll_posting_success() {
@@ -755,7 +755,7 @@ QString ReleasePreparation::attachments(int index) const {
     QString result;
     for (const auto& photo_id : records[index].ids) {
         if (!result.isEmpty()) result += ",";
-        result += manager->prefix() + QString().setNum(photo_id);
+        result += VK_Manager::instance().prefix() + QString().setNum(photo_id);
     }
     return result;
 }
