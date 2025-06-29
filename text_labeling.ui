@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1054</width>
+    <width>1064</width>
     <height>439</height>
    </rect>
   </property>
@@ -99,6 +99,9 @@
          </property>
          <property name="focusPolicy">
           <enum>Qt::ClickFocus</enum>
+         </property>
+         <property name="decimals">
+          <number>3</number>
          </property>
          <property name="maximum">
           <double>0.500000000000000</double>

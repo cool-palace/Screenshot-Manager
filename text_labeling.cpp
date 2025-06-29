@@ -127,6 +127,12 @@ void TextLabeling::keyPressEvent(QKeyEvent *event) {
     case Qt::Key_F2:
         pbAddLine->click();
         break;
+    case Qt::Key_F3:
+        dsbX->setValue(dsbX->value() - 0.005);
+        break;
+    case Qt::Key_F4:
+        dsbX->setValue(dsbX->value() + 0.005);
+        break;
     default:
         break;
     }
