@@ -1,3 +1,4 @@
+#include "locations.h"
 #include "text_labeling.h"
 #include <QFileDialog>
 #include <QPainter>
@@ -5,16 +6,9 @@
 #include <QKeyEvent>
 #include <QJsonArray>
 #include <QMessageBox>
-#define SCREENSHOTS 0
-#define LABELS 1
-
-
 
 TextLabeling::TextLabeling(QWidget *parent) : QWidget(parent) {
     setupUi(this);
-
-    locations[SCREENSHOTS] = "C:\\Users\\User\\Pictures\\Light Alloy\\";
-    locations[LABELS] = "C:\\Users\\User\\Documents\\Screenshot-Manager\\labels\\";
     connect(slider, &QAbstractSlider::valueChanged, this, &TextLabeling::slider_change);
     connect(pbBack, &QPushButton::clicked, this, &TextLabeling::back_button);
     connect(pbOk, &QPushButton::clicked, this, &TextLabeling::ok_button);
@@ -94,7 +88,7 @@ QString TextLabeling::title_name(int index) {
 
 void TextLabeling::start() {
     QDir dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
-                                                    locations[SCREENSHOTS]));
+                                                    Locations::instance()[SCREENSHOTS]));
     if (dir.isEmpty()) return;
 
     clear_all();
@@ -110,7 +104,7 @@ void TextLabeling::start() {
     rbStyle->blockSignals(false);
     title = dir.dirName();
 
-    QString filepath = locations[LABELS] + title + ".json";
+    QString filepath = Locations::instance()[LABELS] + title + ".json";
     QFile file(filepath);
     if (file.exists()) {
         load_labels(json_object(filepath));
@@ -259,7 +253,7 @@ void TextLabeling::switch_mode() {
 }
 
 void TextLabeling::draw(int index = 0) {
-    auto dir_path = locations[SCREENSHOTS] + title_name() + QDir::separator();
+    auto dir_path = Locations::instance()[SCREENSHOTS] + title_name() + QDir::separator();
     auto pic = QImage(dir_path + pics[index]);
     image->setPixmap(scaled_with_box(pic));
     bool reached_end = index + 1 >= pics.size();
@@ -350,7 +344,7 @@ void TextLabeling::save_labels() {
     object["styles"] = style_array;
     object["pics"] = pics_array;
 
-    QFile file(locations[LABELS] + title_name() + ".json");
+    QFile file(Locations::instance()[LABELS] + title_name() + ".json");
     auto message = save_json(object, file)
             ? "Файл с разметкой сохранён."
             : QString("Не удалось сохранить файл: %1").arg(file.fileName());

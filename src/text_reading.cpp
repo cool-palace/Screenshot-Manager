@@ -3,7 +3,7 @@
 TextReading::TextReading(MainWindow* parent) : AbstractPreparationMode(parent) {
     connect(ui->load_subs, &QAction::triggered, this, &TextReading::load_subs);
     QDir dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
-                                                 locations[SCREENSHOTS]));
+                                                 Locations::instance()[SCREENSHOTS]));
     pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
     title_map.insert(0, dir.dirName());
 }
@@ -100,11 +100,11 @@ void TextReading::lay_previews(int page) {
 }
 
 void TextReading::draw(int index = 0) {
-    auto dir_path = locations[SCREENSHOTS] + title_name() + QDir::separator();
+    auto dir_path = Locations::instance()[SCREENSHOTS] + title_name() + QDir::separator();
     auto image = QImage(dir_path + pics[index]);
     if (image.isNull()) {
         // Checking the reserve screenshot folder for text reading
-        image = QImage(locations[SCREENSHOTS_NEW] + title_name() + QDir::separator() + pics[index]);
+        image = QImage(Locations::instance()[SCREENSHOTS_NEW] + title_name() + QDir::separator() + pics[index]);
     }
     ui->image->setPixmap(scaled(image));
     ui->back->setEnabled(index > 0);
@@ -171,7 +171,7 @@ QString TextReading::subs_filename(const QString& filename, const QString& title
     generate_combinations(filename, 0, "", combinations);
     qDebug() << combinations;
     for (const QString& combination : combinations) {
-        QString subs_path = QDir::toNativeSeparators(locations[SUBS]) + title + QDir::separator() + combination + ".ass";
+        QString subs_path = QDir::toNativeSeparators(Locations::instance()[SUBS]) + title + QDir::separator() + combination + ".ass";
         if (QFile::exists(subs_path)) {
             return subs_path;
         } else qDebug() << "Subs file does not exist: " << subs_path;

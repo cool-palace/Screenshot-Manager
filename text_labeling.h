@@ -47,7 +47,6 @@ public:
     explicit TextLabeling(QWidget *parent = nullptr);
 
 protected:
-    QMap<int, QString> locations;
     QStringList pics;
     int pic_index;
     QString title;

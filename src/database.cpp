@@ -1,23 +1,25 @@
 #include "include\database.h"
 #include <QDebug>
 
-Database::Database(const QString& path) {
-    db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(path);
-    if (!db.open()) {
-        qDebug() << "Не удалось подключиться к базе данных";
-        return;
-    }
-}
+Database::Database() { }
 
-Database &Database::instance(const QString &path) {
-    static Database instance(path);
+Database &Database::instance() {
+    static Database instance;
     return instance;
 }
 
 Database::~Database() {
     qDebug() << "Закрытие базы данных";
     db.close();
+}
+
+void Database::init(const QString &path) {
+    db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(path);
+    if (!db.open()) {
+        qDebug() << "Не удалось подключиться к базе данных";
+        return;
+    }
 }
 
 void Database::add_file_data(QSqlQuery &query, int record_id, const QJsonArray &filenames, const QJsonArray &links, const QJsonArray &photo_ids) {
@@ -293,4 +295,178 @@ void Database::create_poll_logs_table(QSqlQuery &query) {
     if (!query.exec()) {
         qDebug() << "Не удалось создать таблицу 'poll_logs'" << query.lastError().text();
     }
+}
+
+void Database::select_records(QSqlQuery &query, const QueryFilters &filters) {
+    query.prepare(select_query(filters));
+    if (!query.exec()) {
+        qDebug() << "Не выполнить поиск по фильтрам" << query.lastError().text();
+    }
+}
+
+void Database::count_records(QSqlQuery &query, const QueryFilters &filters) {
+    QString query_str = QString("SELECT COUNT(*) as count FROM ( %1 )").arg(select_query(filters));
+    query.prepare(query_str);
+    if (!query.exec()) {
+        qDebug() << "Не выполнить получить количество результатов по фильтрам" << query.lastError().text();
+    }
+}
+
+void Database::select_series_ids(QSqlQuery &query) {
+    query.prepare("SELECT s.id FROM series s");
+    if (!query.exec()) {
+        qDebug() << "Не выполнить получить список сериалов" << query.lastError().text();
+    }
+}
+
+void Database::select_excluded_series_ids(QSqlQuery &query, const QDate &date) {
+    query.prepare(select_series_query(date));
+    if (!query.exec()) {
+        qDebug() << "Не выполнить получить список сериалов по дате" << query.lastError().text();
+    }
+}
+
+void Database::select_series_info(QSqlQuery &query) {
+    query.prepare("SELECT s.id AS id, s.name AS series_name, COALESCE(record_counts.record_count, 0) AS record_count, "
+                  "t.name || '\\' || fd.filename AS filepath "
+                  "FROM series s "
+                  "LEFT JOIN ( "
+                  "    SELECT t.series_id, COUNT(r.id) AS record_count "
+                  "    FROM titles t "
+                  "    LEFT JOIN records r ON t.id = r.title_id "
+                  "    GROUP BY t.series_id "
+                  ") AS record_counts ON s.id = record_counts.series_id "
+                  "LEFT JOIN titles t ON s.id = t.series_id "
+                  "LEFT JOIN records r ON t.id = r.title_id "
+                  "LEFT JOIN file_data fd ON r.id = fd.record_id "
+                  "WHERE fd.id = ( "
+                  "    SELECT MIN(fd_inner.id) "
+                  "    FROM file_data fd_inner "
+                  "    JOIN records r_inner ON fd_inner.record_id = r_inner.id "
+                  "    JOIN titles t_inner ON r_inner.title_id = t_inner.id "
+                  "    WHERE t_inner.series_id = s.id "
+                  ")");
+    if (!query.exec()) {
+        qDebug() << "Не выполнить получить информацию по сериалам" << query.lastError().text();
+    }
+}
+
+QString Database::select_query(const QueryFilters &filters) {
+    static const QString base = "SELECT r.id, r.caption, r.is_public, rl.date "
+                                "FROM records r "
+                                "LEFT JOIN titles t ON r.title_id = t.id "
+                                "LEFT JOIN series s ON t.series_id = s.id "
+                                "LEFT JOIN file_data fd ON r.id = fd.record_id "
+                                "LEFT JOIN record_logs rl ON fd.photo_id = rl.photo_id "
+                                "LEFT JOIN tag_record_map trm ON r.id = trm.record_id "
+                                "LEFT JOIN hashtags h ON trm.tag_id = h.id "
+                                "WHERE 1=1 \n";
+    QString query_str;
+    const bool hashtags_enabled = filters.hashtags.enabled && (filters.hashtags.included.size() || filters.hashtags.excluded.size());
+    // Если заданы фильтры по хэштегам
+    if (hashtags_enabled) {
+        // Создаём временные таблицы к хэштегам
+        QStringList temp_values;
+        QStringList excluded_values;
+
+        for (const HashtagFilter& tag : filters.hashtags.included)
+            temp_values << tag.to_sql();
+
+        for (const HashtagFilter& tag : filters.hashtags.excluded)
+            excluded_values << tag.to_sql();
+
+        QStringList withParts;
+
+        if (!temp_values.isEmpty())
+            withParts << QString("temp_tags(tag, type) AS (VALUES %1 )").arg(temp_values.join(", "));
+
+        if (!excluded_values.isEmpty())
+            withParts << QString("excluded_tags(tag, type) AS (VALUES %1)").arg(excluded_values.join(", "));
+
+        query_str = QString("WITH " + withParts.join(",\n") + "\n");
+    }
+    // Базовый запрос
+    query_str += base;
+    // Фильтр по публичности
+    if (filters.publicity.enabled) {
+        query_str += QString("AND r.is_public = %1 \n").arg(filters.publicity.hidden ? "false" : "true");
+    }
+    // Фильтр по источникам
+    if (filters.series.enabled) {
+        if (filters.series.last_used) {
+            query_str += QString("AND s.id NOT IN (%1) ").arg(select_series_query(filters.series.date));
+        } else {
+            QString list;
+            bool included = filters.series.included.size() < filters.series.excluded.size();
+            const std::set<int>& series = included ? filters.series.included : filters.series.excluded;
+            for (const auto& id : series) {
+                if (!list.isEmpty())
+                    list += ", ";
+                list += QString("%1").arg(id);
+            }
+            query_str += QString("AND s.id %1 IN (%2) ").arg(included ? "" : "NOT").arg(list);
+        }
+    }
+    // Фильтр по дате
+    if (filters.last_used.enabled) {
+        query_str += QString("AND (rl.date IS NULL OR rl.date < DATE('%1')) \n").arg(filters.last_used.date.toString(Qt::ISODate));
+    }
+    // Фильтр по хэштегам
+    if (hashtags_enabled) {
+        if (filters.hashtags.included.size())
+            query_str += "AND r.id IN ( "
+                            "SELECT trm.record_id "
+                            "FROM tag_record_map trm "
+                            "JOIN hashtags h ON trm.tag_id = h.id "
+                            "JOIN temp_tags t ON h.tag = t.tag AND (t.type IS NULL OR trm.type = t.type) "
+                            "GROUP BY trm.record_id "
+                            "HAVING COUNT(DISTINCT t.tag) = (SELECT COUNT(*) FROM temp_tags)) \n";
+        if (filters.hashtags.excluded.size())
+            query_str += "AND r.id NOT IN ( "
+                            "SELECT trm.record_id "
+                            "FROM tag_record_map trm "
+                            "JOIN hashtags h ON trm.tag_id = h.id "
+                            "JOIN excluded_tags t ON h.tag = t.tag AND (t.type IS NULL OR trm.type = t.type) "
+                            "GROUP BY trm.record_id) \n";
+    }
+    // Фильтр по тексту
+    if (filters.text.enabled) {
+        QString lower = filters.text.text;
+        QString upper = lower;
+
+        upper[0] = upper[0].toUpper();
+        lower[0] = lower[0].toLower();
+
+        // Если заглавная и строчная версии одинаковы — одно условие
+        if (lower == upper)
+            query_str += QString("AND r.caption LIKE '%%1%' \n").arg(lower);
+        else
+            query_str += QString("AND (r.caption LIKE '%%1%' OR r.caption LIKE '%%2%') \n").arg(lower, upper);
+    }
+    // Собираем по r.id
+    query_str += "GROUP BY r.id ";
+    // Фильтр по количеству кадров
+    if (filters.quantity.enabled) {
+        QChar sign = filters.quantity.multiple ? '>' : '=';
+        query_str += QString("HAVING COUNT(DISTINCT fd.id) %1 1 ").arg(sign);
+    }
+    // Если нужно, перемешиваем
+    if (!filters.ordered)
+        query_str += "ORDER BY RANDOM() ";
+    // Ограничиваем количество
+    if (filters.size > 0)
+        query_str += QString("LIMIT %1;").arg(filters.size);
+
+    qDebug() << query_str;
+    return query_str;
+}
+
+QString Database::select_series_query(const QDate &date) {
+    return QString("SELECT DISTINCT s_inner.id "
+                        "FROM series s_inner "
+                        "JOIN titles t_inner ON s_inner.id = t_inner.series_id "
+                        "JOIN records r_inner ON t_inner.id = r_inner.title_id "
+                        "JOIN file_data fd_inner ON r_inner.id = fd_inner.record_id "
+                        "JOIN record_logs rl_inner ON fd_inner.photo_id = rl_inner.photo_id "
+                        "WHERE rl_inner.date >= DATE('%1') \n").arg(date.toString(Qt::ISODate));
 }

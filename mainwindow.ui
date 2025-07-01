@@ -21,46 +21,12 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>0</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="page_7">
        <layout class="QGridLayout" name="gridLayout_14">
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_10">
-          <item row="3" column="1">
-           <widget class="QPushButton" name="journal_reading_button">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>300</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Чтение журналов</string>
-            </property>
-            <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/images/icons8-edit-file-80.png</normaloff>:/images/icons8-edit-file-80.png</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>80</width>
-              <height>80</height>
-             </size>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="1">
            <widget class="QPushButton" name="journal_creation_button">
             <property name="sizePolicy">
@@ -86,6 +52,34 @@
             <property name="icon">
              <iconset resource="icons.qrc">
               <normaloff>:/images/icons8-add-file-80.png</normaloff>:/images/icons8-add-file-80.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>80</width>
+              <height>80</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="text_labeling_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Разметка текста</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/images/icons8-ocr-80.png</normaloff>:/images/icons8-ocr-80.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -170,6 +164,40 @@
             </property>
            </widget>
           </item>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="journal_reading_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Чтение журналов</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/images/icons8-edit-file-80.png</normaloff>:/images/icons8-edit-file-80.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>80</width>
+              <height>80</height>
+             </size>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_4">
             <property name="text">
@@ -177,8 +205,8 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="text_labeling_button">
+          <item row="5" column="1">
+           <widget class="QPushButton" name="release_preparation_db_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -191,11 +219,11 @@
              </font>
             </property>
             <property name="text">
-             <string>Разметка текста</string>
+             <string>Публикация постов с БД</string>
             </property>
             <property name="icon">
              <iconset resource="icons.qrc">
-              <normaloff>:/images/icons8-ocr-80.png</normaloff>:/images/icons8-ocr-80.png</iconset>
+              <normaloff>:/images/icons8-cloud-80.png</normaloff>:/images/icons8-cloud-80.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -1328,6 +1356,13 @@ p, li { white-space: pre-wrap; }
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="page_11">
+       <layout class="QGridLayout" name="gridLayout_19">
+        <item row="0" column="0">
+         <widget class="ReleasePreparationDB" name="wReleasePreparation" native="true"/>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -1816,6 +1851,12 @@ p, li { white-space: pre-wrap; }
    <class>TextLabeling</class>
    <extends>QWidget</extends>
    <header>text_labeling.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ReleasePreparationDB</class>
+   <extends>QWidget</extends>
+   <header>release_preparation_db.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

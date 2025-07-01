@@ -2,7 +2,7 @@
 #include "include\vk_manager.h"
 
 AbstractMode::AbstractMode(MainWindow* parent)
-    : parent(parent), ui(parent->get_ui()), locations(parent->get_locations())
+    : parent(parent), ui(parent->get_ui())
 {
     connect(&VK_Manager::instance(), &VK_Manager::image_ready, this, &AbstractMode::set_loaded_image);
     connect(ui->slider, &QAbstractSlider::valueChanged, this, &AbstractMode::slider_change);
@@ -89,7 +89,7 @@ void AbstractPreparationMode::set_view(View view) {
 }
 
 bool AbstractPreparationMode::update_quote_file(const QString& title) {
-    QFile file(locations[QUOTES] + title + ".txt");
+    QFile file(Locations::instance()[QUOTES] + title + ".txt");
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         ui->statusBar->showMessage(QString("Не удалось открыть файл с цитатами: %1").arg(file.fileName()));
         return false;
@@ -180,7 +180,7 @@ QRegularExpressionMatchIterator AbstractOperationMode::hashtag_match(const QStri
 void AbstractOperationMode::get_hashtags() {
     int max_rank = 0;
     int min_rank = 0;
-    QJsonObject hashtags_json = json_object(locations[HASHTAGS]);
+    QJsonObject hashtags_json = json_object(Locations::instance()[HASHTAGS]);
     for (const auto& key : hashtags_json.keys()) {
         auto object = hashtags_json[key].toObject();
         int rank = object["rank"].toInt();
@@ -739,9 +739,9 @@ QString AbstractOperationMode::filtration_indices() const {
 }
 
 QString AbstractOperationMode::path(int index) {
-    QString result = locations[SCREENSHOTS] + title_name(index) + QDir::separator();
+    QString result = Locations::instance()[SCREENSHOTS] + title_name(index) + QDir::separator();
     if (QDir(result).exists()) return result;
-    return locations[SCREENSHOTS_NEW] + title_name(index) + QDir::separator();
+    return Locations::instance()[SCREENSHOTS_NEW] + title_name(index) + QDir::separator();
 }
 
 QString AbstractOperationMode::series_name(int index) {

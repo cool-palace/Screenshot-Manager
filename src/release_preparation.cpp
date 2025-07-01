@@ -224,7 +224,7 @@ void ReleasePreparation::set_enabled(bool enable) {
 }
 
 bool ReleasePreparation::open_public_journal() {
-    auto json_file = json_object(locations[PUBLIC_RECORDS]);
+    auto json_file = json_object(Locations::instance()[PUBLIC_RECORDS]);
     if (!json_file.contains("records")) {
         ui->statusBar->showMessage("Неверный формат скомпилированного журнала.");
         return false;
@@ -289,7 +289,7 @@ bool ReleasePreparation::open_public_journal() {
 }
 
 bool ReleasePreparation::open_database() {
-    Database& db = Database::instance(locations[DATABASE]);
+    Database& db = Database::instance();
     QSqlQuery query;
 
 //    read_logs();
@@ -298,7 +298,7 @@ bool ReleasePreparation::open_database() {
     while (query.next()) {
         QString series = query.value("series_name").toString();
         QString title = query.value("title_name").toString();
-        QString filename = locations[SCREENSHOTS] + title + QDir::separator() + query.value("filename").toString();
+        QString filename = Locations::instance()[SCREENSHOTS] + title + QDir::separator() + query.value("filename").toString();
         int size = query.value("record_count").toInt();
 //        title_items.insert(series, new RecordTitleItem(title, filename, size, size));
 //        ui->title_grid->addWidget(title_items[title]);
@@ -312,7 +312,7 @@ bool ReleasePreparation::open_database() {
     while (query.next()) {
         QString quote = query.value("quote").toString();
         QString tag_string = query.value("tag_string").toString();
-        QString filename = locations[SCREENSHOTS] + query.value("title_name").toString() + QDir::separator() + query.value("filename").toString();
+        QString filename = Locations::instance()[SCREENSHOTS] + query.value("title_name").toString() + QDir::separator() + query.value("filename").toString();
         int size = query.value("pics_count").toInt();
         bool is_public = query.value("is_public").toBool();
         auto date = query.value("date").toDateTime();
@@ -633,7 +633,7 @@ void ReleasePreparation::clear_selected_records() {
 }
 
 void ReleasePreparation::read_poll_logs() {
-    auto log = json_object(locations[POLL_LOGS]);
+    auto log = json_object(Locations::instance()[POLL_LOGS]);
     for (auto key : log.keys()) {
         poll_logs[key] = log.value(key).toInt();
     }
@@ -641,7 +641,7 @@ void ReleasePreparation::read_poll_logs() {
 }
 
 void ReleasePreparation::update_poll_logs() {
-    QFile file(locations[POLL_LOGS]);
+    QFile file(Locations::instance()[POLL_LOGS]);
     QJsonObject object;
     for (auto key : poll_logs.keys()) {
         object[key] = poll_logs[key];
@@ -661,7 +661,7 @@ void ReleasePreparation::update_hashtag_file() {
     for (const auto& tag : full_hashtags_map.keys()) {
         object[tag] = full_hashtags_map[tag].to_json();
     }
-    QFile file(locations[HASHTAGS]);
+    QFile file(Locations::instance()[HASHTAGS]);
     auto message = save_json(object, file)
             ? "Файл хэштегов сохранён."
             : "Не удалось сохранить файл.";
@@ -781,7 +781,7 @@ QString ReleasePreparation::poll_message() const {
 }
 
 void ReleasePreparation::read_logs() {
-    auto log = json_object(locations[LOGS_FILE]);
+    auto log = json_object(Locations::instance()[LOGS_FILE]);
     for (auto it = log.begin(); it != log.end(); ++it) {
         int photo_id = it.key().toInt();
         int timestamp = it.value().toInt();
@@ -801,7 +801,7 @@ void ReleasePreparation::read_logs() {
 }
 
 void ReleasePreparation::update_logs() {
-    QFile file(locations[LOGS_FILE]);
+    QFile file(Locations::instance()[LOGS_FILE]);
     QJsonObject object;
     for (auto key : logs.keys()) {
         object[QString().setNum(key)] = logs[key];

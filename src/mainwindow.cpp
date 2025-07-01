@@ -89,23 +89,14 @@ bool MainWindow::initialize() {
         ui->statusBar->showMessage("Неверный формат конфигурационного файла.");
         return false;
     }
-    locations[SCREENSHOTS] = json_file.value("screenshots").toString();
-    locations[SCREENSHOTS_NEW] = locations[SCREENSHOTS] + "Новые кадры\\";
-    locations[QUOTES] = json_file.value("docs").toString();
-    locations[SUBS] = json_file.value("subs").toString();
-    locations[SUBS] = locations[SUBS] + "Новые кадры\\";
-    locations[JOURNALS] = json_file.value("configs").toString();
-    locations[HASHTAGS] = json_file.value("hashtags").toString();
-    locations[LOGS_FILE] = json_file.value("logs").toString();
-    locations[POLL_LOGS] = json_file.value("poll_logs").toString();
-    locations[PUBLIC_RECORDS] = json_file.value("public_records").toString();
-    locations[HIDDEN_RECORDS] = json_file.value("hidden_records").toString();
-    locations[DATABASE] = "C:\\Users\\User\\Documents\\Screenshot-Manager\\your_database.db";
+    Locations::instance().init(json_file);
+
     QString access_token = json_file.value("access_token").toString();
     QString group_id = json_file.value("group_id").toString();
     QString public_id = json_file.value("public_id").toString();
     VK_Manager::instance().init(access_token, group_id, public_id);
-    if (!QDir(locations[SCREENSHOTS]).exists() || !QDir(locations[JOURNALS]).exists()) {
+    Database::instance().init(Locations::instance()[DATABASE]);
+    if (!QDir(Locations::instance()[SCREENSHOTS]).exists() || !QDir(Locations::instance()[JOURNALS]).exists()) {
         ui->statusBar->showMessage("Указаны несуществующие директории. Перепроверьте конфигурационный файл.");
         return false;
     }
@@ -282,7 +273,7 @@ void MainWindow::compile_journals_to_db() {
     }
 
     // Подключение к базе данных
-    Database& db = Database::instance(locations[DATABASE]);
+    Database& db = Database::instance();
     QSqlQuery query;
 
     db.reset_hashtag_table(query);

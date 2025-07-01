@@ -7,10 +7,10 @@ JournalCreation::JournalCreation(MainWindow* parent) : AbstractPreparationMode(p
     connect(parent, &MainWindow::key_press, this, &JournalCreation::keyPressEvent);
     connect(parent, &MainWindow::key_release, this, &JournalCreation::keyReleaseEvent);
     QDir dir = QDir(QFileDialog::getExistingDirectory(nullptr, "Открыть папку с кадрами",
-                                                 locations[SCREENSHOTS]));
+                                                 Locations::instance()[SCREENSHOTS]));
     pics = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
     title_map.insert(0, dir.dirName());
-    QFile file(locations[QUOTES] + title_name() + ".txt");
+    QFile file(Locations::instance()[QUOTES] + title_name() + ".txt");
     read_quote_file(file);
 }
 
@@ -113,11 +113,11 @@ void JournalCreation::draw(int index = 0) {
     if (!ui->offline->isChecked()) {
         VK_Manager::instance().get_image(links[index]);
     } else {
-        auto dir_path = locations[SCREENSHOTS] + title_name() + QDir::separator();
+        auto dir_path = Locations::instance()[SCREENSHOTS] + title_name() + QDir::separator();
         auto image = QImage(dir_path + pics[index]);
         if (image.isNull()) {
             // Checking the reserve screenshot folder
-            image = QImage(locations[SCREENSHOTS_NEW] + title_name() + QDir::separator() + pics[index]);
+            image = QImage(Locations::instance()[SCREENSHOTS_NEW] + title_name() + QDir::separator() + pics[index]);
         }
         ui->image->setPixmap(scaled(image));
     }
@@ -214,7 +214,7 @@ bool JournalCreation::read_quote_file(QFile& file) {
 }
 
 bool JournalCreation::update_quote_file(const QString& title) {
-    QFile file(locations[QUOTES] + title + ".txt");
+    QFile file(Locations::instance()[QUOTES] + title + ".txt");
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         ui->statusBar->showMessage(QString("Не удалось открыть файл с цитатами: %1").arg(file.fileName()));
         return false;
@@ -245,7 +245,7 @@ void JournalCreation::save_title_journal(const QString& title) {
     for (const auto& record : records) {
         record_array.push_back(record.to_json());
     }
-    QFile file(locations[JOURNALS] + title + ".json");
+    QFile file(Locations::instance()[JOURNALS] + title + ".json");
     QJsonObject object;
     object["title"] = title;
     object["title_caption"] = title;

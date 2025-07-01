@@ -19,6 +19,7 @@
 #include "include\recordpreview.h"
 #include "include\common.h"
 #include "include\database.h"
+#include "locations.h"
 #include "text_labeling.h"
 
 namespace Ui {
@@ -30,21 +31,6 @@ class JournalCreation;
 class TextReading;
 class JournalReading;
 class ReleasePreparation;
-
-enum Directories {
-    JOURNALS,
-    SCREENSHOTS,
-    SCREENSHOTS_NEW,
-    QUOTES,
-    SUBS,
-    SUBS_NEW,
-    HASHTAGS,
-    LOGS_FILE,
-    POLL_LOGS,
-    PUBLIC_RECORDS,
-    HIDDEN_RECORDS,
-    DATABASE
-};
 
 class MainWindow : public QMainWindow
 {

@@ -25,6 +25,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        locations.cpp \
+        release_preparation_db.cpp \
+        series_dialog.cpp \
         src\recordpreview.cpp \
         src\database.cpp \
         src\abstract_mode.cpp \
@@ -38,7 +41,8 @@ SOURCES += \
         src\release_preparation.cpp \
         src\text_reading.cpp \
         src\vk_manager.cpp \
-        text_labeling.cpp
+        text_labeling.cpp \
+        title_group.cpp
 
 HEADERS += \
         include\database.h \
@@ -53,12 +57,20 @@ HEADERS += \
         include\text_reading.h \
         include\vk_manager.h \
         include\recordpreview.h \
-        text_labeling.h
+        include\query_filters.h \
+        locations.h \
+        release_preparation_db.h \
+        series_dialog.h \
+        text_labeling.h \
+        title_group.h
 
 FORMS += \
         mainwindow.ui \
         recordpreview.ui \
-        text_labeling.ui
+        release_preparation_db.ui \
+        series_dialog.ui \
+        text_labeling.ui \
+        title_group.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

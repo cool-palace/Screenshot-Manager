@@ -281,18 +281,18 @@ bool JournalReading::open_title_journal(bool all) {
     QStringList filepaths;
     if (!all) {
         filepaths = QFileDialog::getOpenFileNames(nullptr, "Открыть журнал скриншотов",
-                                                           locations[JOURNALS],
+                                                           Locations::instance()[JOURNALS],
                                                            "Файлы (*.json)");
     } else {
         record_edited = false;
-        QDir dir = QDir(locations[JOURNALS]);
+        QDir dir = QDir(Locations::instance()[JOURNALS]);
         dir.setNameFilters(QStringList("*.json"));
         filepaths = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
         if (filepaths.contains(".test.json")) {
             filepaths.removeAt(filepaths.indexOf(".test.json"));
         }
         for (QString& path : filepaths) {
-            path = locations[JOURNALS] + path;
+            path = Locations::instance()[JOURNALS] + path;
         }
     }
     if (filepaths.isEmpty()) return false;
@@ -355,7 +355,7 @@ void JournalReading::save_title_journal(int start, int end) {
         record_array.push_back(records[i].to_json());
     }
     auto title = title_map.value(start);
-    QFile file(locations[JOURNALS] + title + ".json");
+    QFile file(Locations::instance()[JOURNALS] + title + ".json");
     QJsonObject object;
     object["title"] = title;
     object["title_caption"] = title_captions[title];
@@ -398,7 +398,7 @@ void JournalReading::set_edited() {
 }
 
 bool JournalReading::update_quote_file(int start, int end) {
-    QFile file(locations[QUOTES] + title_map.value(start) + ".txt");
+    QFile file(Locations::instance()[QUOTES] + title_map.value(start) + ".txt");
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         ui->statusBar->showMessage(QString("Не удалось открыть файл с цитатами: %1").arg(file.fileName()));
         return false;
@@ -466,14 +466,22 @@ void JournalReading::caption_success() {
 }
 
 void JournalReading::captcha_handling(const QString& captcha_id, const QString& url) {
-    if (!dialog) dialog = new CaptchaDialog();
+    if (!dialog) {
+        dialog = new CaptchaDialog(parent);
+        connect(dialog, &CaptchaDialog::accepted, this, [=]() {
+            qDebug() << captcha_id << url << dialog->text();
+            add_caption(captcha_id, dialog->text());
+        });
+    }
     int size = captions_for_ids.size();
     ui->statusBar->showMessage(QString("Осталось подписать %1 %2").arg(size).arg(inflect(size, "фотографий")));
     connect(&VK_Manager::instance(), &VK_Manager::captcha_image_ready, [this, captcha_id](const QImage& image) {
         dialog->set_captcha_image(image);
-        if (dialog->exec() == QDialog::Accepted) {
-            add_caption(captcha_id, dialog->text());
-        }
+        dialog->setModal(true);
+        dialog->show();
+//        if (dialog->exec() == QDialog::Accepted) {
+//            add_caption(captcha_id, dialog->text());
+//        }
         disconnect(&VK_Manager::instance(), &VK_Manager::captcha_image_ready, nullptr, nullptr);
     });
     VK_Manager::instance().get_captcha(url);
@@ -579,8 +587,8 @@ void JournalReading::export_captions_by_ids() {
             links[id] = records[i].links[j];
         }
     }
-    QFile file_captions(locations[JOURNALS] + "result\\captions_list.json");
-    QFile file_links(locations[JOURNALS] + "result\\links_list.json");
+    QFile file_captions(Locations::instance()[JOURNALS] + "result\\captions_list.json");
+    QFile file_links(Locations::instance()[JOURNALS] + "result\\links_list.json");
     auto message = save_json(captions, file_captions) && save_json(links, file_links)
             ? "Список текстов по кадрам сохранён."
             : "Не удалось сохранить файл.";
@@ -608,7 +616,7 @@ void JournalReading::export_info_by_ids() {
             captions[id] = info;
         }
     }
-    QFile file(locations[JOURNALS] + "result\\photo_info.json");
+    QFile file(Locations::instance()[JOURNALS] + "result\\photo_info.json");
     auto message = save_json(captions, file)
             ? "Информация по кадрам сохранена."
             : "Не удалось сохранить файл.";
