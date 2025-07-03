@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <set>
 #include <title_group.h>
+#include <include/series_info.h>
 #include <ui_series_dialog.h>
 
 class SeriesDialog : public QDialog, public Ui_SeriesDialog
@@ -11,8 +12,9 @@ class SeriesDialog : public QDialog, public Ui_SeriesDialog
     Q_OBJECT
 
 public:
-    explicit SeriesDialog(const std::set<int>& included, QWidget *parent = nullptr);
+    explicit SeriesDialog(const std::set<int>& included, const QList<SeriesInfo>& titles, QWidget *parent = nullptr);
     ~SeriesDialog();
+    QPair<std::set<int>, std::set<int>> results() const;
 
 public slots:
     void resizeEvent(QResizeEvent *event);

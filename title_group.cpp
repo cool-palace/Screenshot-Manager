@@ -1,18 +1,28 @@
 #include "title_group.h"
 #include <include/common.h>
+#include <QtConcurrent>
+#include "locations.h"
 
-const QSize TitleGroup::pic_size = QSize(160, 90);
-
-TitleGroup::TitleGroup(const QString &name, const QString &filepath, int size, QWidget *parent)
-    : QGroupBox(parent), m_name(name), m_filepath(filepath), m_size(size)
+TitleGroup::TitleGroup(const SeriesInfo& series, QWidget *parent)
+    : QGroupBox(parent), m_id(series.id), m_name(series.name), m_filepath(Locations::instance()[SCREENSHOTS] + series.filepath), m_size(series.size)
 {
-    setTitle(elide_by_word_limit(m_name, 20));
+    setupUi(this);
+    setTitle(elide_by_word_limit(m_name, 24));
+    QtConcurrent::run(this, &TitleGroup::load_thumbmnail);
+    set_text();
+}
 
-    auto pic = QImage(filepath);
-    if (pic.isNull()) pic = QImage(filepath.chopped(3) + "jpg");
-    lblImage->setPixmap(QPixmap::fromImage(pic.scaled(pic_size, Qt::KeepAspectRatio)));
+void TitleGroup::set_text() {
+    lblSize->setText(QString("%1 %2").arg(m_size).arg(inflect(m_size, "записей")));
+}
 
-    lblSize->setText(QString("%1 %2").arg(m_size).arg(inflect(m_size, "кадров")));
+void TitleGroup::load_thumbmnail() {
+    static const QSize pic_size = QSize(192, 108);
+    auto pic = QImage(m_filepath);
+    if (pic.isNull())
+        pic = QImage(m_filepath.chopped(3) + "jpg");
+    if (!pic.isNull())
+        lblImage->setPixmap(QPixmap::fromImage(pic.scaled(pic_size, Qt::KeepAspectRatio)));
 }
 
 QString TitleGroup::elide_by_word_limit(const QString &input, int max_length) {

@@ -1,7 +1,7 @@
 #include "release_preparation_db.h"
 #include <include/common.h>
 #include <include/database.h>
-#include <series_dialog.h>
+#include "series_dialog.h"
 #include <QSqlQuery>
 
 ReleasePreparationDB::ReleasePreparationDB(QWidget *parent) : QWidget(parent) {
@@ -143,11 +143,29 @@ void ReleasePreparationDB::update_results() {
     }
 }
 
-void ReleasePreparationDB::series_dialog() {
-    SeriesDialog dialog(m_filters.series.included, this);
-    if (dialog.exec() == QDialog::Accepted) {
-
+void ReleasePreparationDB::get_series_info() {
+    QSqlQuery query;
+    Database::instance().select_series_info(query);
+    while (query.next()) {
+        int id = query.value("id").toInt();
+        QString name = query.value("series_name").toString();
+        int count = query.value("record_count").toInt();
+        QString filepath = query.value("filepath").toString();
+        m_series_info.append(SeriesInfo(id, name, filepath, count));
     }
+}
+
+void ReleasePreparationDB::series_dialog() {
+    if (m_series_info.isEmpty())
+        get_series_info();
+
+    SeriesDialog dialog(m_filters.series.included, m_series_info, this);
+    if (dialog.exec() == QDialog::Accepted) {
+        const auto results = dialog.results();
+        m_filters.series.included = std::move(results.first);
+        m_filters.series.excluded = std::move(results.second);
+    }
+    series_filter_changed();
 }
 
 bool ReleasePreparationDB::open_database() {

@@ -1,30 +1,36 @@
 #include <series_dialog.h>
 #include <include/database.h>
+#include <QtConcurrent>
 
-SeriesDialog::SeriesDialog(const std::set<int>& included, QWidget *parent) : QDialog(parent) {
+SeriesDialog::SeriesDialog(const std::set<int>& included, const QList<SeriesInfo>& titles, QWidget *parent)
+    : QDialog(parent)
+{
     setupUi(this);
+    setWindowTitle("Выбор по сериалам");
 
     connect(cbSorting, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SeriesDialog::sort_titles);
     connect(pbCheckAll,   &QPushButton::clicked, [this]() { check_titles(true); });
     connect(pbUncheckAll, &QPushButton::clicked, [this]() { check_titles(false); });
 
-    QSqlQuery query;
-    Database::instance().select_series_info(query);
-    while (query.next()) {
-        int id = query.value("id").toInt();
-        QString name = query.value("series_name").toString();
-        int count = query.value("record_count").toInt();
-        QString filepath = query.value("filepath").toString();
-        TitleGroup* item = new TitleGroup(name, filepath, count);
-        m_titles.insert(id, item);
+    for (const SeriesInfo& series : titles) {
+        TitleGroup* item = new TitleGroup(series, this);
+        m_titles.insert(series.id, item);
         grlTitles->addWidget(item);
-        item->setChecked(included.count(id));
+        item->setChecked(included.count(series.id));
     }
 }
 
 SeriesDialog::~SeriesDialog() {
     for (auto item : m_titles)
         delete item;
+}
+
+QPair<std::set<int>, std::set<int>> SeriesDialog::results() const {
+    std::set<int> checked;
+    std::set<int> unchecked;
+    for (auto item : m_titles)
+        (item->isChecked() ? checked : unchecked).insert(item->id());
+    return qMakePair(checked, unchecked);
 }
 
 void SeriesDialog::resizeEvent(QResizeEvent *event) {
@@ -73,7 +79,6 @@ void SeriesDialog::sort_titles() {
     int i = 0;
     for (const auto iter : iters) {
         auto title_item = m_titles[iter.key()];
-//        QtConcurrent::run(title_item, &RecordBase::load_thumbmnail);
         grlTitles->addWidget(title_item, i/columns, i%columns, Qt::AlignCenter);
         title_item->show();
         ++i;

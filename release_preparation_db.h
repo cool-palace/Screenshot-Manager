@@ -1,10 +1,13 @@
 #ifndef RELEASE_PREPARATION_DB_H
 #define RELEASE_PREPARATION_DB_H
+#include "title_group.h"
 #include <include/query_filters.h>
 #include <include/vk_manager.h>
 #include <include/hashtag_button.h>
+#include <include/series_info.h>
 #include <ui_release_preparation_db.h>
 #include <set>
+
 
 class ReleasePreparationDB : public QWidget, public Ui_ReleasePreparationDB
 {
@@ -27,6 +30,7 @@ private slots:
     void text_filter_changed();
     void text_filter_reset();
     void update_results();
+    void get_series_info();
     void series_dialog();
 
     bool open_database();
@@ -40,6 +44,7 @@ protected:
     std::set<int> m_series;
     QStringList m_hashtags;
     QueryFilters m_filters;
+    QList<SeriesInfo> m_series_info;
 };
 
 #endif // RELEASE_PREPARATION_DB_H

@@ -45,6 +45,7 @@ SOURCES += \
         title_group.cpp
 
 HEADERS += \
+        include/series_info.h \
         include\database.h \
         include\abstract_mode.h \
         include\common.h \
