@@ -2,6 +2,8 @@
 #include <include/common.h>
 #include <include/database.h>
 #include "series_dialog.h"
+#include "hashtag_dialog.h"
+#include "record_preview_db.h"
 #include <QSqlQuery>
 
 ReleasePreparationDB::ReleasePreparationDB(QWidget *parent) : QWidget(parent) {
@@ -14,6 +16,7 @@ ReleasePreparationDB::ReleasePreparationDB(QWidget *parent) : QWidget(parent) {
     connect(pbTextSearch, &QPushButton::clicked, this, &ReleasePreparationDB::text_filter_changed);
     connect(pbTextReset, &QPushButton::clicked, this, &ReleasePreparationDB::text_filter_reset);
     connect(pbSeriesDialog, &QPushButton::clicked, this, &ReleasePreparationDB::series_dialog);
+    connect(pbHashtagsDialog, &QPushButton::clicked, this, &ReleasePreparationDB::hashtag_dialog);
 
     connect(grpPublicity, &QGroupBox::clicked, this, &ReleasePreparationDB::publicity_filter_changed);
     connect(grpQuantity,  &QGroupBox::clicked, this, &ReleasePreparationDB::quantity_filter_changed);
@@ -40,15 +43,23 @@ void ReleasePreparationDB::start() {
     if (weekend) sbSize->setValue(6);
 
     QSqlQuery query;
-    Database::instance().select_series_ids(query);
+    Database::instance().count_series(query);
+    if (query.next()) {
+        int value = query.value("count").toInt();
+        m_series_size = value;
+    }
+    Database::instance().select_hashtag_info(query);
     while (query.next()) {
-        int value = query.value("id").toInt();
-        m_series.insert(value);
+        int id = query.value("id").toInt();
+        QString name = query.value("name").toString();
+        int rank = query.value("rank").toInt();
+        m_hashtag_info.insert(id, HashtagInfo(id, name, rank));
     }
     set_enabled(true);
 
-//    grpLastUsed->setChecked(true);
-    //    grpSeries->setChecked(true);
+    publicity_filter_changed();
+    last_used_filter_changed();
+    series_filter_changed();
 }
 
 void ReleasePreparationDB::set_enabled(bool enable) {
@@ -61,21 +72,21 @@ void ReleasePreparationDB::set_enabled(bool enable) {
 }
 
 void ReleasePreparationDB::publicity_filter_changed() {
-    m_filters.publicity.enabled = grpPublicity->isChecked();
-    m_filters.publicity.hidden = cbPublicity->currentIndex() > 0;
+    QueryFilters::instance().publicity.enabled = grpPublicity->isChecked();
+    QueryFilters::instance().publicity.hidden = cbPublicity->currentIndex() > 0;
     update_results();
 }
 
 void ReleasePreparationDB::quantity_filter_changed() {
-    m_filters.quantity.enabled = grpQuantity->isChecked();
-    m_filters.quantity.multiple = cbQuantity->currentIndex() > 0;
+    QueryFilters::instance().quantity.enabled = grpQuantity->isChecked();
+    QueryFilters::instance().quantity.multiple = cbQuantity->currentIndex() > 0;
     update_results();
 }
 
 void ReleasePreparationDB::last_used_filter_changed() {
     sbLastUsedDays->setEnabled(grpLastUsed->isChecked());
-    m_filters.last_used.enabled = grpLastUsed->isChecked();
-    m_filters.last_used.date = deDate->date().addDays(-sbLastUsedDays->value());
+    QueryFilters::instance().last_used.enabled = grpLastUsed->isChecked();
+    QueryFilters::instance().last_used.date = deDate->date().addDays(-sbLastUsedDays->value());
     update_results();
 }
 
@@ -83,47 +94,44 @@ void ReleasePreparationDB::series_filter_changed() {
     QDate date = deDate->date().addDays(-sbSeriesLastUsed->value());
     // Обновляем фильтр
     const bool enabled = grpSeries->isChecked();
-    m_filters.series.enabled = enabled;
-    m_filters.series.last_used = rbSeriesLastUsed->isChecked();
-    m_filters.series.date = date;
+    QueryFilters::instance().series.enabled = enabled;
+    QueryFilters::instance().series.last_used = rbSeriesLastUsed->isChecked();
+    QueryFilters::instance().series.date = date;
 
     // Если задано исключение по дате
-    if (m_filters.series.last_used) {
+    if (QueryFilters::instance().series.last_used) {
         // Обновляем списки
-        m_filters.series.excluded.clear();
-        m_filters.series.included.clear();
+        QueryFilters::instance().series.excluded.clear();
+        QueryFilters::instance().series.included.clear();
         QSqlQuery query;
         Database::instance().select_excluded_series_ids(query, date);
         while (query.next()) {
             int id = query.value("id").toInt();
-            m_filters.series.excluded.insert(id);
+            QueryFilters::instance().series.excluded.insert(id);
         }
-        for (const int id : m_series)
-            if (!m_filters.series.excluded.count(id))
-                m_filters.series.included.insert(id);
+        for (int id  = 1; id <= m_series_size; ++id)
+            if (!QueryFilters::instance().series.excluded.count(id))
+                QueryFilters::instance().series.included.insert(id);
     }
     // Обновляем состояние виджетов
-    sbSeriesLastUsed->setEnabled(enabled && m_filters.series.last_used);
-    pbSeriesDialog->setEnabled(enabled && !m_filters.series.last_used);
+    sbSeriesLastUsed->setEnabled(enabled && QueryFilters::instance().series.last_used);
+    pbSeriesDialog->setEnabled(enabled && !QueryFilters::instance().series.last_used);
     const int days = sbSeriesLastUsed->value();
     sbSeriesLastUsed->setSuffix(" " + inflect(days, "дней"));
-    lblSeriesCount->setText(QString("%1 из %2").arg(m_filters.series.included.size()).arg(m_series.size()));
+    lblSeriesCount->setText(QString("%1 из %2").arg(QueryFilters::instance().series.included.size()).arg(m_series_size));
 
     update_results();
 }
 
 void ReleasePreparationDB::hashtags_filter_changed() {
-    const bool enabled = grpHashtags->isChecked();
-    m_filters.hashtags.enabled = enabled;
-    lblHashtags->setEnabled(enabled);
-    pbHashtagsDialog->setEnabled(enabled);
+    lblHashtags->setText(hashtag_filters());
     update_results();
 }
 
 void ReleasePreparationDB::text_filter_changed() {
     const bool enabled = leSearchBar->text().size() > 2;
-    m_filters.text.enabled = enabled;
-    m_filters.text.text = leSearchBar->text().replace("'", "''");
+    QueryFilters::instance().text.enabled = enabled;
+    QueryFilters::instance().text.text = leSearchBar->text().replace("'", "''");
     update_results();
 }
 
@@ -133,14 +141,8 @@ void ReleasePreparationDB::text_filter_reset() {
 }
 
 void ReleasePreparationDB::update_results() {
-    m_filters.ordered = true;
-    m_filters.size = 0;
-    QSqlQuery query;
-    Database::instance().count_records(query, m_filters);
-    while (query.next()) {
-        int count = query.value("count").toInt();
-        lblRecords->setText(QString("Найдено результатов: %1").arg(count));
-    }
+    int count = Database::instance().count_records(QueryFilters::instance());
+    lblRecords->setText(QString("Найдено результатов: %1").arg(count));
 }
 
 void ReleasePreparationDB::get_series_info() {
@@ -159,13 +161,33 @@ void ReleasePreparationDB::series_dialog() {
     if (m_series_info.isEmpty())
         get_series_info();
 
-    SeriesDialog dialog(m_filters.series.included, m_series_info, this);
+    SeriesDialog dialog(QueryFilters::instance().series.included, m_series_info, this);
     if (dialog.exec() == QDialog::Accepted) {
         const auto results = dialog.results();
-        m_filters.series.included = std::move(results.first);
-        m_filters.series.excluded = std::move(results.second);
+        QueryFilters::instance().series.included = std::move(results.first);
+        QueryFilters::instance().series.excluded = std::move(results.second);
     }
     series_filter_changed();
+}
+
+void ReleasePreparationDB::hashtag_dialog() {
+    update_hashtag_count();
+
+    HashtagDialog dialog(QueryFilters::instance().hashtags, QueryFilters::instance(), m_hashtag_info);
+    if (dialog.exec() == QDialog::Rejected) {
+        QueryFilters::instance().hashtags = dialog.old_results();
+    }
+    hashtags_filter_changed();
+}
+
+void ReleasePreparationDB::update_hashtag_count() {
+    QSqlQuery query;
+    Database::instance().count_hashtags(query, QueryFilters::instance());
+    while (query.next()) {
+        int id = query.value("id").toInt();
+        int count = query.value("count").toInt();
+        m_hashtag_info.find(id)->count = count;
+    }
 }
 
 bool ReleasePreparationDB::open_database() {
@@ -173,11 +195,30 @@ bool ReleasePreparationDB::open_database() {
 }
 
 void ReleasePreparationDB::generate_button() {
-
+    clear_grid(grlPreview);
+    for (RecordPreviewDB* record : m_selected_records)
+        delete record;
+    m_selected_records.clear();
+    generate_release();
 }
 
 void ReleasePreparationDB::generate_release() {
-
+    QDateTime time = QDateTime(deDate->date(), teTime->time(), Qt::LocalTime);
+    QSqlQuery query;
+    Database::instance().select_records(query, QueryFilters::instance(), true, sbSize->value());
+    RecordPreviewDB* previous = nullptr;
+    while (query.next()) {
+        RecordPreviewInfo record(query);
+        RecordPreviewDB* record_preview = new RecordPreviewDB(record, time, this);
+        m_selected_records.append(record_preview);
+        if (previous) {
+            previous->set_next(record_preview);
+            record_preview->set_prev(previous);
+        }
+        previous = record_preview;
+        grlPreview->addWidget(record_preview);
+        time = time.addSecs(teInterval->time().hour()*3600 + teInterval->time().minute()*60);
+    }
 }
 
 void ReleasePreparationDB::post_button() {
@@ -190,5 +231,16 @@ void ReleasePreparationDB::posting_success(int, int) {
 
 void ReleasePreparationDB::posting_fail(int, const QString &) {
 
+}
+
+QString ReleasePreparationDB::hashtag_filters() {
+    QStringList result;
+    for (const HashtagFilter& filter : QueryFilters::instance().hashtags.included)
+        result += filter.sign() + m_hashtag_info.value(filter.id()).name;
+    for (const HashtagFilter& filter : QueryFilters::instance().hashtags.excluded)
+        result += "-" + filter.sign() + m_hashtag_info.value(filter.id()).name;
+    if (!result.isEmpty())
+        return result.join(", ");
+    return "Хэштеги не выбраны";
 }
 

@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>1126</width>
-    <height>618</height>
+    <height>698</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>6</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="page_7">
        <layout class="QGridLayout" name="gridLayout_14">
@@ -258,7 +258,7 @@
             </size>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>1</number>
            </property>
            <widget class="QWidget" name="page">
             <layout class="QGridLayout" name="gridLayout">
@@ -481,8 +481,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>67</width>
-                    <height>24</height>
+                    <width>1066</width>
+                    <height>310</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_15">
@@ -607,7 +607,7 @@ p, li { white-space: pre-wrap; }
              <x>0</x>
              <y>0</y>
              <width>1080</width>
-             <height>428</height>
+             <height>508</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -768,7 +768,7 @@ p, li { white-space: pre-wrap; }
              <x>0</x>
              <y>0</y>
              <width>1116</width>
-             <height>460</height>
+             <height>540</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -1336,7 +1336,7 @@ p, li { white-space: pre-wrap; }
              <x>0</x>
              <y>0</y>
              <width>1080</width>
-             <height>442</height>
+             <height>522</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">

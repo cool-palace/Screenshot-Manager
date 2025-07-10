@@ -25,7 +25,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        hashtag_button_db.cpp \
+        hashtag_dialog.cpp \
         locations.cpp \
+        record_item_db.cpp \
+        record_preview_db.cpp \
+        records_dialog.cpp \
         release_preparation_db.cpp \
         series_dialog.cpp \
         src\recordpreview.cpp \
@@ -45,6 +50,9 @@ SOURCES += \
         title_group.cpp
 
 HEADERS += \
+        hashtag_button_db.h \
+        hashtag_dialog.h \
+        include/hashtag_info.h \
         include/series_info.h \
         include\database.h \
         include\abstract_mode.h \
@@ -60,14 +68,20 @@ HEADERS += \
         include\recordpreview.h \
         include\query_filters.h \
         locations.h \
+        record_item_db.h \
+        record_preview_db.h \
+        records_dialog.h \
         release_preparation_db.h \
         series_dialog.h \
         text_labeling.h \
         title_group.h
 
 FORMS += \
+        hashtag_dialog.ui \
         mainwindow.ui \
+        record_preview_db.ui \
         recordpreview.ui \
+        records_dialog.ui \
         release_preparation_db.ui \
         series_dialog.ui \
         text_labeling.ui \

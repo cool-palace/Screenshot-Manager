@@ -80,58 +80,6 @@
        </item>
        <item row="0" column="0">
         <layout class="QGridLayout" name="grlHeader">
-         <item row="1" column="6">
-          <widget class="QLabel" name="lblInterval">
-           <property name="font">
-            <font>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string>Интервал</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="7" column="0" colspan="8">
-          <widget class="QPushButton" name="pbGenerate">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>70</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>70</height>
-            </size>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string>Генерировать</string>
-           </property>
-           <property name="icon">
-            <iconset resource="icons.qrc">
-             <normaloff>:/images/icons8-available-updates-80.png</normaloff>:/images/icons8-available-updates-80.png</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>30</width>
-             <height>30</height>
-            </size>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="5">
           <widget class="QSpinBox" name="sbSize">
            <property name="enabled">
@@ -153,50 +101,51 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="4">
-          <widget class="QLabel" name="lblSize">
+         <item row="1" column="0">
+          <widget class="QLabel" name="lblDate">
            <property name="font">
             <font>
              <pointsize>12</pointsize>
             </font>
            </property>
            <property name="text">
-            <string>Количество</string>
+            <string>Дата</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
-         <item row="1" column="2">
-          <widget class="QLabel" name="lblTime">
+         <item row="1" column="7">
+          <widget class="QTimeEdit" name="teInterval">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="font">
             <font>
              <pointsize>12</pointsize>
             </font>
            </property>
-           <property name="text">
-            <string>Время</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           <property name="time">
+            <time>
+             <hour>2</hour>
+             <minute>0</minute>
+             <second>0</second>
+            </time>
            </property>
           </widget>
          </item>
          <item row="3" column="0" colspan="8">
           <layout class="QGridLayout" name="grlFilters">
-           <item row="0" column="2">
-            <widget class="QGroupBox" name="grpLastUsed">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
+           <item row="0" column="1">
+            <widget class="QGroupBox" name="grpQuantity">
              <property name="font">
               <font>
                <pointsize>12</pointsize>
               </font>
              </property>
              <property name="title">
-              <string>По дате публикации</string>
+              <string>По количеству кадров</string>
              </property>
              <property name="checkable">
               <bool>true</bool>
@@ -204,32 +153,19 @@
              <property name="checked">
               <bool>false</bool>
              </property>
-             <layout class="QGridLayout" name="gridLayout_10">
+             <layout class="QGridLayout" name="gridLayout_9">
               <item row="0" column="0">
-               <widget class="QSpinBox" name="sbLastUsedDays">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="suffix">
-                 <string> дней</string>
-                </property>
-                <property name="prefix">
-                 <string>&gt;</string>
-                </property>
-                <property name="maximum">
-                 <number>1000</number>
-                </property>
-                <property name="singleStep">
-                 <number>10</number>
-                </property>
-                <property name="value">
-                 <number>200</number>
-                </property>
+               <widget class="QComboBox" name="cbQuantity">
+                <item>
+                 <property name="text">
+                  <string>Один кадр</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Много кадров</string>
+                 </property>
+                </item>
                </widget>
               </item>
              </layout>
@@ -315,69 +251,51 @@
              </layout>
             </widget>
            </item>
-           <item row="0" column="1">
-            <widget class="QGroupBox" name="grpQuantity">
+           <item row="0" column="2">
+            <widget class="QGroupBox" name="grpLastUsed">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
              <property name="font">
               <font>
                <pointsize>12</pointsize>
               </font>
              </property>
              <property name="title">
-              <string>По количеству кадров</string>
+              <string>По дате публикации</string>
              </property>
              <property name="checkable">
               <bool>true</bool>
              </property>
              <property name="checked">
-              <bool>false</bool>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_9">
-              <item row="0" column="0">
-               <widget class="QComboBox" name="cbQuantity">
-                <item>
-                 <property name="text">
-                  <string>Один кадр</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Много кадров</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QGroupBox" name="grpPublicity">
-             <property name="font">
-              <font>
-               <pointsize>12</pointsize>
-              </font>
-             </property>
-             <property name="title">
-              <string>По публичности</string>
-             </property>
-             <property name="checkable">
               <bool>true</bool>
              </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_6">
+             <layout class="QGridLayout" name="gridLayout_10">
               <item row="0" column="0">
-               <widget class="QComboBox" name="cbPublicity">
-                <item>
-                 <property name="text">
-                  <string>Публичные</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Скрытые</string>
-                 </property>
-                </item>
+               <widget class="QSpinBox" name="sbLastUsedDays">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="suffix">
+                 <string> дней</string>
+                </property>
+                <property name="prefix">
+                 <string>&gt;</string>
+                </property>
+                <property name="maximum">
+                 <number>1000</number>
+                </property>
+                <property name="singleStep">
+                 <number>10</number>
+                </property>
+                <property name="value">
+                 <number>200</number>
+                </property>
                </widget>
               </item>
              </layout>
@@ -397,23 +315,11 @@
               <bool>true</bool>
              </property>
              <property name="checked">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <layout class="QGridLayout" name="gridLayout_11">
               <item row="0" column="0">
                <layout class="QGridLayout" name="grlSeries">
-                <item row="2" column="1">
-                 <widget class="QLabel" name="lblSeriesCount">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>M из N</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="1" column="1">
                  <widget class="QPushButton" name="pbSeriesDialog">
                   <property name="text">
@@ -451,7 +357,7 @@
                    </font>
                   </property>
                   <property name="suffix">
-                   <string> день</string>
+                   <string> дней</string>
                   </property>
                   <property name="prefix">
                    <string>за </string>
@@ -462,17 +368,8 @@
                   <property name="maximum">
                    <number>30</number>
                   </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QRadioButton" name="radioButton_6">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>Ручной выбор</string>
+                  <property name="value">
+                   <number>7</number>
                   </property>
                  </widget>
                 </item>
@@ -491,6 +388,30 @@
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QLabel" name="lblSeriesCount">
+                  <property name="font">
+                   <font>
+                    <pointsize>12</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>M из N</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QRadioButton" name="radioButton_6">
+                  <property name="font">
+                   <font>
+                    <pointsize>12</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Ручной выбор</string>
                   </property>
                  </widget>
                 </item>
@@ -551,7 +472,7 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>Список выбранных: ...</string>
+                   <string>Хэштеги не выбраны</string>
                   </property>
                  </widget>
                 </item>
@@ -579,7 +500,135 @@
              </layout>
             </widget>
            </item>
+           <item row="0" column="0">
+            <widget class="QGroupBox" name="grpPublicity">
+             <property name="font">
+              <font>
+               <pointsize>12</pointsize>
+              </font>
+             </property>
+             <property name="title">
+              <string>По публичности</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_6">
+              <item row="0" column="0">
+               <widget class="QComboBox" name="cbPublicity">
+                <item>
+                 <property name="text">
+                  <string>Публичные</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Скрытые</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
           </layout>
+         </item>
+         <item row="7" column="0" colspan="8">
+          <widget class="QPushButton" name="pbGenerate">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>70</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>70</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Генерировать</string>
+           </property>
+           <property name="icon">
+            <iconset resource="icons.qrc">
+             <normaloff>:/images/icons8-available-updates-80.png</normaloff>:/images/icons8-available-updates-80.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>30</width>
+             <height>30</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="4">
+          <widget class="QLabel" name="lblSize">
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Количество</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QLabel" name="lblTime">
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Время</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QDateEdit" name="deDate">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="6">
+          <widget class="QLabel" name="lblInterval">
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Интервал</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
          </item>
          <item row="1" column="3">
           <widget class="QTimeEdit" name="teTime">
@@ -596,53 +645,7 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="lblDate">
-           <property name="font">
-            <font>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string>Дата</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="7">
-          <widget class="QTimeEdit" name="teInterval">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
-           <property name="time">
-            <time>
-             <hour>2</hour>
-             <minute>0</minute>
-             <second>0</second>
-            </time>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QDateEdit" name="deDate">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>12</pointsize>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0" colspan="8">
+         <item row="4" column="0" colspan="3">
           <widget class="QLabel" name="lblRecords">
            <property name="font">
             <font>

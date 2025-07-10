@@ -1,13 +1,13 @@
 #ifndef RELEASE_PREPARATION_DB_H
 #define RELEASE_PREPARATION_DB_H
+#include "record_preview_db.h"
 #include "title_group.h"
 #include <include/query_filters.h>
 #include <include/vk_manager.h>
-#include <include/hashtag_button.h>
 #include <include/series_info.h>
+#include <include/hashtag_info.h>
 #include <ui_release_preparation_db.h>
 #include <set>
-
 
 class ReleasePreparationDB : public QWidget, public Ui_ReleasePreparationDB
 {
@@ -32,6 +32,8 @@ private slots:
     void update_results();
     void get_series_info();
     void series_dialog();
+    void hashtag_dialog();
+    void update_hashtag_count();
 
     bool open_database();
     void generate_button();
@@ -40,11 +42,13 @@ private slots:
     void posting_success(int, int);
     void posting_fail(int, const QString&);
 
+    QString hashtag_filters();
+
 protected:
-    std::set<int> m_series;
-    QStringList m_hashtags;
-    QueryFilters m_filters;
+    int m_series_size;
     QList<SeriesInfo> m_series_info;
+    QMap<int, HashtagInfo> m_hashtag_info;
+    QList<RecordPreviewDB*> m_selected_records;
 };
 
 #endif // RELEASE_PREPARATION_DB_H
