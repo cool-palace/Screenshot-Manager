@@ -41,6 +41,7 @@ private:
     QLabel text;
 };
 
+void clear_grid(QLayout* layout, bool hide = true);
 double roundTo(double value, int decimals);
 QJsonObject json_object(const QString& filepath);
 bool save_json(const QJsonObject& object, QFile& file);
