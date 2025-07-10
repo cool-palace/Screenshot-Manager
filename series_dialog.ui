@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>968</width>
-    <height>600</height>
+    <width>1043</width>
+    <height>494</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,8 +24,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>944</width>
-        <height>540</height>
+        <width>1019</width>
+        <height>434</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_12">
@@ -45,7 +45,7 @@
       <string>Выбрать все</string>
      </property>
      <property name="icon">
-      <iconset resource="icons.qrc">
+      <iconset>
        <normaloff>:/images/icons8-checked-checkbox-80.png</normaloff>:/images/icons8-checked-checkbox-80.png</iconset>
      </property>
     </widget>
@@ -91,7 +91,7 @@
       <string>Снять все</string>
      </property>
      <property name="icon">
-      <iconset resource="icons.qrc">
+      <iconset>
        <normaloff>:/images/icons8-unchecked-checkbox-80.png</normaloff>:/images/icons8-unchecked-checkbox-80.png</iconset>
      </property>
     </widget>
@@ -114,9 +114,7 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="icons.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>

@@ -6,7 +6,7 @@ SeriesDialog::SeriesDialog(const std::set<int>& included, const QList<SeriesInfo
     : QDialog(parent)
 {
     setupUi(this);
-    setWindowTitle("Выбор по сериалам");
+    setWindowTitle("Выбор сериалов");
 
     connect(cbSorting, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SeriesDialog::sort_titles);
     connect(pbCheckAll,   &QPushButton::clicked, [this]() { check_titles(true); });
@@ -18,6 +18,7 @@ SeriesDialog::SeriesDialog(const std::set<int>& included, const QList<SeriesInfo
         grlTitles->addWidget(item);
         item->setChecked(included.count(series.id));
     }
+    setWindowState(Qt::WindowMaximized);
 }
 
 SeriesDialog::~SeriesDialog() {
