@@ -176,3 +176,11 @@ double roundTo(double value, int decimals) {
     double factor = qPow(10.0, decimals);
     return qRound(value * factor) / factor;
 }
+
+void clear_grid(QLayout *layout, bool hide) {
+    QLayoutItem* child;
+    while ((child = layout->takeAt(0))) {
+        // Clearing items from the grid
+        if (hide) child->widget()->hide();
+    }
+}
