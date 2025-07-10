@@ -24,9 +24,9 @@ class RecordFrame : public QLabel
 {
     Q_OBJECT
 public:
-    RecordFrame(const QString&);
-    ~RecordFrame() override { qDebug() << "deleting " << pixmap(); }
-    void set_image(const QString&);
+    RecordFrame(const QString&, const QSize& size = QSize(400, 200));
+    ~RecordFrame() override {}
+    void set_image(const QString&, const QSize& size = QSize(400, 200));
 };
 
 class RecordPreview : public QWidget, public Ui::RecordPreview

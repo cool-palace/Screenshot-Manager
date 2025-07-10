@@ -4,19 +4,19 @@ QVector<Record>* RecordPreview::records;
 QMap<int, int>* RecordPreview::logs;
 QList<RecordPreview*>* RecordPreview::selected_records;
 
-RecordFrame::RecordFrame(const QString& link) {
-    set_image(link);
+RecordFrame::RecordFrame(const QString& link, const QSize& size) {
+    set_image(link, size);
 }
 
-void RecordFrame::set_image(const QString& link) {
+void RecordFrame::set_image(const QString& link, const QSize& size) {
     auto response = VK_Manager::instance().get_url(link);
     connect(this, &QObject::destroyed, response, &QNetworkReply::abort);
-    connect(response, &QNetworkReply::finished, [this, response](){
+    connect(response, &QNetworkReply::finished, [this, response, size](){
         response->deleteLater();
         if (response->error() != QNetworkReply::NoError) return;
         QImageReader reader(response);
         QImage loaded_image = reader.read();
-        setPixmap(QPixmap::fromImage(loaded_image.scaled(QSize(400, 220), Qt::KeepAspectRatio)));
+        setPixmap(QPixmap::fromImage(loaded_image.scaled(size, Qt::KeepAspectRatio)));
         disconnect(response, nullptr, this, nullptr);
     });
 }
