@@ -269,7 +269,7 @@ void MainWindow::compile_journals_to_db() {
     QFile db_file(locations[DATABASE]);
     if (db_file.exists()) {
         // Если база данных уже существует, создаём резервную копию
-        QFile::copy(locations[DATABASE], locations[DATABASE] + QString(".backup_%1").arg(QDate::currentDate().toString()));
+        QFile::copy(locations[DATABASE], locations[DATABASE].chopped(3) + QString("_%1.db").arg(QDate::currentDate().toString(Qt::ISODate)));
     }
 
     // Подключение к базе данных
