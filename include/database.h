@@ -40,15 +40,20 @@ public slots:
     void create_hashtag_table(QSqlQuery &query);
     void create_record_logs_table(QSqlQuery &query);
     void create_poll_logs_table(QSqlQuery &query);
-    void select_records(QSqlQuery &query, const QueryFilters& filters);
-    void count_records(QSqlQuery &query, const QueryFilters& filters);
-    void select_series_ids(QSqlQuery &query);
+    void select_records(QSqlQuery &query, const QueryFilters& filters, bool random = false, int limit = 0, int offset = 0);
+    int count_records(const QueryFilters& filters);
+    int count_records();
+    void count_series(QSqlQuery &query);
     void select_excluded_series_ids(QSqlQuery &query, const QDate& date);
     void select_series_info(QSqlQuery &query);
+    void select_hashtag_info(QSqlQuery &query);
+    void count_hashtags(QSqlQuery &query, const QueryFilters& filters);
+    void select_hashtag_ranks(QSqlQuery &query);
+    void select_record_by_id(QSqlQuery &query, int id);
 
 private:
-    QString select_query(const QueryFilters& filters);
-    QString select_series_query(const QDate& date);
+    static QString select_query(const QueryFilters& filters);
+    static QString select_series_query(const QDate& date);
 
 private:
     QSqlDatabase db;
