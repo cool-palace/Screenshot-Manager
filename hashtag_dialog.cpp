@@ -2,12 +2,12 @@
 #include <include/database.h>
 
 QPair<int, int> HashtagDialog::m_rank_range = {-1, -1};
+int HashtagDialog::m_button_width = 130;
 
 HashtagDialog::HashtagDialog(HashtagsFilter& filters,
-                             const QueryFilters& query_filters,
                              const QMap<int, HashtagInfo>& hashtags,
                              QWidget *parent)
-    : QDialog(parent), m_filters(filters), m_prev_filters(filters), m_qfilters(query_filters)
+    : QDialog(parent), m_filters(filters), m_prev_filters(filters)
 {
     setupUi(this);
     setWindowTitle("Выбор хэштегов");
@@ -64,7 +64,7 @@ void HashtagDialog::filter_event(const HashtagFilterType type, const int id) {
         }
     }
     QSqlQuery query;
-    Database::instance().count_hashtags(query, m_qfilters);
+    Database::instance().count_hashtags(query, QueryFilters::instance());
     while (query.next()) {
         int id = query.value("id").toInt();
         int count = query.value("count").toInt();
@@ -89,8 +89,7 @@ void HashtagDialog::get_hashtag_ranks() {
 }
 
 void HashtagDialog::sort_hashtags() {
-    int button_width = 130;
-    int columns = std::max(1, (saHashtags->width() - 100) / button_width);
+    int columns = std::max(1, (saHashtags->width() - 100) / m_button_width);
     m_current_tag_columns = columns;
     QLayoutItem* child;
     while ((child = grlHashtags->takeAt(0))) {
@@ -133,8 +132,7 @@ void HashtagDialog::sort_hashtags() {
 }
 
 void HashtagDialog::lay_hashtags(QResizeEvent *event) {
-    static int button_width = 130;
-    int columns = std::max(1, (saHashtags->width() - 100) / button_width);
+    int columns = std::max(1, (saHashtags->width() - 100) / m_button_width);
     if (columns == m_current_tag_columns) return;
     m_current_tag_columns = columns;
     QVector<QLayoutItem*> items;

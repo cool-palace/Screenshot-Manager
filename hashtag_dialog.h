@@ -12,7 +12,7 @@ class HashtagDialog : public QDialog, public Ui_HashtagDialog
     Q_OBJECT
 
 public:
-    explicit HashtagDialog(HashtagsFilter& filters, const QueryFilters& query_filters, const QMap<int, HashtagInfo>& hashtags, QWidget *parent = nullptr);
+    explicit HashtagDialog(HashtagsFilter& filters, const QMap<int, HashtagInfo>& hashtags, QWidget *parent = nullptr);
     ~HashtagDialog() {}
     HashtagsFilter old_results() const { return m_prev_filters; };
 
@@ -33,10 +33,10 @@ private:
     QMap<int, HashtagButtonDB*> m_hashtags;
     HashtagsFilter& m_filters;
     HashtagsFilter m_prev_filters;
-    const QueryFilters& m_qfilters;
     uint8_t m_current_tag_columns = 0;
     std::set<int> m_checked_ids;
     static QPair<int, int> m_rank_range;
+    static int m_button_width;
 };
 
 #endif // HASHTAG_DIALOG_H
