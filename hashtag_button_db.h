@@ -31,6 +31,7 @@ class HashtagButtonDB : public QPushButton
     Q_OBJECT
 public:
     explicit HashtagButtonDB(const HashtagInfo& info, QWidget *parent = nullptr);
+    void create_actions();
     void mousePressEvent(QMouseEvent*) override;
     void highlight(const HashtagActions, bool);
     void set_count(int count);

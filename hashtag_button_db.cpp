@@ -4,6 +4,12 @@
 HashtagButtonDB::HashtagButtonDB(const HashtagInfo &info, QWidget *parent)
     : m_info(info)
 {
+    create_actions();
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    show_count();
+}
+
+void HashtagButtonDB::create_actions() {
     QAction * action_include_all = m_menu.addAction("Выбрать все записи");
     QAction * action_include_hash = m_menu.addAction("Выбрать со знаком #");
     QAction * action_include_amp = m_menu.addAction("Выбрать со знаком &&");
@@ -40,9 +46,7 @@ HashtagButtonDB::HashtagButtonDB(const HashtagInfo &info, QWidget *parent)
         select_action(HashtagActions::EXCLUDE_AMP);
         emit filterEvent(HashtagFilterType::AMPTAG_EXCLUDE, id());
     });
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setCheckable(true);
-    show_count();
 }
 
 void HashtagButtonDB::mousePressEvent(QMouseEvent *e) {
