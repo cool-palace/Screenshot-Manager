@@ -48,8 +48,11 @@ bool save_json(const QJsonObject& object, QFile& file);
 QStringList word_forms(const QString&);
 QString inflect(int, const QString&);
 int lowest_degree_vertex(const QList<QList<int>>& M);
+int lowest_degree_vertex(const QVector<QVector<int>>& M);
 void find_hamiltonian_cycles(int current, const QList<QList<int>>& M, QVector<int>& path, QSet<int>& visited, QList<QVector<int>>& cycles, int start);
+void find_hamiltonian_cycles(int current, const QVector<QVector<int>>& M, QVector<int>& path, QSet<int>& visited, QList<QVector<int>>& cycles, int start);
 QList<QVector<int>> get_all_hamiltonian_cycles(const QList<QList<int>>& M);
+QList<QVector<int>> get_all_hamiltonian_cycles(const QVector<QVector<int>>& M);
 QList<QVector<int>> remove_duplicate_cycles(const QList<QVector<int>>& cycles);
 
 #endif // COMMON_H
