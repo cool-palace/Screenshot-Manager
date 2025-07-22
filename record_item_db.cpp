@@ -8,7 +8,9 @@ RecordItemDB::RecordItemDB(const RecordPreviewInfo & record, QWidget *parent) :
     lblNumber->setFont(font);
     lblText->setFont(font);
     lblLogs->setFont(font);
-    saImages->setMinimumSize(180, 120);
+    font.setItalic(true);
+    lblTitle->setFont(font);
+    saImages->setFixedSize(180, 120);
     pbTime->hide();
     pbReroll->hide();
     pbSearch->hide();
@@ -72,4 +74,5 @@ void RecordItemDB::update_images() {
 
 void RecordItemDB::update_text() {
     lblText->setText(m_info.quote + '\n' + m_info.hashtags);
+    lblTitle->setText("\t" + m_info.title);
 }
