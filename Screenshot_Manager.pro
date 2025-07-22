@@ -27,9 +27,15 @@ CONFIG += c++11
 SOURCES += \
         hashtag_button_db.cpp \
         hashtag_dialog.cpp \
+        hashtag_poll_button.cpp \
+        hashtag_poll_dialog.cpp \
+        hashtag_preview_db.cpp \
         locations.cpp \
+        poll_preparation_db.cpp \
         record_item_db.cpp \
+        record_poll_preview.cpp \
         record_preview_db.cpp \
+        record_preview_info.cpp \
         records_dialog.cpp \
         release_preparation_db.cpp \
         series_dialog.cpp \
@@ -52,6 +58,9 @@ SOURCES += \
 HEADERS += \
         hashtag_button_db.h \
         hashtag_dialog.h \
+        hashtag_poll_button.h \
+        hashtag_poll_dialog.h \
+        hashtag_preview_db.h \
         include/hashtag_info.h \
         include/series_info.h \
         include\database.h \
@@ -68,8 +77,11 @@ HEADERS += \
         include\recordpreview.h \
         include\query_filters.h \
         locations.h \
+        poll_preparation_db.h \
         record_item_db.h \
+        record_poll_preview.h \
         record_preview_db.h \
+        record_preview_info.h \
         records_dialog.h \
         release_preparation_db.h \
         series_dialog.h \
@@ -78,7 +90,10 @@ HEADERS += \
 
 FORMS += \
         hashtag_dialog.ui \
+        hashtag_preview_db.ui \
         mainwindow.ui \
+        poll_preparation_db.ui \
+        record_poll_preview.ui \
         record_preview_db.ui \
         recordpreview.ui \
         records_dialog.ui \

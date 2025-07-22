@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1126</width>
+    <width>1194</width>
     <height>698</height>
    </rect>
   </property>
@@ -21,12 +21,74 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stacked_view">
       <property name="currentIndex">
-       <number>2</number>
+       <number>7</number>
       </property>
       <widget class="QWidget" name="page_7">
        <layout class="QGridLayout" name="gridLayout_14">
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_10">
+          <item row="1" column="1">
+           <widget class="QPushButton" name="text_labeling_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Разметка текста</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/images/icons8-ocr-80.png</normaloff>:/images/icons8-ocr-80.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>80</width>
+              <height>80</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="journal_reading_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Чтение журналов</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/images/icons8-edit-file-80.png</normaloff>:/images/icons8-edit-file-80.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>80</width>
+              <height>80</height>
+             </size>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="1">
            <widget class="QPushButton" name="journal_creation_button">
             <property name="sizePolicy">
@@ -61,47 +123,20 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="text_labeling_button">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_4">
             <property name="text">
-             <string>Разметка текста</string>
-            </property>
-            <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/images/icons8-ocr-80.png</normaloff>:/images/icons8-ocr-80.png</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>80</width>
-              <height>80</height>
-             </size>
+             <string/>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
-           <widget class="QPushButton" name="release_preparation_button">
+          <item row="5" column="1">
+           <widget class="QPushButton" name="release_preparation_db_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>300</width>
-              <height>0</height>
-             </size>
             </property>
             <property name="font">
              <font>
@@ -109,7 +144,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Публикация постов</string>
+             <string>Публикация постов с БД</string>
             </property>
             <property name="icon">
              <iconset resource="icons.qrc">
@@ -157,15 +192,8 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="3">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QPushButton" name="journal_reading_button">
+          <item row="4" column="1">
+           <widget class="QPushButton" name="release_preparation_button">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -184,11 +212,11 @@
              </font>
             </property>
             <property name="text">
-             <string>Чтение журналов</string>
+             <string>Публикация постов</string>
             </property>
             <property name="icon">
              <iconset resource="icons.qrc">
-              <normaloff>:/images/icons8-edit-file-80.png</normaloff>:/images/icons8-edit-file-80.png</iconset>
+              <normaloff>:/images/icons8-cloud-80.png</normaloff>:/images/icons8-cloud-80.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -198,32 +226,26 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_4">
+          <item row="0" column="3">
+           <widget class="QLabel" name="label_5">
             <property name="text">
              <string/>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
-           <widget class="QPushButton" name="release_preparation_db_button">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
+          <item row="6" column="1">
+           <widget class="QPushButton" name="poll_preparation_button">
             <property name="font">
              <font>
               <pointsize>12</pointsize>
              </font>
             </property>
             <property name="text">
-             <string>Публикация постов с БД</string>
+             <string>Публикация опроса</string>
             </property>
             <property name="icon">
              <iconset resource="icons.qrc">
-              <normaloff>:/images/icons8-cloud-80.png</normaloff>:/images/icons8-cloud-80.png</iconset>
+              <normaloff>:/images/icons8-poll-80.png</normaloff>:/images/icons8-poll-80.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -481,7 +503,7 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>1066</width>
+                    <width>1134</width>
                     <height>310</height>
                    </rect>
                   </property>
@@ -606,7 +628,7 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1080</width>
+             <width>1148</width>
              <height>508</height>
             </rect>
            </property>
@@ -767,8 +789,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1116</width>
-             <height>540</height>
+             <width>1148</width>
+             <height>557</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -1335,7 +1357,7 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1080</width>
+             <width>1148</width>
              <height>522</height>
             </rect>
            </property>
@@ -1363,6 +1385,13 @@ p, li { white-space: pre-wrap; }
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="page_12">
+       <layout class="QGridLayout" name="gridLayout_20">
+        <item row="0" column="0">
+         <widget class="PollPreparationDB" name="wPollPreparation" native="true"/>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -1372,7 +1401,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1126</width>
+     <width>1194</width>
      <height>25</height>
     </rect>
    </property>
@@ -1857,6 +1886,12 @@ p, li { white-space: pre-wrap; }
    <class>ReleasePreparationDB</class>
    <extends>QWidget</extends>
    <header>release_preparation_db.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PollPreparationDB</class>
+   <extends>QWidget</extends>
+   <header>poll_preparation_db.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
