@@ -76,6 +76,13 @@ struct HashtagsFilter {
     QMap<int, HashtagFilter> excluded;
 };
 
+struct PollFilters {
+    bool min_count_enabled = false;
+    bool min_date_enabled = false;
+    QDate min_date;
+    int min_count;
+};
+
 struct QueryFilters {
 private:
     QueryFilters() {}
@@ -94,6 +101,7 @@ public:
     SeriesFilter series;
     HashtagsFilter hashtags;
     TextFilter text;
+    PollFilters poll_filters;
 };
 
 #endif // QUERYFILTERS_H
