@@ -335,7 +335,58 @@ void Database::select_records(QSqlQuery &query, const QueryFilters &filters, boo
 
     query.prepare(query_str);
     if (!query.exec()) {
-        qDebug() << "Не выполнить поиск записей по фильтрам" << query.lastError().text();
+        qDebug() << "Не удалось выполнить поиск записей по фильтрам" << query.lastError().text();
+    }
+}
+
+void Database::select_records_by_ids(QSqlQuery &query, const QList<int> &ids) {
+    QStringList ids_str;
+    QStringList case_statements;
+    for (int i = 0; i < ids.size(); ++i) {
+        int id = ids[i];
+        ids_str.append(QString().setNum(id));
+        case_statements << QString("WHEN %1 THEN %2").arg(id).arg(i + 1);
+    }
+
+    QString query_str = QString("WITH tags AS ("
+                                "       SELECT trm.record_id,"
+                                "           GROUP_CONCAT("
+                                "               CASE "
+                                "                   WHEN trm.type = 1 THEN '#' || h.tag"
+                                "                   ELSE '&' || h.tag    "
+                                "               END,"
+                                "               ' '"
+                                "           ) AS tag_string"
+                                "       FROM tag_record_map trm"
+                                "       JOIN hashtags h ON trm.tag_id = h.id"
+                                "       GROUP BY trm.record_id),"
+                                "   links AS ("
+                                "       SELECT fd.record_id,"
+                                "           GROUP_CONCAT(fd.link, '|') AS links"
+                                "       FROM file_data fd"
+                                "       GROUP BY fd.record_id),"
+                                "   latest_date AS ("
+                                "       SELECT r.id AS record_id, MAX(rl.date) AS date"
+                                "       FROM records r"
+                                "       JOIN file_data fd ON fd.record_id = r.id"
+                                "       JOIN record_logs rl ON rl.photo_id = fd.photo_id"
+                                "       GROUP BY r.id)"
+                                "   SELECT r.id AS record_id,"
+                                "       r.caption AS quote,"
+                                "       tags.tag_string,"
+                                "       links.links,"
+                                "       latest_date.date,"
+                                "       t.name AS title_name"
+                                "   FROM records r"
+                                "   LEFT JOIN latest_date ON latest_date.record_id = r.id"
+                                "   LEFT JOIN tags ON tags.record_id = r.id"
+                                "   LEFT JOIN links ON links.record_id = r.id"
+                                "   LEFT JOIN titles t ON r.title_id = t.id "
+                                "   WHERE r.id IN (%1) "
+                                "   ORDER BY CASE r.id %2 ELSE 999 END; ").arg(ids_str.join(", "), case_statements.join(' '));
+    query.prepare(query_str);
+    if (!query.exec()) {
+        qDebug() << "Не удалось выполнить поиск записей по индексам" << query.lastError().text();
     }
 }
 
@@ -344,7 +395,7 @@ int Database::count_records(const QueryFilters &filters) {
     QString query_str = QString("SELECT COUNT(*) as count FROM ( %1 )").arg(select_query(filters));
     query.prepare(query_str);
     if (!query.exec()) {
-        qDebug() << "Не выполнить получить количество результатов по фильтрам" << query.lastError().text();
+        qDebug() << "Не удалось выполнить получить количество результатов по фильтрам" << query.lastError().text();
         return 0;
     }
     if (query.next())
@@ -404,7 +455,31 @@ void Database::select_series_info(QSqlQuery &query) {
 }
 
 void Database::select_hashtag_info(QSqlQuery &query) {
-    query.prepare("SELECT h.id, h.tag AS name, h.rank FROM hashtags h");
+    query.prepare("SELECT h.id, h.tag AS name, h.rank, h.emoji, h.description FROM hashtags h");
+    if (!query.exec()) {
+        qDebug() << "Не выполнить получить информацию по хэштегам" << query.lastError().text();
+    }
+}
+
+void Database::select_hashtag_info(QSqlQuery &query, const QueryFilters &filters, bool random, int limit) {
+    QString poll_date_filter;
+    if (filters.poll_filters.min_date_enabled)
+        poll_date_filter = QString("WHERE (pl.date IS NULL OR pl.date < DATE('%1'))").arg(filters.poll_filters.min_date.toString(Qt::ISODate));
+
+    QString query_str = QString("WITH filtered_records AS ( %1 ) "
+                                "SELECT h.id, h.emoji, h.tag AS name, h.description, COUNT(DISTINCT fr.id) AS count, pl.date "
+                                "FROM hashtags h "
+                                "LEFT JOIN tag_record_map trm ON trm.tag_id = h.id "
+                                "LEFT JOIN filtered_records fr ON fr.id = trm.record_id "
+                                "LEFT JOIN poll_logs pl ON pl.tag = h.tag "
+                                + poll_date_filter +
+                                "GROUP BY h.id "
+                                "HAVING count > %2 ").arg(select_query(filters)).arg(filters.poll_filters.min_count);
+    if (random)
+        query_str += "ORDER BY RANDOM() ";
+    if (limit)
+        query_str += QString("LIMIT %1 ").arg(limit);
+    query.prepare(query_str);
     if (!query.exec()) {
         qDebug() << "Не выполнить получить информацию по хэштегам" << query.lastError().text();
     }
@@ -468,6 +543,45 @@ void Database::select_record_by_id(QSqlQuery &query, int id) {
     query.bindValue(":id", id);
     if (!query.exec()) {
         qDebug() << "Не выполнить получить запись" << id << query.lastError().text();
+    }
+}
+
+void Database::select_hashtag_pairs_count(QSqlQuery &query, const QList<int>& tag_ids, const QueryFilters &filters) {
+    // Формируем список строк со значениям id
+    QStringList values;
+    for (int id : tag_ids)
+        values.append(QString().setNum(id));
+
+    QString query_str = QString("WITH filtered_records AS ( %1 ), "
+                                "tag_list(tag_id) AS (VALUES ( %2 )), "
+                                "tag_pairs AS ("
+                                "    SELECT a.tag_id AS tag1, b.tag_id AS tag2"
+                                "    FROM tag_list a"
+                                "    JOIN tag_list b ON a.tag_id < b.tag_id"
+                                "),"
+                                "tag_pairs_in_records AS ("
+                                "    SELECT a.tag_id AS tag1,"
+                                "        b.tag_id AS tag2,"
+                                "        COUNT(DISTINCT a.record_id) AS pair_count,"
+                                "        GROUP_CONCAT(DISTINCT a.record_id) AS record_ids"
+                                "    FROM tag_record_map a"
+                                "    JOIN tag_record_map b ON a.record_id = b.record_id AND a.tag_id < b.tag_id"
+                                "    WHERE a.tag_id IN (SELECT tag_id FROM tag_list) "
+                                "       AND b.tag_id IN (SELECT tag_id FROM tag_list) "
+                                "       AND a.record_id IN (SELECT id FROM filtered_records)"
+                                "    GROUP BY a.tag_id, b.tag_id ) "
+                                "SELECT tp.tag1, tp.tag2, "
+//                                "   h1.tag AS tag1_name, h2.tag AS tag2_name, "
+                                "   COALESCE(tpr.pair_count, 0) AS count, "
+                                "   COALESCE(tpr.record_ids, '') AS records "
+                                "FROM tag_pairs tp "
+                                "LEFT JOIN tag_pairs_in_records tpr ON tpr.tag1 = tp.tag1 AND tpr.tag2 = tp.tag2 "
+//                                "LEFT JOIN hashtags h1 ON h1.id = tp.tag1 "
+//                                "LEFT JOIN hashtags h2 ON h2.id = tp.tag2 "
+                                "ORDER BY tp.tag1, tp.tag2;").arg(select_query(filters)).arg(values.join("), ("));
+    query.prepare(query_str);
+    if (!query.exec()) {
+        qDebug() << "Не выполнить получить информацию по парам тегов" << query.lastError().text();
     }
 }
 
