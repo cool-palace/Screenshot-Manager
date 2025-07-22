@@ -68,6 +68,7 @@ public slots:
     void descriptions_reading();
     void release_preparation();
     void release_preparation_db();
+    void poll_preparation_db();
     void text_labeling();
 
 private:

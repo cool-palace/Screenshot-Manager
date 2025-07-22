@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->text_reading_button, &QPushButton::clicked, this, &MainWindow::text_reading);
     connect(ui->release_preparation_button, &QPushButton::clicked, this, &MainWindow::release_preparation);
     connect(ui->release_preparation_db_button, &QPushButton::clicked, this, &MainWindow::release_preparation_db);
+    connect(ui->poll_preparation_button, &QPushButton::clicked, this, &MainWindow::poll_preparation_db);
     connect(ui->text_labeling_button, &QPushButton::clicked, this, &MainWindow::text_labeling);
     connect(ui->exit_mode, &QAction::triggered, this, &MainWindow::exit_mode);
     connect(ui->initialization, &QAction::triggered, this, &MainWindow::initialize);
@@ -172,6 +173,11 @@ void MainWindow::release_preparation() {
 void MainWindow::release_preparation_db() {
     ui->stacked_view->setCurrentIndex(6);
     ui->wReleasePreparation->start();
+}
+
+void MainWindow::poll_preparation_db() {
+    ui->stacked_view->setCurrentIndex(7);
+    ui->wPollPreparation->start();
 }
 
 void MainWindow::text_labeling() {
