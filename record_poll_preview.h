@@ -1,6 +1,7 @@
 #ifndef RECORD_POLL_PREVIEW_H
 #define RECORD_POLL_PREVIEW_H
-#include "record_preview_interface.h"
+#include "record_preview_info.h"
+#include <include/recordpreview.h>
 #include <include/hashtag_info.h>
 #include <ui_record_poll_preview.h>
 
