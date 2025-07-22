@@ -173,7 +173,7 @@ void ReleasePreparationDB::series_dialog() {
 void ReleasePreparationDB::hashtag_dialog() {
     update_hashtag_count();
 
-    HashtagDialog dialog(QueryFilters::instance().hashtags, QueryFilters::instance(), m_hashtag_info);
+    HashtagDialog dialog(QueryFilters::instance().hashtags, m_hashtag_info);
     if (dialog.exec() == QDialog::Rejected) {
         QueryFilters::instance().hashtags = dialog.old_results();
     }
@@ -190,35 +190,57 @@ void ReleasePreparationDB::update_hashtag_count() {
     }
 }
 
-bool ReleasePreparationDB::open_database() {
-    return 1;
-}
-
 void ReleasePreparationDB::generate_button() {
-    clear_grid(grlPreview);
-    for (RecordPreviewDB* record : m_selected_records)
-        delete record;
-    m_selected_records.clear();
-    generate_release();
+    QList<RecordPreviewInfo> record_infos;
+    QSqlQuery query;
+    Database::instance().select_records(query, QueryFilters::instance(), true, sbSize->value());
+    while (query.next()) {
+        record_infos.append(RecordPreviewInfo(query));
+    }
+
+    // Удаляем лишние виджеты, если их существует больше нужного
+    for (int j = m_selected_records.size(); j > record_infos.size(); --j) {
+        delete m_selected_records.back();
+        m_selected_records.pop_back();
+    }
+    QDateTime time = QDateTime(deDate->date(), teTime->time(), Qt::LocalTime);
+    RecordPreviewDB* previous = nullptr;
+    for (int i = 0; i < record_infos.size(); ++i) {
+        if (m_selected_records.size() <= i) {
+            // Если меньше нужного, добавляем новый виджет
+            RecordPreviewDB* record_preview = new RecordPreviewDB(record_infos[i], time, this);
+            m_selected_records.append(record_preview);
+            if (previous) {
+                previous->set_next(record_preview);
+                record_preview->set_prev(previous);
+            }
+            previous = record_preview;
+            grlPreview->addWidget(record_preview);
+        } else {
+            // Обновляем уже существующие виджеты
+            m_selected_records[i]->set_record(std::move(record_infos[i]));
+            previous = m_selected_records[i];
+        }
+    }
 }
 
 void ReleasePreparationDB::generate_release() {
-    QDateTime time = QDateTime(deDate->date(), teTime->time(), Qt::LocalTime);
-    QSqlQuery query;
-    Database::instance().select_records(query, QueryFilters::instance(), true, sbSize->value());
-    RecordPreviewDB* previous = nullptr;
-    while (query.next()) {
-        RecordPreviewInfo record(query);
-        RecordPreviewDB* record_preview = new RecordPreviewDB(record, time, this);
-        m_selected_records.append(record_preview);
-        if (previous) {
-            previous->set_next(record_preview);
-            record_preview->set_prev(previous);
-        }
-        previous = record_preview;
-        grlPreview->addWidget(record_preview);
-        time = time.addSecs(teInterval->time().hour()*3600 + teInterval->time().minute()*60);
-    }
+//    QDateTime time = QDateTime(deDate->date(), teTime->time(), Qt::LocalTime);
+//    QSqlQuery query;
+//    Database::instance().select_records(query, QueryFilters::instance(), true, sbSize->value());
+//    RecordPreviewDB* previous = nullptr;
+//    while (query.next()) {
+//        RecordPreviewInfo record(query);
+//        RecordPreviewDB* record_preview = new RecordPreviewDB(record, time, this);
+//        m_selected_records.append(record_preview);
+//        if (previous) {
+//            previous->set_next(record_preview);
+//            record_preview->set_prev(previous);
+//        }
+//        previous = record_preview;
+//        grlPreview->addWidget(record_preview);
+//        time = time.addSecs(teInterval->time().hour()*3600 + teInterval->time().minute()*60);
+//    }
 }
 
 void ReleasePreparationDB::post_button() {

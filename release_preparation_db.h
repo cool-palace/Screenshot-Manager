@@ -35,7 +35,6 @@ private slots:
     void hashtag_dialog();
     void update_hashtag_count();
 
-    bool open_database();
     void generate_button();
     void generate_release();
     void post_button();
