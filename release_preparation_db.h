@@ -36,10 +36,7 @@ private slots:
     void update_hashtag_count();
 
     void generate_button();
-    void generate_release();
     void post_button();
-    void posting_success(int, int);
-    void posting_fail(int, const QString&);
 
     QString hashtag_filters();
 
@@ -48,6 +45,8 @@ protected:
     QList<SeriesInfo> m_series_info;
     QMap<int, HashtagInfo> m_hashtag_info;
     QList<RecordPreviewDB*> m_selected_records;
+    QMutex m_status_mutex;
+    int m_post_counter = 0;
 };
 
 #endif // RELEASE_PREPARATION_DB_H

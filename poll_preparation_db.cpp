@@ -1,5 +1,6 @@
 #include "hashtag_poll_dialog.h"
 #include "poll_preparation_db.h"
+#include "posting_progress_dialog.h"
 #include <include/database.h>
 
 PollPreparationDB::PollPreparationDB(QWidget *parent) : QWidget(parent) {
@@ -8,8 +9,6 @@ PollPreparationDB::PollPreparationDB(QWidget *parent) : QWidget(parent) {
     tabWidget->setTabText(0, "Хэштеги");
     tabWidget->setTabText(1, "Посты");
 
-    connect(&VK_Manager::instance(), &VK_Manager::posted_successfully, this, &PollPreparationDB::posting_success);
-    connect(&VK_Manager::instance(), &VK_Manager::post_failed, this, &PollPreparationDB::posting_fail);
     connect(pbGenHashtags, &QPushButton::clicked, this, &PollPreparationDB::generate_hashtags);
     connect(pbGenPosts, &QPushButton::clicked, this, &PollPreparationDB::generate_posts);
     connect(pbPost, &QPushButton::clicked, this, &PollPreparationDB::post_button);
@@ -49,6 +48,8 @@ void PollPreparationDB::start() {
 
     publicity_filter_changed();
     last_used_filter_changed();
+
+    pbGenHashtags->click();
 }
 
 void PollPreparationDB::set_enabled(bool enable) {
@@ -109,19 +110,6 @@ void PollPreparationDB::prepare_tag_map() {
         QList<int> tag_id_list;
         for (const HashtagPreviewDB* hashtag : m_selected_hashtags)
             tag_id_list.append(hashtag->id());
-
-//        // Collecting results for every tag pair
-//        for (int i = 0; i < cycle.size() - 1; ++i) {
-//            QStringList tags = QStringList() << tag_list[cycle[i]] << tag_list[cycle[i+1]];
-//            if (i > 0) {
-//                hashtags[tag_list[cycle[i-1]]]->emit_filter_event();
-//            } else hashtags[tag_list[cycle[i]]]->emit_filter_event();
-//            hashtags[tags.last()]->emit_filter_event();
-//            if (!smart_tag_map.contains(tags)) {
-//                smart_tag_map.insert(tags, filtration_results.keys());
-//            }
-//        }
-//        remove_hashtag_filters();
     }
 }
 
@@ -180,6 +168,7 @@ void PollPreparationDB::set_cycle(int value) {
             m_selected_records[i]->set_record(std::move(record_infos[i]));
             m_selected_records[i]->set_hashtags(pairs[i]);
             m_selected_records[i]->reset_spinbox();
+            m_selected_records[i]->set_time(time);
             previous = m_selected_records[i];
         }
         time = time.addSecs(teInterval->time().hour()*3600 + teInterval->time().minute()*60);
@@ -281,20 +270,10 @@ void PollPreparationDB::generate_posts() {
     set_cycle(1);
 }
 
-void PollPreparationDB::generate_release() {
-
-}
-
 void PollPreparationDB::post_button() {
-
-}
-
-void PollPreparationDB::posting_success(int, int) {
-
-}
-
-void PollPreparationDB::posting_fail(int, const QString &) {
-
+    auto dialog = new PostingProgressDialog(m_selected_hashtags, qMakePair(dteStart->dateTime(), dteEnd->dateTime()), m_selected_records, this);
+    dialog->show();
+    dialog->start_posting();
 }
 
 QVector<QVector<int>> PollPreparationDB::matrix(QSqlQuery &query, const QList<int>& tag_ids) {

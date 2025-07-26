@@ -33,10 +33,7 @@ private slots:
     void generate_hashtags();
     void tag_pairing_analysis();
     void generate_posts();
-    void generate_release();
     void post_button();
-    void posting_success(int, int);
-    void posting_fail(int, const QString&);
 
     QVector<QVector<int>> matrix(QSqlQuery& query, const QList<int>& tag_ids);
     QList<HashtagPairInfo> tag_pairs(const QVector<int>& cycle) const;

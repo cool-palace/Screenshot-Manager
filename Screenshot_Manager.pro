@@ -32,6 +32,7 @@ SOURCES += \
         hashtag_preview_db.cpp \
         locations.cpp \
         poll_preparation_db.cpp \
+        posting_progress_dialog.cpp \
         record_item_db.cpp \
         record_poll_preview.cpp \
         record_preview_db.cpp \
@@ -78,6 +79,7 @@ HEADERS += \
         include\query_filters.h \
         locations.h \
         poll_preparation_db.h \
+        posting_progress_dialog.h \
         record_item_db.h \
         record_poll_preview.h \
         record_preview_db.h \

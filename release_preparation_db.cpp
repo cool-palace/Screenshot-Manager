@@ -4,13 +4,12 @@
 #include "series_dialog.h"
 #include "hashtag_dialog.h"
 #include "record_preview_db.h"
+#include "posting_progress_dialog.h"
 #include <QSqlQuery>
 
 ReleasePreparationDB::ReleasePreparationDB(QWidget *parent) : QWidget(parent) {
     setupUi(this);
 
-    connect(&VK_Manager::instance(), &VK_Manager::posted_successfully, this, &ReleasePreparationDB::posting_success);
-    connect(&VK_Manager::instance(), &VK_Manager::post_failed, this, &ReleasePreparationDB::posting_fail);
     connect(pbGenerate, &QPushButton::clicked, this, &ReleasePreparationDB::generate_button);
     connect(pbPost, &QPushButton::clicked, this, &ReleasePreparationDB::post_button);
     connect(pbTextSearch, &QPushButton::clicked, this, &ReleasePreparationDB::text_filter_changed);
@@ -60,6 +59,8 @@ void ReleasePreparationDB::start() {
     publicity_filter_changed();
     last_used_filter_changed();
     series_filter_changed();
+
+    pbGenerate->click();
 }
 
 void ReleasePreparationDB::set_enabled(bool enable) {
@@ -197,6 +198,10 @@ void ReleasePreparationDB::generate_button() {
     while (query.next()) {
         record_infos.append(RecordPreviewInfo(query));
     }
+    // Обеспечиваем необходимое количество результатов (на случай узких запросов)
+    int current_size = record_infos.size();
+    for (int i = 0; record_infos.size() < sbSize->value(); ++i)
+        record_infos.append(record_infos[i % current_size]);
 
     // Удаляем лишние виджеты, если их существует больше нужного
     for (int j = m_selected_records.size(); j > record_infos.size(); --j) {
@@ -219,40 +224,17 @@ void ReleasePreparationDB::generate_button() {
         } else {
             // Обновляем уже существующие виджеты
             m_selected_records[i]->set_record(std::move(record_infos[i]));
+            m_selected_records[i]->set_time(time);
             previous = m_selected_records[i];
         }
+        time = time.addSecs(teInterval->time().hour()*3600 + teInterval->time().minute()*60);
     }
 }
 
-void ReleasePreparationDB::generate_release() {
-//    QDateTime time = QDateTime(deDate->date(), teTime->time(), Qt::LocalTime);
-//    QSqlQuery query;
-//    Database::instance().select_records(query, QueryFilters::instance(), true, sbSize->value());
-//    RecordPreviewDB* previous = nullptr;
-//    while (query.next()) {
-//        RecordPreviewInfo record(query);
-//        RecordPreviewDB* record_preview = new RecordPreviewDB(record, time, this);
-//        m_selected_records.append(record_preview);
-//        if (previous) {
-//            previous->set_next(record_preview);
-//            record_preview->set_prev(previous);
-//        }
-//        previous = record_preview;
-//        grlPreview->addWidget(record_preview);
-//        time = time.addSecs(teInterval->time().hour()*3600 + teInterval->time().minute()*60);
-//    }
-}
-
 void ReleasePreparationDB::post_button() {
-
-}
-
-void ReleasePreparationDB::posting_success(int, int) {
-
-}
-
-void ReleasePreparationDB::posting_fail(int, const QString &) {
-
+    auto dialog = new PostingProgressDialog(m_selected_records, this);
+    dialog->show();
+    dialog->start_posting();
 }
 
 QString ReleasePreparationDB::hashtag_filters() {
@@ -265,4 +247,3 @@ QString ReleasePreparationDB::hashtag_filters() {
         return result.join(", ");
     return "Хэштеги не выбраны";
 }
-
