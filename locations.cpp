@@ -12,8 +12,8 @@ void Locations::init(const QJsonObject &json_file) {
     m_locations[POLL_LOGS] = json_file.value("poll_logs").toString();
     m_locations[PUBLIC_RECORDS] = json_file.value("public_records").toString();
     m_locations[HIDDEN_RECORDS] = json_file.value("hidden_records").toString();
-    m_locations[LABELS] = "C:\\Users\\User\\Documents\\Screenshot-Manager\\labels\\";
-    m_locations[DATABASE] = "C:\\Users\\User\\Documents\\Screenshot-Manager\\your_database.db";
+    m_locations[LABELS] = json_file.value("labels").toString();
+    m_locations[DATABASE] = json_file.value("database").toString();
 }
 
 const QString Locations::operator[](Directories key) const {
