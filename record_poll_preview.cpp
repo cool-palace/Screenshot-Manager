@@ -3,13 +3,13 @@
 #include <include/database.h>
 
 RecordPollPreview::RecordPollPreview(const RecordPreviewInfo &record, const HashtagPairInfo& tags, const QDateTime& time, QWidget *parent)
-    : QWidget(parent), m_info(std::move(record)), m_tag_info(std::move(tags)), m_time(time)
+    : RecordPreviewBase(record, time, parent), m_tag_info(std::move(tags))
 {
     setupUi(this);
     update();
     update_time();
     update_tags();
-    connect(pbTime, &QPushButton::clicked, this, &RecordPollPreview::set_time);
+    connect(pbTime, &QPushButton::clicked, this, &RecordPollPreview::time_dialog);
     connect(pbSearch, &QPushButton::clicked, this, &RecordPollPreview::search);
     connect(pbSwitchUp, &QPushButton::clicked, this, &RecordPollPreview::switch_up);
     connect(pbSwitchDown, &QPushButton::clicked, this, &RecordPollPreview::switch_down);
@@ -40,6 +40,11 @@ void RecordPollPreview::set_record(const RecordPreviewInfo &record) {
 void RecordPollPreview::set_hashtags(const HashtagPairInfo & hashtags) {
     m_tag_info = hashtags;
     update_tags();
+}
+
+void RecordPollPreview::set_time(const QDateTime & time) {
+    m_time = time;
+    update_time();
 }
 
 void RecordPollPreview::update_log_info() {
@@ -121,7 +126,7 @@ void RecordPollPreview::search() {
     QueryFilters::instance().hashtags.included.remove(tag2);
 }
 
-void RecordPollPreview::set_time() {
+void RecordPollPreview::time_dialog() {
     TimeInputDialog dialog(m_time.time(), this);
     if (dialog.exec() == QDialog::Accepted) {
         m_time.setTime(dialog.selectedTime());

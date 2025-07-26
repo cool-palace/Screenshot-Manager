@@ -3,14 +3,14 @@
 #include <QSqlQuery>
 
 RecordPreviewDB::RecordPreviewDB(const RecordPreviewInfo& record, const QDateTime& time, QWidget *parent) :
-    QWidget(parent), m_info(std::move(record)), m_time(time)
+    RecordPreviewBase(record, time, parent)
 {
     setupUi(this);
     pbSelect->hide();
     update();
     update_time();
     connect(pbReroll, &QPushButton::clicked, this, &RecordPreviewDB::reroll);
-    connect(pbTime, &QPushButton::clicked, this, &RecordPreviewDB::set_time);
+    connect(pbTime, &QPushButton::clicked, this, &RecordPreviewDB::time_dialog);
     connect(pbSearch, &QPushButton::clicked, this, &RecordPreviewDB::search);
     connect(pbNumber, &QPushButton::clicked, this, &RecordPreviewDB::input_number);
     connect(pbSwitchUp, &QPushButton::clicked, this, &RecordPreviewDB::switch_up);
@@ -38,6 +38,11 @@ void RecordPreviewDB::set_record(const RecordPreviewInfo &record) {
     update();
 }
 
+void RecordPreviewDB::set_time(const QDateTime &time) {
+    m_time = time;
+    update_time();
+}
+
 void RecordPreviewDB::update_log_info() {
     auto font = lblLogs->font();
     if (m_info.date.isValid()) {
@@ -52,6 +57,10 @@ void RecordPreviewDB::update_log_info() {
     }
     lblLogs->setFont(font);
 }
+
+//void RecordPreviewDB::post() const {
+//    VK_Manager::instance().post(m_info.id, m_info.attachments(), m_time.toSecsSinceEpoch());
+//}
 
 void RecordPreviewDB::switch_up() {
     if (!m_prev) return;
@@ -74,7 +83,7 @@ void RecordPreviewDB::search() {
     }
 }
 
-void RecordPreviewDB::set_time() {
+void RecordPreviewDB::time_dialog() {
     TimeInputDialog dialog(m_time.time(), this);
     if (dialog.exec() == QDialog::Accepted) {
         m_time.setTime(dialog.selectedTime());
