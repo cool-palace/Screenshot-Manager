@@ -312,13 +312,15 @@ void Database::select_records(QSqlQuery &query, const QueryFilters &filters, boo
                                 "       GROUP BY trm.record_id),"
                                 "   links AS ("
                                 "       SELECT fd.record_id,"
-                                "           GROUP_CONCAT(fd.link, '|') AS links"
+                                "           GROUP_CONCAT(fd.link, '|') AS links,"
+                                "           GROUP_CONCAT(fd.photo_id, '|') AS photo_ids"
                                 "       FROM file_data fd"
                                 "       GROUP BY fd.record_id)"
                                 "   SELECT fr.id AS record_id,"
                                 "       fr.caption AS quote,"
                                 "       tags.tag_string,"
                                 "       links.links,"
+                                "       links.photo_ids,"
                                 "       fr.date,"
                                 "       t.name AS title_name"
                                 "   FROM filtered_records fr"
@@ -362,7 +364,8 @@ void Database::select_records_by_ids(QSqlQuery &query, const QList<int> &ids) {
                                 "       GROUP BY trm.record_id),"
                                 "   links AS ("
                                 "       SELECT fd.record_id,"
-                                "           GROUP_CONCAT(fd.link, '|') AS links"
+                                "           GROUP_CONCAT(fd.link, '|') AS links,"
+                                "           GROUP_CONCAT(fd.photo_id, '|') AS photo_ids"
                                 "       FROM file_data fd"
                                 "       GROUP BY fd.record_id),"
                                 "   latest_date AS ("
@@ -375,6 +378,7 @@ void Database::select_records_by_ids(QSqlQuery &query, const QList<int> &ids) {
                                 "       r.caption AS quote,"
                                 "       tags.tag_string,"
                                 "       links.links,"
+                                "       links.photo_ids,"
                                 "       latest_date.date,"
                                 "       t.name AS title_name"
                                 "   FROM records r"
@@ -387,6 +391,48 @@ void Database::select_records_by_ids(QSqlQuery &query, const QList<int> &ids) {
     query.prepare(query_str);
     if (!query.exec()) {
         qDebug() << "Не удалось выполнить поиск записей по индексам" << query.lastError().text();
+    }
+}
+
+void Database::select_record_by_id(QSqlQuery &query, int id) {
+    query.prepare(" WITH tags AS ("
+                  "     SELECT trm.record_id,"
+                  "         GROUP_CONCAT("
+                  "             CASE "
+                  "                 WHEN trm.type = 1 THEN '#' || h.tag"
+                  "                 ELSE '&' || h.tag    "
+                  "             END, ' ') AS tag_string"
+                  "     FROM tag_record_map trm"
+                  "     JOIN hashtags h ON trm.tag_id = h.id"
+                  "     GROUP BY trm.record_id),"
+                  " links AS ("
+                  "     SELECT fd.record_id,"
+                  "         GROUP_CONCAT(fd.link, '|') AS links,"
+                  "         GROUP_CONCAT(fd.photo_id, '|') AS photo_ids"
+                  "     FROM file_data fd"
+                  "     GROUP BY fd.record_id),"
+                  " latest_date AS ("
+                  "     SELECT r.id AS record_id, MAX(rl.date) AS date"
+                  "     FROM records r"
+                  "     JOIN file_data fd ON fd.record_id = r.id"
+                  "     JOIN record_logs rl ON rl.photo_id = fd.photo_id"
+                  "     GROUP BY r.id)"
+                  " SELECT r.id AS record_id,"
+                  "     r.caption AS quote,"
+                  "     tags.tag_string,"
+                  "     links.links,"
+                  "     links.photo_ids,"
+                  "     latest_date.date,"
+                  "     t.name AS title_name"
+                  " FROM records r"
+                  " LEFT JOIN latest_date ON latest_date.record_id = r.id"
+                  " LEFT JOIN tags ON tags.record_id = r.id"
+                  " LEFT JOIN links ON links.record_id = r.id"
+                  " LEFT JOIN titles t ON r.title_id = t.id"
+                  " WHERE r.id = :id");
+    query.bindValue(":id", id);
+    if (!query.exec()) {
+        qDebug() << "Не выполнить получить запись" << id << query.lastError().text();
     }
 }
 
@@ -503,46 +549,6 @@ void Database::select_hashtag_ranks(QSqlQuery &query) {
     query.prepare("SELECT MIN(h.rank) AS min_rank, MAX(h.rank) AS max_rank FROM hashtags h");
     if (!query.exec()) {
         qDebug() << "Не выполнить получить уровни хэштегов" << query.lastError().text();
-    }
-}
-
-void Database::select_record_by_id(QSqlQuery &query, int id) {
-    query.prepare(" WITH tags AS ("
-                  "     SELECT trm.record_id,"
-                  "         GROUP_CONCAT("
-                  "             CASE "
-                  "                 WHEN trm.type = 1 THEN '#' || h.tag"
-                  "                 ELSE '&' || h.tag    "
-                  "             END, ' ') AS tag_string"
-                  "     FROM tag_record_map trm"
-                  "     JOIN hashtags h ON trm.tag_id = h.id"
-                  "     GROUP BY trm.record_id),"
-                  " links AS ("
-                  "     SELECT fd.record_id,"
-                  "            GROUP_CONCAT(fd.link, '|') AS links"
-                  "     FROM file_data fd"
-                  "     GROUP BY fd.record_id),"
-                  " latest_date AS ("
-                  "     SELECT r.id AS record_id, MAX(rl.date) AS date"
-                  "     FROM records r"
-                  "     JOIN file_data fd ON fd.record_id = r.id"
-                  "     JOIN record_logs rl ON rl.photo_id = fd.photo_id"
-                  "     GROUP BY r.id)"
-                  " SELECT r.id AS record_id,"
-                  "     r.caption AS quote,"
-                  "     tags.tag_string,"
-                  "     links.links,"
-                  "     latest_date.date,"
-                  "     t.name AS title_name"
-                  " FROM records r"
-                  " LEFT JOIN latest_date ON latest_date.record_id = r.id"
-                  " LEFT JOIN tags ON tags.record_id = r.id"
-                  " LEFT JOIN links ON links.record_id = r.id"
-                  " LEFT JOIN titles t ON r.title_id = t.id"
-                  " WHERE r.id = :id");
-    query.bindValue(":id", id);
-    if (!query.exec()) {
-        qDebug() << "Не выполнить получить запись" << id << query.lastError().text();
     }
 }
 
