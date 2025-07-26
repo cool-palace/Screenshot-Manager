@@ -38,6 +38,12 @@ public slots:
     void post() const {
         VK_Manager::instance().post(m_info.id, m_info.attachments(), m_time.toSecsSinceEpoch());
     }
+    QMap<int, QDateTime> logs_data() const {
+        QMap<int, QDateTime> result;
+        for (const QString& id : m_info.photo_ids)
+            result.insert(id.toInt(), m_time);
+        return result;
+    }
 
 protected:
     RecordPreviewInfo m_info;

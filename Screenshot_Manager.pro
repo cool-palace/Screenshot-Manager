@@ -36,7 +36,6 @@ SOURCES += \
         record_item_db.cpp \
         record_poll_preview.cpp \
         record_preview_db.cpp \
-        record_preview_info.cpp \
         records_dialog.cpp \
         release_preparation_db.cpp \
         series_dialog.cpp \

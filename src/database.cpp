@@ -577,18 +577,59 @@ void Database::select_hashtag_pairs_count(QSqlQuery &query, const QList<int>& ta
                                 "       AND a.record_id IN (SELECT id FROM filtered_records)"
                                 "    GROUP BY a.tag_id, b.tag_id ) "
                                 "SELECT tp.tag1, tp.tag2, "
-//                                "   h1.tag AS tag1_name, h2.tag AS tag2_name, "
                                 "   COALESCE(tpr.pair_count, 0) AS count, "
                                 "   COALESCE(tpr.record_ids, '') AS records "
                                 "FROM tag_pairs tp "
                                 "LEFT JOIN tag_pairs_in_records tpr ON tpr.tag1 = tp.tag1 AND tpr.tag2 = tp.tag2 "
-//                                "LEFT JOIN hashtags h1 ON h1.id = tp.tag1 "
-//                                "LEFT JOIN hashtags h2 ON h2.id = tp.tag2 "
                                 "ORDER BY tp.tag1, tp.tag2;").arg(select_query(filters)).arg(values.join("), ("));
     query.prepare(query_str);
     if (!query.exec()) {
         qDebug() << "Не выполнить получить информацию по парам тегов" << query.lastError().text();
     }
+}
+
+int Database::update_record_logs(const QMap<int, QDateTime> &data) {
+    db.transaction();
+    QSqlQuery query;
+    query.prepare(R"(
+        INSERT INTO record_logs (photo_id, date)
+        VALUES (:photo_id, :date)
+        ON CONFLICT(photo_id) DO UPDATE SET date = excluded.date;
+    )");
+    int success_count = 0;
+    for (auto it = data.cbegin(); it != data.cend(); ++it) {
+        query.bindValue(":photo_id", it.key());
+        query.bindValue(":date", it.value().toString("yyyy-MM-dd HH:mm:ss"));
+        if (!query.exec()) {
+            qWarning() << "Не удалось обновить логи: " << query.lastError().text();
+        } else
+            ++success_count;
+    }
+    if (db.commit())
+        return success_count;
+    return -1;
+}
+
+int Database::update_poll_logs(const QList<int> &ids, const QDateTime &time) {
+    db.transaction();
+    QSqlQuery query;
+    query.prepare(R"(
+        INSERT INTO poll_logs (id, date)
+        VALUES (:id, :date)
+        ON CONFLICT(id) DO UPDATE SET date = excluded.date;
+    )");
+    int success_count = 0;
+    for (int i = 0; i < ids.size(); ++i) {
+        query.bindValue(":id", ids[i]);
+        query.bindValue(":date", time.toString("yyyy-MM-dd HH:mm:ss"));
+        if (!query.exec()) {
+            qWarning() << "Не удалось обновить логи: " << query.lastError().text();
+        } else
+            ++success_count;
+    }
+    if (db.commit())
+        return success_count;
+    return -1;
 }
 
 QString Database::select_query(const QueryFilters &filters) {

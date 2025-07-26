@@ -28,6 +28,8 @@ private slots:
     void handle_poll_failure(const QString &error);
     void get_poll();
     void post_poll(int id);
+    void update_record_logs();
+    void update_poll_logs();
 
 private:
     QString poll_options() const;
