@@ -18,6 +18,12 @@ void HashtagPreviewDB::set_hashtag(const HashtagInfo &info) {
     emit changed();
 }
 
+QString HashtagPreviewDB::message() const {
+    QString name = m_info.name;
+    name.replace(0, 1, name[0].toUpper());
+    return QString("%1 — %2").arg(name).arg(leDescription->text());
+}
+
 void HashtagPreviewDB::update() {
     lblCount->setText(QString().setNum(m_info.count));
     lblName->setText(m_info.emoji + ' ' + m_info.name);
