@@ -610,17 +610,17 @@ int Database::update_record_logs(const QMap<int, QDateTime> &data) {
     return -1;
 }
 
-int Database::update_poll_logs(const QList<int> &ids, const QDateTime &time) {
+int Database::update_poll_logs(const QStringList &tags, const QDateTime &time) {
     db.transaction();
     QSqlQuery query;
     query.prepare(R"(
-        INSERT INTO poll_logs (id, date)
-        VALUES (:id, :date)
+        INSERT INTO poll_logs (tag, date)
+        VALUES (:tag, :date)
         ON CONFLICT(id) DO UPDATE SET date = excluded.date;
     )");
     int success_count = 0;
-    for (int i = 0; i < ids.size(); ++i) {
-        query.bindValue(":id", ids[i]);
+    for (int i = 0; i < tags.size(); ++i) {
+        query.bindValue(":tag", tags[i]);
         query.bindValue(":date", time.toString("yyyy-MM-dd HH:mm:ss"));
         if (!query.exec()) {
             qWarning() << "Не удалось обновить логи: " << query.lastError().text();

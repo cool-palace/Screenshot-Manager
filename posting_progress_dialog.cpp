@@ -7,6 +7,7 @@ PostingProgressDialog::PostingProgressDialog(QWidget *parent) : QDialog(parent) 
 
     m_progress = new QProgressBar(this);
     m_progress->setRange(0, m_records.size());
+    m_progress->setValue(0);
 
     m_status = new QLabel("Ожидание начала...", this);
     m_log = new QTextEdit(this);
@@ -131,17 +132,17 @@ void PostingProgressDialog::update_record_logs() {
 void PostingProgressDialog::update_poll_logs() {
     if (m_hashtags.empty()) return;
 
-    QList<int> ids;
-    ids.reserve(m_hashtags.size());
+    QStringList tags;
+    tags.reserve(m_hashtags.size());
     for (const HashtagPreviewDB* hashtag : m_hashtags)
-        ids.append(hashtag->id());
+        tags.append(hashtag->name());
 
     // Обновление логов в базе данных
-    int query_result = Database::instance().update_poll_logs(ids, m_poll_times.second);
-    if (query_result == ids.size())
+    int query_result = Database::instance().update_poll_logs(tags, m_poll_times.second);
+    if (query_result == tags.size())
         m_log->append(QString("✅ Логи опросов в базе данных обновлены."));
     else if (query_result > 0)
-        m_log->append(QString("❌ Не удалось обновить %1 записей в логах опросов в БД.").arg(ids.size() - query_result));
+        m_log->append(QString("❌ Не удалось обновить %1 записей в логах опросов в БД.").arg(tags.size() - query_result));
     else
         m_log->append(QString("❌ Не удалось провести транзакцию в логах опросов в БД."));
 
@@ -151,7 +152,8 @@ void PostingProgressDialog::update_poll_logs() {
     QFile file(logs_filepath);
     qint64 time = m_poll_times.first.toSecsSinceEpoch();
     for (int i = 0; i < m_hashtags.size(); ++i) {
-        logs_json[m_hashtags[i]->name()] = time;
+        QString tag = m_hashtags[i]->name();
+        logs_json[tag] = time;
     }
     if (save_json(logs_json, file))
         m_log->append(QString("✅ Текстовые логи опросов обновлены."));
