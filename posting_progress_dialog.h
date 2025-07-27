@@ -30,6 +30,7 @@ private slots:
     void post_poll(int id);
     void update_record_logs();
     void update_poll_logs();
+    void update_hashtags();
 
 private:
     QString poll_options() const;
@@ -43,9 +44,9 @@ private:
     int m_success_count = 0;
     int m_fail_count = 0;
 
-    QProgressBar *m_progress;
-    QLabel *m_status;
-    QTextEdit *m_log;
+    QProgressBar *pbProgress;
+    QLabel *lblStatus;
+    QTextEdit *teLog;
 };
 
 #endif // POSTPROGRESSDIALOG_H

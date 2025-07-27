@@ -278,8 +278,7 @@ void Database::create_hashtag_table(QSqlQuery &query) {
 
 void Database::create_record_logs_table(QSqlQuery &query) {
     query.prepare("CREATE TABLE IF NOT EXISTS record_logs ("
-                      "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                      "photo_id INTEGER,"
+                      "photo_id INTEGER PRIMARY KEY,"
                       "date TIMESTAMP)");
     if (!query.exec()) {
         qDebug() << "Не удалось создать таблицу 'record_logs'" << query.lastError().text();
@@ -616,12 +615,30 @@ int Database::update_poll_logs(const QStringList &tags, const QDateTime &time) {
     query.prepare(R"(
         INSERT INTO poll_logs (tag, date)
         VALUES (:tag, :date)
-        ON CONFLICT(id) DO UPDATE SET date = excluded.date;
+        ON CONFLICT(tag) DO UPDATE SET date = excluded.date;
     )");
     int success_count = 0;
     for (int i = 0; i < tags.size(); ++i) {
         query.bindValue(":tag", tags[i]);
         query.bindValue(":date", time.toString("yyyy-MM-dd HH:mm:ss"));
+        if (!query.exec()) {
+            qWarning() << "Не удалось обновить логи: " << query.lastError().text();
+        } else
+            ++success_count;
+    }
+    if (db.commit())
+        return success_count;
+    return -1;
+}
+
+int Database::update_hashtag_descriptions(const QMap<int, QString> &tags) {
+    db.transaction();
+    QSqlQuery query;
+    query.prepare(R"(UPDATE hashtags SET description = :description WHERE id = :id;)");
+    int success_count = 0;
+    for (auto it = tags.cbegin(); it != tags.cend(); ++it) {
+        query.bindValue(":id", it.key());
+        query.bindValue(":description", it.value());
         if (!query.exec()) {
             qWarning() << "Не удалось обновить логи: " << query.lastError().text();
         } else

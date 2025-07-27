@@ -55,6 +55,7 @@ public slots:
     void select_hashtag_pairs_count(QSqlQuery &query, const QList<int>& ids, const QueryFilters& filters);
     int update_record_logs(const QMap<int, QDateTime>& data);
     int update_poll_logs(const QStringList& tags, const QDateTime& time);
+    int update_hashtag_descriptions(const QMap<int, QString>& data);
 
 private:
     static QString select_query(const QueryFilters& filters);
