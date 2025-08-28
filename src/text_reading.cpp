@@ -169,9 +169,9 @@ void TextReading::generate_combinations(const QString& input, int index, QString
 QString TextReading::subs_filename(const QString& filename, const QString& title) const {
     QStringList combinations;
     generate_combinations(filename, 0, "", combinations);
-    qDebug() << combinations;
+//    qDebug() << combinations;
     for (const QString& combination : combinations) {
-        QString subs_path = QDir::toNativeSeparators(Locations::instance()[SUBS]) + title + QDir::separator() + combination + ".ass";
+        QString subs_path = QDir::toNativeSeparators(Locations::instance()[SUBS_NEW]) + title + QDir::separator() + combination + ".ass";
         if (QFile::exists(subs_path)) {
             return subs_path;
         } else qDebug() << "Subs file does not exist: " << subs_path;
