@@ -1,4 +1,5 @@
 #include "hashtag_poll_dialog.h"
+#include "locations.h"
 #include "poll_preparation_db.h"
 #include "posting_progress_dialog.h"
 #include <include/database.h>
@@ -27,6 +28,7 @@ PollPreparationDB::PollPreparationDB(QWidget *parent) : QWidget(parent) {
 }
 
 void PollPreparationDB::start() {
+    Database::instance().init(Locations::instance()[DATABASE]);
     dteStart->setMinimumDate(QDate::currentDate());
     dteStart->setDate(QTime::currentTime() < QTime(3,0)
                           ? QDate::currentDate()

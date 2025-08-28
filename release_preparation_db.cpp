@@ -5,6 +5,7 @@
 #include "hashtag_dialog.h"
 #include "record_preview_db.h"
 #include "posting_progress_dialog.h"
+#include "locations.h"
 #include <QSqlQuery>
 
 ReleasePreparationDB::ReleasePreparationDB(QWidget *parent) : QWidget(parent) {
@@ -33,6 +34,7 @@ ReleasePreparationDB::ReleasePreparationDB(QWidget *parent) : QWidget(parent) {
 }
 
 void ReleasePreparationDB::start() {
+    Database::instance().init(Locations::instance()[DATABASE]);
     deDate->setMinimumDate(QDate::currentDate());
     deDate->setDate(QTime::currentTime() < QTime(3,0)
                           ? QDate::currentDate()

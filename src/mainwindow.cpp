@@ -26,7 +26,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->journal_creation_button, &QPushButton::clicked, this, &MainWindow::journal_creation);
     connect(ui->journal_reading_button, &QPushButton::clicked, this, &MainWindow::journal_reading);
     connect(ui->text_reading_button, &QPushButton::clicked, this, &MainWindow::text_reading);
-    connect(ui->release_preparation_button, &QPushButton::clicked, this, &MainWindow::release_preparation);
     connect(ui->release_preparation_db_button, &QPushButton::clicked, this, &MainWindow::release_preparation_db);
     connect(ui->poll_preparation_button, &QPushButton::clicked, this, &MainWindow::poll_preparation_db);
     connect(ui->text_labeling_button, &QPushButton::clicked, this, &MainWindow::text_labeling);
@@ -96,7 +95,6 @@ bool MainWindow::initialize() {
     QString group_id = json_file.value("group_id").toString();
     QString public_id = json_file.value("public_id").toString();
     VK_Manager::instance().init(access_token, group_id, public_id);
-    Database::instance().init(Locations::instance()[DATABASE]);
     if (!QDir(Locations::instance()[SCREENSHOTS]).exists() || !QDir(Locations::instance()[JOURNALS]).exists()) {
         ui->statusBar->showMessage("Указаны несуществующие директории. Перепроверьте конфигурационный файл.");
         return false;
@@ -264,7 +262,9 @@ void MainWindow::compile_journals() {
 }
 
 void MainWindow::compile_journals_to_db() {
-    QDir dir = QDir(locations[JOURNALS]);
+    Database::instance().init(Locations::instance()[DATABASE]);
+
+    QDir dir = QDir(Locations::instance()[JOURNALS]);
     dir.setNameFilters(QStringList("*.json"));
     auto configs = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
     if (configs.contains(".test.json")) {
@@ -272,10 +272,10 @@ void MainWindow::compile_journals_to_db() {
     }
 
     // Открытие или создание базы данных
-    QFile db_file(locations[DATABASE]);
+    QFile db_file(Locations::instance()[DATABASE]);
     if (db_file.exists()) {
         // Если база данных уже существует, создаём резервную копию
-        QFile::copy(locations[DATABASE], locations[DATABASE].chopped(3) + QString("_%1.db").arg(QDate::currentDate().toString(Qt::ISODate)));
+        QFile::copy(Locations::instance()[DATABASE], Locations::instance()[DATABASE].chopped(3) + QString("_%1.db").arg(QDate::currentDate().toString(Qt::ISODate)));
     }
 
     // Подключение к базе данных
@@ -283,7 +283,7 @@ void MainWindow::compile_journals_to_db() {
     QSqlQuery query;
 
     db.reset_hashtag_table(query);
-    QJsonObject hashtags_json = json_object(locations[HASHTAGS]);
+    QJsonObject hashtags_json = json_object(Locations::instance()[HASHTAGS]);
     db.add_hashtags_data(query, hashtags_json);
 
     // Очистка таблиц, если они существуют
@@ -293,7 +293,7 @@ void MainWindow::compile_journals_to_db() {
     for (int i = 0; i < configs.size(); ++i) {
         const auto& config = configs[i];
         QMetaObject::invokeMethod(progress_dialog, "update_progress", Q_ARG(int, i*100 / configs.size()), Q_ARG(const QString&, QString("Обработка файла: %1").arg(config)));
-        auto object = json_object(locations[JOURNALS] + config);
+        auto object = json_object(Locations::instance()[JOURNALS] + config);
         db.add_journal_data(query, object);
     }
     QMetaObject::invokeMethod(progress_dialog, "update_progress", Q_ARG(int, 100), Q_ARG(const QString&, "База данных создана успешно."));
