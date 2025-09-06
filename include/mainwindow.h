@@ -93,6 +93,7 @@ private:
     void export_text();
     QJsonObject reverse_index(const QJsonArray&);
     void refactor_journals();
+    void compile_series();
 };
 
 #endif // MAINWINDOW_H

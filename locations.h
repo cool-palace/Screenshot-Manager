@@ -12,6 +12,7 @@ enum Directories {
     SUBS,
     SUBS_NEW,
     HASHTAGS,
+    SERIES,
     LOGS_FILE,
     POLL_LOGS,
     PUBLIC_RECORDS,

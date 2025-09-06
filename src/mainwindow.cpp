@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
         QtConcurrent::run(this, &MainWindow::compile_journals_to_db);
     });
     connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
+    connect(ui->compile_series, &QAction::triggered, this, &MainWindow::compile_series);
 //    connect(ui->add_hashtag, &QAction::triggered, this, &MainWindow::add_hashtag);
 
 }
@@ -339,5 +340,30 @@ QJsonObject MainWindow::reverse_index(const QJsonArray& array) {
         }
     }
     return result;
+}
+
+void MainWindow::compile_series() {
+    QDir dir = QDir(Locations::instance()[JOURNALS]);
+    dir.setNameFilters(QStringList("*.json"));
+    auto configs = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+    if (configs.contains(".test.json")) {
+        configs.removeAt(configs.indexOf(".test.json"));
+    }
+    QJsonObject series_json;
+    // Проход по всем json-конфигам
+    for (int i = 0; i < configs.size(); ++i) {
+        const auto& config = configs[i];
+        QJsonObject object = json_object(Locations::instance()[JOURNALS] + config);
+        QJsonObject series_info;
+        series_info["name_rus"] = "";
+        series_info["emoji"] = "";
+        series_json[object["series"].toString()] = series_info;
+    }
+    QString filepath = Locations::instance()[SERIES];
+    QFile file(filepath);
+    if (save_json(series_json, file))
+        qDebug() << (QString("✅ Данные о сериалах собраны."));
+    else
+        qDebug() << (QString("❌ Не удалось собрать данные о сериалах"));
 }
 
