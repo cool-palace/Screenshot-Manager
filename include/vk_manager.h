@@ -36,6 +36,7 @@ signals:
     void caption_passed();
     void captcha_error(const QString&, const QString&);
     void captcha_image_ready(const QImage&);
+    void posts_ready(const QJsonObject&);
 
 public slots:
     QNetworkReply* get_url(const QString& url);
@@ -47,6 +48,8 @@ public slots:
     void get_poll(const QString&, int);
     void edit_photo_caption(int, const QString&, const QString& captcha_sid = "", const QString& captcha_key = "");
     void get_captcha(const QString& url);
+    void get_posts();
+    void collect_posts();
 
 private slots:
     QJsonObject reply_json(QNetworkReply *response);
@@ -56,11 +59,14 @@ private slots:
     void got_photo_ids(QNetworkReply *);
     void got_image(QNetworkReply *);
     void got_captcha(QNetworkReply *);
+    void got_posts(QNetworkReply *);
 
 private:
     QString m_access_token;
     QString m_group_id;
     QString m_public_id;
+    QJsonObject m_result;
+    int m_offset = 0;
 };
 
 #endif // VK_MANAGER_H

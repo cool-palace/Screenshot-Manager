@@ -1,5 +1,6 @@
 #include "include\vk_manager.h"
 #include <QRegularExpression>
+#include <QTimer>
 
 VK_Manager::VK_Manager()
     : QNetworkAccessManager() {}
@@ -75,6 +76,22 @@ void VK_Manager::get_image(const QString& url) {
 void VK_Manager::get_captcha(const QString &url) {
     connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_captcha);
     get_url(url);
+}
+
+void VK_Manager::get_posts() {
+    QString url = "https://api.vk.com/method/wall.get?v=5.199"
+                  "&access_token=" + m_access_token
+                + "&domain=public" + m_public_id
+                + "&count=" + QString::number(100)
+                + "&offset=" + QString::number(m_offset);
+    get_url(url);
+    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_posts);
+}
+
+void VK_Manager::collect_posts() {
+    m_result = QJsonObject();
+    m_offset = 0;
+    get_posts();
 }
 
 void VK_Manager::get_albums() {
@@ -205,4 +222,52 @@ void VK_Manager::got_image(QNetworkReply *response) {
 void VK_Manager::got_captcha(QNetworkReply *response) {
     disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_captcha);
     emit captcha_image_ready(image(response));
+}
+
+void VK_Manager::got_posts(QNetworkReply *response) {
+    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_posts);
+    auto reply = reply_json(response);
+    auto array = reply["response"].toObject()["items"].toArray();
+    int added = 0;
+    int old = 0;
+    int skipped = 0;
+    int reposts = 0;
+    int text_only = 0;
+    for (const QJsonValueRef item : array) {
+        auto current_item = item.toObject();
+        if (current_item.contains("copy_history")) {
+            ++reposts;
+            continue;
+        }
+        if (!current_item.contains("attachments")) {
+            ++text_only;
+            continue;
+        }
+        int post_id = current_item["id"].toInt();
+        int date = current_item["date"].toInt();
+        auto attachments = current_item["attachments"].toArray();
+        for (const QJsonValueRef attachment : attachments) {
+            auto current_attachment = attachment.toObject();
+            if (current_attachment["type"].toString() == "photo" && current_attachment["photo"].toObject()["owner_id"].toInt() == -m_group_id.toInt()) {
+                QString photo_id = QString::number(current_attachment["photo"].toObject()["id"].toInt());
+                if (!m_result.contains(photo_id)) {
+                    QJsonObject info;
+                    info["date"] = date;
+                    info["post_id"] = post_id;
+                    m_result[photo_id] = info;
+                    ++added;
+                } else {
+                    ++old;
+                }
+            } else {
+                ++skipped;
+            }
+        }
+    }
+    qDebug() << QString("Смещение %4. Пропущено: %1, репостов: %5, текстовых: %6, добавлено: %2, повторы: %3").arg(skipped).arg(added).arg(old).arg(m_offset).arg(reposts).arg(text_only);
+    m_offset += 100;
+    if (m_offset <= 8500)
+        QTimer::singleShot(1000, this, &VK_Manager::get_posts);
+    else
+        emit posts_ready(m_result);
 }
