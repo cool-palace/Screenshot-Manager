@@ -1,6 +1,7 @@
 #include "include\vk_manager.h"
 #include <QRegularExpression>
 #include <QTimer>
+#include <QUrlQuery>
 
 VK_Manager::VK_Manager()
     : QNetworkAccessManager() {}
@@ -88,10 +89,29 @@ void VK_Manager::get_posts() {
     connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_posts);
 }
 
+void VK_Manager::get_recent_posts(int count) {
+    QString url = "https://api.vk.com/method/wall.get?v=5.199"
+                  "&access_token=" + m_access_token
+                + "&domain=public" + m_public_id
+                + "&count=" + QString::number(count);
+    get_url(url);
+    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_recent_posts);
+}
+
 void VK_Manager::collect_posts() {
     m_result = QJsonObject();
     m_offset = 0;
-    get_posts();
+    get_postponed_posts();
+}
+
+void VK_Manager::get_postponed_posts() {
+    QString url = "https://api.vk.com/method/wall.get?v=5.199"
+                  "&access_token=" + m_access_token
+                + "&domain=public" + m_public_id
+                + "&count=" + QString::number(100)
+                + "&filter=postponed";
+    get_url(url);
+    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_postponed_posts);
 }
 
 void VK_Manager::get_albums() {
@@ -118,27 +138,38 @@ void VK_Manager::post(int index, const QString& attachments, int date) {
             emit post_failed(index, QJsonDocument(reply).toJson(QJsonDocument::Compact));
             return;
         }
-        emit posted_successfully(index, date);
+        int postponed_id = reply["response"].toObject()["post_id"].toInt();
+        emit posted_successfully(index, date, postponed_id);
     });
 }
 
 void VK_Manager::get_poll(const QString& options, int end_date) {
-    QString url = "https://api.vk.com/method/polls.create?v=5.199&from_group=1&signed=0"
-                  "&access_token=" + m_access_token
-                + "&owner_id=-" + m_public_id
-                + "&question=" + "Тема пятничных постов"
-                + "&is_anonymous=1&is_multiple=1&background_id=1"
-                + "&add_answers=" + options
-                + "&end_date=" + QString().setNum(end_date);
-    auto response = get_url(url);
+    QUrl url("https://api.vk.com/method/polls.create");
+    QUrlQuery params;
+    params.addQueryItem("v", "5.199");
+    params.addQueryItem("access_token", m_access_token);
+    params.addQueryItem("owner_id", "-" + m_public_id);
+    params.addQueryItem("question", "Тема пятничных постов");
+    params.addQueryItem("is_anonymous", "1");
+    params.addQueryItem("is_multiple", "1");
+    params.addQueryItem("add_answers", options);
+    params.addQueryItem("end_date", QString::number(end_date));
+    url.setQuery(params);
+    qDebug() << url;
+    QNetworkReply* response = get(QNetworkRequest(url));
     connect(response, &QNetworkReply::finished, [this, response](){
-        auto reply = reply_json(response);
+        QJsonObject reply = reply_json(response);
         response->deleteLater();
+        qDebug() << "reply" << reply;
         if (reply.contains("error")) {
             emit poll_post_failed(QJsonDocument(reply).toJson(QJsonDocument::Compact));
             return;
         }
         int poll_id = reply["response"].toObject()["id"].toInt();
+        if (!poll_id) {
+            emit poll_post_failed(QJsonDocument(reply).toJson(QJsonDocument::Compact));
+            return;
+        }
         emit poll_ready(poll_id);
     });
 }
@@ -266,8 +297,57 @@ void VK_Manager::got_posts(QNetworkReply *response) {
     }
     qDebug() << QString("Смещение %4. Пропущено: %1, репостов: %5, текстовых: %6, добавлено: %2, повторы: %3").arg(skipped).arg(added).arg(old).arg(m_offset).arg(reposts).arg(text_only);
     m_offset += 100;
-    if (m_offset <= 8500)
+    if (added || skipped)
         QTimer::singleShot(1000, this, &VK_Manager::get_posts);
     else
         emit posts_ready(m_result);
+}
+
+void VK_Manager::got_recent_posts(QNetworkReply *response) {
+    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_recent_posts);
+    QJsonObject result;
+    QJsonArray result_array;
+    auto reply = reply_json(response);
+    if (!reply.size()) {
+        qDebug() << "Не удалось получить данные о последних постах";
+        return;
+    }
+    auto array = reply["response"].toObject()["items"].toArray();
+    for (const QJsonValueRef item : array) {
+        auto current_item = item.toObject();
+        if (!current_item.contains("postponed_id"))
+            continue;
+        result_array.append(QJsonObject{
+            {"postponed_id", current_item["postponed_id"].toInt()},
+            {"date", current_item["date"].toInt()},
+            {"post_id", current_item["id"].toInt()}
+        });
+    }
+    result["result"] = result_array;
+    emit recent_posts_ready(result);
+}
+
+void VK_Manager::got_postponed_posts(QNetworkReply *response) {
+    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_postponed_posts);
+    auto reply = reply_json(response);
+    auto array = reply["response"].toObject()["items"].toArray();
+    for (const QJsonValueRef item : array) {
+        auto current_item = item.toObject();
+        int post_id = -current_item["id"].toInt();
+        int date = current_item["date"].toInt();
+        auto attachments = current_item["attachments"].toArray();
+        for (const QJsonValueRef attachment : attachments) {
+            auto current_attachment = attachment.toObject();
+            if (current_attachment["type"].toString() == "photo" && current_attachment["photo"].toObject()["owner_id"].toInt() == -m_group_id.toInt()) {
+                QString photo_id = QString::number(current_attachment["photo"].toObject()["id"].toInt());
+                if (!m_result.contains(photo_id)) {
+                    QJsonObject info;
+                    info["date"] = date;
+                    info["post_id"] = post_id;
+                    m_result[photo_id] = info;
+                }
+            }
+        }
+    }
+    get_posts();
 }

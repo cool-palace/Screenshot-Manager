@@ -28,7 +28,7 @@ signals:
     void albums_ready(const QMap<QString, int>&);
     void photo_ids_ready(const QVector<int>&, const QStringList&);
     void image_ready(const QImage&);
-    void posted_successfully(int, int);
+    void posted_successfully(int, int, int);
     void poll_posted_successfully();
     void post_failed(int, const QString&);
     void poll_post_failed(const QString&);
@@ -37,6 +37,7 @@ signals:
     void captcha_error(const QString&, const QString&);
     void captcha_image_ready(const QImage&);
     void posts_ready(const QJsonObject&);
+    void recent_posts_ready(const QJsonObject&);
 
 public slots:
     QNetworkReply* get_url(const QString& url);
@@ -49,7 +50,9 @@ public slots:
     void edit_photo_caption(int, const QString&, const QString& captcha_sid = "", const QString& captcha_key = "");
     void get_captcha(const QString& url);
     void get_posts();
+    void get_recent_posts(int count);
     void collect_posts();
+    void get_postponed_posts();
 
 private slots:
     QJsonObject reply_json(QNetworkReply *response);
@@ -60,6 +63,8 @@ private slots:
     void got_image(QNetworkReply *);
     void got_captcha(QNetworkReply *);
     void got_posts(QNetworkReply *);
+    void got_recent_posts(QNetworkReply *);
+    void got_postponed_posts(QNetworkReply *);
 
 private:
     QString m_access_token;
