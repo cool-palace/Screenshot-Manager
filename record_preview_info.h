@@ -44,6 +44,12 @@ public slots:
             result.insert(id.toInt(), m_time);
         return result;
     }
+    QMap<int, QPair<QDateTime, int>> logs_data(int post_id) const {
+        QMap<int, QPair<QDateTime, int>> result;
+        for (const QString& id : m_info.photo_ids)
+            result.insert(id.toInt(), qMakePair(m_time, -post_id));
+        return result;
+    }
 
 protected:
     RecordPreviewInfo m_info;

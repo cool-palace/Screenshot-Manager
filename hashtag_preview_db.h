@@ -16,7 +16,7 @@ public:
     void set_hashtag(const HashtagInfo& info);
     int id() const { return m_info.id; }
     QString name() const { return m_info.name; }
-    QString option() const { return QString("\"%1 %2\"").arg(m_info.emoji, m_info.name); }
+    QString option() const { return QString("%1 %2").arg(m_info.emoji, m_info.name); }
     QString message() const;
     bool description_edited() const { return m_info.description != leDescription->text(); }
     QString current_description() const { return leDescription->text(); }
