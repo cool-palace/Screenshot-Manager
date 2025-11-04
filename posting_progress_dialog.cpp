@@ -20,6 +20,7 @@ PostingProgressDialog::PostingProgressDialog(QWidget *parent) : QDialog(parent) 
 
     connect(&VK_Manager::instance(), &VK_Manager::posted_successfully, this, &PostingProgressDialog::handle_success);
     connect(&VK_Manager::instance(), &VK_Manager::post_failed, this, &PostingProgressDialog::handle_failure);
+    connect(&VK_Manager::instance(), &VK_Manager::recent_posts_ready, this, &PostingProgressDialog::handle_recent_posts);
 }
 
 PostingProgressDialog::PostingProgressDialog(const QList<RecordPreviewDB*> &records, QWidget *parent)
@@ -49,6 +50,8 @@ void PostingProgressDialog::start_posting() {
     m_current = 0;
     m_success_count = 0;
     m_fail_count = 0;
+    m_post_ids.clear();
+    m_post_ids.reserve(m_records.size());
     lblStatus->setText("Начинаем публикацию...");
     if (!m_hashtags.size())
         post_next();
@@ -56,17 +59,19 @@ void PostingProgressDialog::start_posting() {
         get_poll();
 }
 
-void PostingProgressDialog::handle_success(int index, int date) {
-    teLog->append(QString("✅ Запись %1 опубликована (дата: %2)").arg(index).arg(QDateTime::fromSecsSinceEpoch(date).toString(Qt::ISODate)));
+void PostingProgressDialog::handle_success(int index, int date, int post_id) {
+    teLog->append(QString("📤✅ Запись %1 опубликована (дата: %2, номер: %3)").arg(index).arg(QDateTime::fromSecsSinceEpoch(date).toString("dd-MM-yyyy HH:mm")).arg(post_id));
     ++m_success_count;
     pbProgress->setValue(++m_current);
+    m_post_ids.append(post_id);
     QTimer::singleShot(200, this, &PostingProgressDialog::post_next);
 }
 
 void PostingProgressDialog::handle_failure(int index, const QString &error) {
-    teLog->append(QString("❌ Ошибка публикации %1: %2").arg(index).arg(error));
+    teLog->append(QString("📤❌ Ошибка публикации %1: %2").arg(index).arg(error));
     ++m_fail_count;
     pbProgress->setValue(++m_current);
+    m_post_ids.append(0);
     QTimer::singleShot(200, this, &PostingProgressDialog::post_next);
 }
 
@@ -74,6 +79,7 @@ void PostingProgressDialog::post_next() {
     if (m_current >= m_records.size()) {
         lblStatus->setText(QString("Готово: %1 успешно, %2 с ошибкой").arg(m_success_count).arg(m_fail_count));
         update_record_logs();
+        update_recent_record_logs();
         return;
     }
 
@@ -83,14 +89,14 @@ void PostingProgressDialog::post_next() {
 }
 
 void PostingProgressDialog::handle_poll_success() {
-    teLog->append(QString("✅ Опрос опубликован (дата: %1)").arg(m_poll_times.first.toString("dd-MM-yyyy HH:mm")));
+    teLog->append(QString("📊✅ Опрос опубликован (дата: %1)").arg(m_poll_times.first.toString("dd-MM-yyyy HH:mm")));
     update_poll_logs();
     update_hashtags();
     QTimer::singleShot(200, this, &PostingProgressDialog::post_next);
 }
 
 void PostingProgressDialog::handle_poll_failure(const QString &error) {
-    teLog->append(QString("❌ Ошибка публикации опроса: %1").arg(error));
+    teLog->append(QString("📊❌ Ошибка публикации опроса: %1").arg(error));
     QTimer::singleShot(200, this, &PostingProgressDialog::post_next);
 }
 
@@ -99,35 +105,41 @@ void PostingProgressDialog::get_poll() {
 }
 
 void PostingProgressDialog::post_poll(int id) {
-    teLog->append(QString("✅ Опрос создан, id = %1").arg(id));
+    teLog->append(QString("📊✅ Опрос создан, id = %1").arg(id));
     VK_Manager::instance().post(poll_message(), id, m_poll_times.first.toSecsSinceEpoch());
 }
 
 void PostingProgressDialog::update_record_logs() {
-    QMap<int, QDateTime> logs;
-    for (const RecordPreviewBase* record : m_records)
-        logs.insert(record->logs_data());
+    QMap<int, QPair<QDateTime, int>> logs;
+    for (int i = 0; i < m_records.size() && i < m_post_ids.size(); ++i) {
+        const RecordPreviewBase* record = m_records[i];
+        int post_id = m_post_ids[i];
+        logs.insert(record->logs_data(post_id));
+    }
 
     // Обновление логов в базе данных
     int query_result = Database::instance().update_record_logs(logs);
     if (query_result == logs.size())
-        teLog->append(QString("✅ Логи публикаций в базе данных обновлены."));
+        teLog->append(QString("📃🗃️✅ Логи %1 публикаций в базе данных обновлены.").arg(query_result));
     else if (query_result > 0)
-        teLog->append(QString("❌ Не удалось обновить %1 записей в логах публикаций в БД.").arg(logs.size() - query_result));
+        teLog->append(QString("📃🗃️❌ Не удалось обновить %1 записей в логах публикаций в БД.").arg(logs.size() - query_result));
     else
-        teLog->append(QString("❌ Не удалось провести транзакцию в логах публикаций в БД."));
+        teLog->append(QString("📃🗃️❌ Не удалось провести транзакцию в логах публикаций в БД."));
 
     // Обновление текстовых логов
     QString logs_filepath = Locations::instance()[LOGS_FILE];
     QJsonObject logs_json = json_object(logs_filepath);
     QFile file(logs_filepath);
     for (auto it = logs.cbegin(); it != logs.cend(); ++it) {
-        logs_json[QString().setNum(it.key())] = it.value().toSecsSinceEpoch();
+        QJsonObject info;
+        info["date"] = it.value().first.toSecsSinceEpoch();
+        info["post_id"] = it.value().second;
+        logs_json[QString::number(it.key())] = info;
     }
     if (save_json(logs_json, file))
-        teLog->append(QString("✅ Текстовые логи публикаций обновлены."));
+        teLog->append(QString("📃📄✅ Текстовые логи публикаций обновлены."));
     else
-        teLog->append(QString("❌ Не удалось обновить текстовые логи публикаций."));
+        teLog->append(QString("📃📄❌ Не удалось обновить текстовые логи публикаций."));
 }
 
 void PostingProgressDialog::update_poll_logs() {
@@ -141,11 +153,11 @@ void PostingProgressDialog::update_poll_logs() {
     // Обновление логов в базе данных
     int query_result = Database::instance().update_poll_logs(tags, m_poll_times.first);
     if (query_result == tags.size())
-        teLog->append(QString("✅ Логи опросов в базе данных обновлены."));
+        teLog->append(QString("📊🗃️✅ Логи опросов в базе данных обновлены."));
     else if (query_result > 0)
-        teLog->append(QString("❌ Не удалось обновить %1 записей в логах опросов в БД.").arg(tags.size() - query_result));
+        teLog->append(QString("📊🗃️❌ Не удалось обновить %1 записей в логах опросов в БД.").arg(tags.size() - query_result));
     else
-        teLog->append(QString("❌ Не удалось провести транзакцию в логах опросов в БД."));
+        teLog->append(QString("📊🗃️❌ Не удалось провести транзакцию в логах опросов в БД."));
 
     // Обновление текстовых логов
     QString logs_filepath = Locations::instance()[POLL_LOGS];
@@ -157,9 +169,9 @@ void PostingProgressDialog::update_poll_logs() {
         logs_json[tag] = time;
     }
     if (save_json(logs_json, file))
-        teLog->append(QString("✅ Текстовые логи опросов обновлены."));
+        teLog->append(QString("📊📄✅ Текстовые логи опросов обновлены."));
     else
-        teLog->append(QString("❌ Не удалось обновить текстовые логи опросов."));
+        teLog->append(QString("📊📄❌ Не удалось обновить текстовые логи опросов."));
 }
 
 void PostingProgressDialog::update_hashtags() {
@@ -175,14 +187,15 @@ void PostingProgressDialog::update_hashtags() {
     // Обновление описаний хэштегов в базе данных
     int query_result = Database::instance().update_hashtag_descriptions(modified_descriptions);
     if (query_result == modified_descriptions.size())
-        teLog->append(QString("✅ Описания хэштегов в базе данных обновлены."));
+        teLog->append(QString("#️⃣🗃️✅ Описания хэштегов в базе данных обновлены."));
     else if (query_result > 0)
-        teLog->append(QString("❌ Не удалось обновить %1 описаний хэштегов в БД.").arg(modified_descriptions.size() - query_result));
+        teLog->append(QString("#️⃣🗃️❌ Не удалось обновить %1 описаний хэштегов в БД.").arg(modified_descriptions.size() - query_result));
     else
-        teLog->append(QString("❌ Не удалось провести транзакцию в таблице хэштегов в БД."));
+        teLog->append(QString("#️⃣🗃️❌ Не удалось провести транзакцию в таблице хэштегов в БД."));
 
     // Обновление текстовых описаний хэштегов
     QString filepath = Locations::instance()[HASHTAGS];
+    qDebug() << filepath;
     QJsonObject hashtags_json = json_object(filepath);
     QFile file(filepath);
     for (const HashtagPreviewDB* hashtag : m_hashtags) {
@@ -190,17 +203,77 @@ void PostingProgressDialog::update_hashtags() {
         hashtags_json[tag].toObject()["description"] = hashtag->current_description();
     }
     if (save_json(hashtags_json, file))
-        teLog->append(QString("✅ Текстовые описания хэштегов обновлены."));
+        teLog->append(QString("#️⃣📄✅ Текстовые описания хэштегов обновлены."));
     else
-        teLog->append(QString("❌ Не удалось обновить текстовые описания хэштегов."));
+        teLog->append(QString("#️⃣📄❌ Не удалось обновить текстовые описания хэштегов."));
+}
+
+void PostingProgressDialog::update_recent_record_logs() {
+    VK_Manager::instance().get_recent_posts(25);
+}
+
+void PostingProgressDialog::handle_recent_posts(const QJsonObject &json) {
+    qDebug() << json;
+    // Собираем номера отложенных постов и список photo_id
+    QMap<int, QStringList> photo_ids_by_postponed;
+    QSqlQuery query;
+    Database::instance().select_postponed_posts(query);
+    while (query.next()) {
+        int postponed_id = query.value("post_id").toInt();
+        int photo_id = query.value("photo_id").toInt();
+        photo_ids_by_postponed[-postponed_id] << QString::number(photo_id);
+    }
+    qDebug() << photo_ids_by_postponed;
+
+    // Обрабатываем данные из ответа API для ранее отложенных постов
+    QMap<int, QPair<QDateTime,int>> result;
+    QJsonArray result_array;
+    const QJsonArray& array = json["result"].toArray();
+    for (const QJsonValue& item : array) {
+        int postponed_id = item.toObject()["postponed_id"].toInt();
+        if (!photo_ids_by_postponed.contains(postponed_id))
+            continue;
+        QDateTime date = QDateTime::fromSecsSinceEpoch(item.toObject()["date"].toInt());
+        int post_id = item.toObject()["post_id"].toInt();
+        result.insert(postponed_id, qMakePair(date, post_id));
+    }
+    qDebug() << result;
+
+    // Обновление логов в базе данных
+    int query_result = Database::instance().update_record_logs_by_post_id(result);
+    if (query_result == result.size())
+        teLog->append(QString("📥🗃️✅ Логи %1 кадров в базе данных обновлены.").arg(query_result));
+    else if (query_result > 0)
+        teLog->append(QString("📥🗃️❌ Не удалось обновить %1 записей в логах кадров в БД.").arg(result.size() - query_result));
+    else
+        teLog->append(QString("📥🗃️❌ Не удалось провести транзакцию в логах кадров в БД."));
+
+    // Обновление текстовых логов
+    QString logs_filepath = Locations::instance()[LOGS_FILE];
+    QJsonObject logs_json = json_object(logs_filepath);
+    QFile file(logs_filepath);
+    for (auto it = photo_ids_by_postponed.begin(); it != photo_ids_by_postponed.end(); ++it) {
+        int postponed_id = it.key();
+        if (!result.contains(postponed_id))
+            continue;
+        for (const QString& photo_id : it.value()) {
+            QJsonObject info;
+            info["date"] = result[postponed_id].first.toSecsSinceEpoch();
+            info["post_id"] = result[postponed_id].second;
+            logs_json[photo_id] = info;
+        }
+    }
+    if (save_json(logs_json, file))
+        teLog->append(QString("📥📄✅ Текстовые логи постов обновлены."));
+    else
+        teLog->append(QString("📥📄❌ Не удалось обновить текстовые логи постов."));
 }
 
 QString PostingProgressDialog::poll_options() const {
-    QStringList options;
-    options.reserve(m_hashtags.size());
+    QJsonArray options;
     for (const HashtagPreviewDB* tag : m_hashtags)
-        options += tag->option();
-    return QString("[%1]").arg(options.join(','));
+        options.append(tag->option());
+    return QString::fromUtf8(QJsonDocument(options).toJson(QJsonDocument::Compact));;
 }
 
 QString PostingProgressDialog::poll_message() const {
