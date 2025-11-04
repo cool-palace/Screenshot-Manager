@@ -43,6 +43,7 @@ public slots:
     void select_records(QSqlQuery &query, const QueryFilters& filters, bool random = false, int limit = 0, int offset = 0);
     void select_records_by_ids(QSqlQuery &query, const QList<int>& ids);
     void select_record_by_id(QSqlQuery &query, int id);
+    void select_postponed_posts(QSqlQuery &query);
     int count_records(const QueryFilters& filters);
     int count_records();
     void count_series(QSqlQuery &query);
@@ -54,6 +55,8 @@ public slots:
     void select_hashtag_ranks(QSqlQuery &query);
     void select_hashtag_pairs_count(QSqlQuery &query, const QList<int>& ids, const QueryFilters& filters);
     int update_record_logs(const QMap<int, QDateTime>& data);
+    int update_record_logs(const QMap<int, QPair<QDateTime,int>>& data);
+    int update_record_logs_by_post_id(const QMap<int, QPair<QDateTime,int>>& data);
     int update_poll_logs(const QStringList& tags, const QDateTime& time);
     int update_hashtag_descriptions(const QMap<int, QString>& data);
 

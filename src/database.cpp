@@ -435,6 +435,13 @@ void Database::select_record_by_id(QSqlQuery &query, int id) {
     }
 }
 
+void Database::select_postponed_posts(QSqlQuery &query) {
+    query.prepare("SELECT photo_id, post_id FROM record_logs WHERE post_id < 0");
+    if (!query.exec()) {
+        qDebug() << "Не выполнить получить отложенные посты";
+    }
+}
+
 int Database::count_records(const QueryFilters &filters) {
     QSqlQuery query;
     QString query_str = QString("SELECT COUNT(*) as count FROM ( %1 )").arg(select_query(filters));
@@ -609,6 +616,48 @@ int Database::update_record_logs(const QMap<int, QDateTime> &data) {
     return -1;
 }
 
+int Database::update_record_logs(const QMap<int, QPair<QDateTime, int>> &data) {
+    db.transaction();
+    QSqlQuery query;
+    query.prepare(R"(
+        INSERT INTO record_logs (photo_id, date, post_id)
+        VALUES (:photo_id, :date, :post_id)
+        ON CONFLICT(photo_id) DO UPDATE SET date = excluded.date, post_id = excluded.post_id;
+    )");
+    int success_count = 0;
+    for (auto it = data.cbegin(); it != data.cend(); ++it) {
+        query.bindValue(":photo_id", it.key());
+        query.bindValue(":date", it.value().first.toString("yyyy-MM-dd HH:mm:ss"));
+        query.bindValue(":post_id", it.value().second);
+        if (!query.exec()) {
+            qWarning() << "Не удалось обновить логи: " << query.lastError().text();
+        } else
+            ++success_count;
+    }
+    if (db.commit())
+        return success_count;
+    return -1;
+}
+
+int Database::update_record_logs_by_post_id(const QMap<int, QPair<QDateTime, int>> &data) {
+    db.transaction();
+    QSqlQuery query;
+    query.prepare(R"(UPDATE record_logs SET date = :date, post_id = :post_id WHERE post_id = :postponed_id;)");
+    int success_count = 0;
+    for (auto it = data.cbegin(); it != data.cend(); ++it) {
+        query.bindValue(":date", it.value().first.toString("yyyy-MM-dd HH:mm:ss"));
+        query.bindValue(":post_id", it.value().second);
+        query.bindValue(":postponed_id", -it.key());
+        if (!query.exec()) {
+            qWarning() << "Не удалось обновить логи: " << query.lastError().text();
+        } else
+            ++success_count;
+    }
+    if (db.commit())
+        return success_count;
+    return -1;
+}
+
 int Database::update_poll_logs(const QStringList &tags, const QDateTime &time) {
     db.transaction();
     QSqlQuery query;
@@ -746,7 +795,6 @@ QString Database::select_query(const QueryFilters &filters) {
         QChar sign = filters.quantity.multiple ? '>' : '=';
         query_str += QString("HAVING COUNT(DISTINCT fd.id) %1 1 ").arg(sign);
     }
-    qDebug() << query_str;
     return query_str;
 }
 
