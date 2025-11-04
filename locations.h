@@ -18,7 +18,8 @@ enum Directories {
     PUBLIC_RECORDS,
     HIDDEN_RECORDS,
     LABELS,
-    DATABASE
+    DATABASE,
+    POSTS
 };
 
 class Locations

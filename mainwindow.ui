@@ -475,8 +475,8 @@
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>98</width>
-                    <height>28</height>
+                    <width>45</width>
+                    <height>24</height>
                    </rect>
                   </property>
                   <layout class="QGridLayout" name="gridLayout_15">
@@ -600,8 +600,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>28</height>
+             <width>59</width>
+             <height>24</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_6">
@@ -1329,8 +1329,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>28</height>
+             <width>59</width>
+             <height>24</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">
@@ -1408,6 +1408,9 @@ p, li { white-space: pre-wrap; }
     <addaction name="separator"/>
     <addaction name="read_db"/>
     <addaction name="compile_series"/>
+    <addaction name="separator"/>
+    <addaction name="get_posts"/>
+    <addaction name="action_2"/>
    </widget>
    <widget class="QMenu" name="menu_4">
     <property name="title">
@@ -1849,6 +1852,16 @@ p, li { white-space: pre-wrap; }
   <action name="compile_series">
    <property name="text">
     <string>Сбор сериалов</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string>Исправление логов</string>
+   </property>
+  </action>
+  <action name="get_posts">
+   <property name="text">
+    <string>Сбор постов</string>
    </property>
   </action>
  </widget>

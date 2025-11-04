@@ -94,6 +94,8 @@ private:
     QJsonObject reverse_index(const QJsonArray&);
     void refactor_journals();
     void compile_series();
+    void get_posts();
+    void fix_logs();
 };
 
 #endif // MAINWINDOW_H

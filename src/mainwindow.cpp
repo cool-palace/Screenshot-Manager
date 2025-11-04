@@ -39,6 +39,12 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
     connect(ui->compile_series, &QAction::triggered, this, &MainWindow::compile_series);
+    connect(ui->get_posts, &QAction::triggered, this, &MainWindow::get_posts);
+    connect(ui->action_2, &QAction::triggered, this, &MainWindow::fix_logs);
+    connect(&VK_Manager::instance(), &VK_Manager::posts_ready, this, [](const QJsonObject& json) {
+        QFile file(Locations::instance()[POSTS]);
+        save_json(json, file);
+    });
 //    connect(ui->add_hashtag, &QAction::triggered, this, &MainWindow::add_hashtag);
 
 }
@@ -365,5 +371,59 @@ void MainWindow::compile_series() {
         qDebug() << (QString("✅ Данные о сериалах собраны."));
     else
         qDebug() << (QString("❌ Не удалось собрать данные о сериалах"));
+}
+
+void MainWindow::get_posts() {
+    VK_Manager::instance().collect_posts();
+}
+
+void MainWindow::fix_logs() {
+    QJsonObject logs_json = json_object(Locations::instance()[LOGS_FILE]);
+    QJsonObject posts_json = json_object(Locations::instance()[POSTS]);
+    int ok = 0;
+    int missing = 0;
+    int bad = 0;
+
+    qDebug() << QString("Логов: %1, постов: %2").arg(logs_json.size()).arg(posts_json.size());
+
+    for (auto it = logs_json.begin(); it != logs_json.end(); ++it) {
+        QString photo_id = it.key();
+        int timestamp = it.value().toInt();
+        QDateTime time = QDateTime::fromSecsSinceEpoch(timestamp);
+        if (posts_json.contains(photo_id)) {
+            int post_timestamp = posts_json[photo_id].toObject()["date"].toInt();
+            if (post_timestamp != timestamp && qAbs(post_timestamp - timestamp) > 10) {
+                ++bad;
+                qDebug() << QString("Несовпадение %3: записано %1, время поста %2").arg(time.toString()).arg(QDateTime::fromSecsSinceEpoch(post_timestamp).toString()).arg(photo_id);
+            } else {
+                ++ok;
+            }
+        } else {
+            ++missing;
+            qDebug() << QString("Не найден пост: %1: %2").arg(photo_id).arg(time.toString());
+        }
+    }
+    qDebug() << QString("Совпадений: %1, несовпадений: %2, пропаж: %3").arg(ok).arg(bad).arg(missing);
+
+    ok = bad = missing = 0;
+    for (auto it = posts_json.begin(); it != posts_json.end(); ++it) {
+        QString photo_id = it.key();
+        int timestamp = it.value().toObject()["date"].toInt();
+        QDateTime time = QDateTime::fromSecsSinceEpoch(timestamp);
+        int post_id = it.value().toObject()["post_id"].toInt();
+        if (logs_json.contains(photo_id)) {
+//            int post_timestamp = posts_json[photo_id].toObject()["date"].toInt();
+//            if (post_timestamp != timestamp && qAbs(post_timestamp - timestamp) > 10) {
+//                ++bad;
+//                qDebug() << QString("Несовпадение %3: записано %1, время поста %2").arg(time.toString()).arg(QDateTime::fromSecsSinceEpoch(post_timestamp).toString()).arg(photo_id);
+//            } else {
+                ++ok;
+//            }
+        } else {
+            ++missing;
+            qDebug() << QString("Не найдена запись в логах: %1: %2").arg(post_id).arg(time.toString());
+        }
+    }
+    qDebug() << QString("Совпадений: %1, пропаж: %2").arg(ok).arg(missing);
 }
 
