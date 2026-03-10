@@ -1,4 +1,6 @@
 #include "include\database.h"
+#include "include\common.h"
+#include "locations.h"
 #include <QDebug>
 
 Database::Database() { }
@@ -60,8 +62,11 @@ int Database::add_series(QSqlQuery &query, const QString &series_name) {
         return query.value(0).toInt();
     }
     // Inserting new series into database
-    query.prepare("INSERT INTO series (name) VALUES (:name)");
+    QJsonObject json = json_object(Locations::instance()[SERIES])[series_name].toObject();
+    query.prepare("INSERT INTO series (name, name_rus, emoji) VALUES (:name, :name_rus, :emoji)");
     query.bindValue(":name", series_name);
+    query.bindValue(":name_rus", json["name_rus"].toString());
+    query.bindValue(":emoji", json["emoji"].toString());
     query.exec();
     return query.lastInsertId().toInt();
 }
@@ -186,6 +191,11 @@ void Database::clear_main_tables(QSqlQuery &query) {
 
     query.exec("DROP TABLE IF EXISTS tag_record_map");
     query.exec("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'tag_record_map'");
+
+    query.exec("DROP TABLE IF EXISTS records_fts");
+    query.exec("DROP TRIGGER IF EXISTS records_ai");
+    query.exec("DROP TRIGGER IF EXISTS records_au");
+    query.exec("DROP TRIGGER IF EXISTS records_ad");
 }
 
 void Database::clear_hashtag_table(QSqlQuery &query) {
@@ -196,7 +206,9 @@ void Database::clear_hashtag_table(QSqlQuery &query) {
 void Database::create_main_tables(QSqlQuery &query) {
     query.prepare("CREATE TABLE IF NOT EXISTS series ("
                       "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                      "name VARCHAR(127))");
+                      "name VARCHAR(127),"
+                      "name_rus VARCHAR(127),"
+                      "emoji VARCHAR(1))");
     if (!query.exec()) {
         qDebug() << "Не удалось создать таблицу 'series'" << query.lastError().text();
     }
@@ -243,6 +255,37 @@ void Database::create_main_tables(QSqlQuery &query) {
     if (!query.exec()) {
         qDebug() << "Не удалось создать таблицу 'tag_record_map'" << query.lastError().text();
     }
+
+    query.prepare("CREATE VIRTUAL TABLE records_fts USING fts5("
+                  "caption,"
+                  "record_id UNINDEXED,"
+                  "tokenize = 'unicode61')");
+    if (!query.exec()) {
+        qDebug() << "Не удалось создать таблицу 'records_fts'" << query.lastError().text();
+    }
+
+    query.prepare("CREATE TRIGGER records_ai AFTER INSERT ON records BEGIN"
+                  "     INSERT INTO records_fts (rowid, caption, record_id)"
+                  "     VALUES (new.id, new.caption, new.id);"
+                  "END;");
+    if (!query.exec()) {
+        qDebug() << "Не удалось создать триггер 'records_ai'" << query.lastError().text();
+    }
+    query.prepare("CREATE TRIGGER records_au AFTER UPDATE ON records BEGIN"
+                  "     UPDATE records_fts"
+                  "     SET caption = new.caption"
+                  "     WHERE rowid = new.id;"
+                  "END;");
+    if (!query.exec()) {
+        qDebug() << "Не удалось создать триггер 'records_au'" << query.lastError().text();
+    }
+    query.prepare("CREATE TRIGGER records_ad AFTER DELETE ON records BEGIN"
+                  "     DELETE FROM records_fts WHERE rowid = old.id;"
+                  "END;");
+    if (!query.exec()) {
+        qDebug() << "Не удалось создать триггер 'records_ad'" << query.lastError().text();
+    }
+
 }
 
 void Database::reset_main_tables(QSqlQuery &query) {
