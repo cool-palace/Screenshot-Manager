@@ -12,6 +12,7 @@ PostingProgressDialog::PostingProgressDialog(QWidget *parent) : QDialog(parent) 
     lblStatus = new QLabel("Ожидание начала...", this);
     teLog = new QTextEdit(this);
     teLog->setReadOnly(true);
+    teLog->setFontPointSize(10);
 
     auto layout = new QVBoxLayout(this);
     layout->addWidget(pbProgress);

@@ -289,11 +289,12 @@ void MainWindow::compile_journals_to_db() {
     Database& db = Database::instance();
     QSqlQuery query;
 
+    // Очистка и повторное наполнение таблицы хэштегов
     db.reset_hashtag_table(query);
     QJsonObject hashtags_json = json_object(Locations::instance()[HASHTAGS]);
     db.add_hashtags_data(query, hashtags_json);
 
-    // Очистка таблиц, если они существуют
+    // Очистка основных таблиц, если они существуют
     db.reset_main_tables(query);
 
     // Проход по всем json-конфигам
