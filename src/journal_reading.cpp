@@ -336,6 +336,7 @@ void JournalReading::read_title_journal(const QJsonObject& json_file) {
         for (QJsonValueRef link : link_array) {
             record.links.push_back(link.toString());
         }
+
         records.push_back(record);
     }
     int title_start_index = records.size() - records_array.size();

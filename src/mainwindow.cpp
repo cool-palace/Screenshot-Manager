@@ -40,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
     connect(ui->compile_series, &QAction::triggered, this, &MainWindow::compile_series);
     connect(ui->get_posts, &QAction::triggered, this, &MainWindow::get_posts);
+//    connect(ui->get_photo_ids, &QAction::triggered, this, &MainWindow::collect_photo_ids);
     connect(ui->action_2, &QAction::triggered, this, &MainWindow::fix_logs);
     connect(&VK_Manager::instance(), &VK_Manager::posts_ready, this, [](const QJsonObject& json) {
         QFile file(Locations::instance()[POSTS]);
@@ -426,5 +427,55 @@ void MainWindow::fix_logs() {
         }
     }
     qDebug() << QString("Совпадений: %1, пропаж: %2").arg(ok).arg(missing);
+}
+
+void MainWindow::collect_photo_ids() {
+    QDir dir = QDir(Locations::instance()[JOURNALS]);
+    dir.setNameFilters(QStringList("*.json"));
+    QDir dir_new = QDir(Locations::instance()[JOURNALS] + "new");
+    dir_new.setNameFilters(QStringList("*.json"));
+    auto journals = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+    auto journals_new = dir_new.entryList(QDir::Files | QDir::NoDotAndDotDot);
+
+    for (const auto& journal : journals_new) {
+        journals += "\\new\\" + journal;
+    }
+//    qDebug() << journals;
+
+    QSet<int> photo_ids;
+    QJsonObject result;
+    for (const auto& journal : journals) {
+        auto object = json_object(Locations::instance()[JOURNALS] + journal);
+        auto title = object["title"].toString();
+        auto array = object["screens"].toArray();
+        qDebug() << title << array.size();
+        for (QJsonValueRef item : array) {
+            auto record = item.toObject();
+            auto photo_ids_array = record["photo_ids"].toArray();
+            auto filenames_array = record["filenames"].toArray();
+            for (int i = 0; i < photo_ids_array.size(); ++i) {
+                int id = photo_ids_array[i].toInt();
+                QString photo_id = QString::number(id);
+                result[photo_id] = filenames_array[i].toString();
+                photo_ids.insert(id);
+            }
+        }
+    }
+    QFile file(Locations::instance()[JOURNALS] + "\\result\\photo_ids.json");
+    save_json(result, file);
+    auto message = save_json(result, file)
+            ? "Обработано конфигов: " + QString().setNum(journals.size())
+            : "Не удалось сохранить файл.";
+    ui->statusBar->showMessage(message);
+
+    connect(&VK_Manager::instance(), &VK_Manager::posts_ready, [this](const QJsonObject& result){
+        QFile file(Locations::instance()[JOURNALS] + "\\result\\photo_ids.json");
+        save_json(result, file);
+        auto message = save_json(result, file)
+                ? "Файл сохранён: " + QString().setNum(result.keys().size())
+                : "Не удалось сохранить файл.";
+        ui->statusBar->showMessage(message);
+    });
+    VK_Manager::instance().start_getting_photos(photo_ids);
 }
 

@@ -9,7 +9,7 @@ RecordFrame::RecordFrame(const QString& link, const QSize& size) {
 }
 
 void RecordFrame::set_image(const QString& link, const QSize& size) {
-    auto response = VK_Manager::instance().get_url(link);
+    auto response = VK_Manager::instance().get_url(link + "&cs=360x0");
     connect(this, &QObject::destroyed, response, &QNetworkReply::abort);
     connect(response, &QNetworkReply::finished, [this, response, size](){
         response->deleteLater();

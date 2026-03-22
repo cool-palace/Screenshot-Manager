@@ -53,10 +53,13 @@ public slots:
     void get_recent_posts(int count);
     void collect_posts();
     void get_postponed_posts();
+    void start_getting_photos(const QSet<int>& ids);
+    void get_photos_by_ids();
 
 private slots:
     QJsonObject reply_json(QNetworkReply *response);
     QString link(const QJsonObject & photo_item);
+    QString thumbnail_link(const QJsonObject & photo_item);
     QImage image(QNetworkReply *response);
     void got_albums(QNetworkReply *);
     void got_photo_ids(QNetworkReply *);
@@ -65,6 +68,7 @@ private slots:
     void got_posts(QNetworkReply *);
     void got_recent_posts(QNetworkReply *);
     void got_postponed_posts(QNetworkReply *);
+    void got_photos_by_ids(QNetworkReply *);
 
 private:
     QString m_access_token;
@@ -72,6 +76,8 @@ private:
     QString m_public_id;
     QJsonObject m_result;
     int m_offset = 0;
+    QSet<int> m_photo_ids;
+    QJsonObject m_thumbnails;
 };
 
 #endif // VK_MANAGER_H

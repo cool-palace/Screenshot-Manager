@@ -96,6 +96,7 @@ private:
     void compile_series();
     void get_posts();
     void fix_logs();
+    void collect_photo_ids();
 };
 
 #endif // MAINWINDOW_H

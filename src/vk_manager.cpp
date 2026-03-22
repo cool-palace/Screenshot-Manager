@@ -46,6 +46,18 @@ QString VK_Manager::link(const QJsonObject & photo_item) {
     return url;
 }
 
+QString VK_Manager::thumbnail_link(const QJsonObject &photo_item) {
+    auto array = photo_item["sizes"].toArray();
+    QString url;
+    for (QJsonValueRef item : array) {
+        if (item.toObject()["type"].toString() == "m") {
+            url = item.toObject()["url"].toString();
+            break;
+        }
+    }
+    return url;
+}
+
 QImage VK_Manager::image(QNetworkReply *response) {
     response->deleteLater();
     if (response->error() != QNetworkReply::NoError) return QImage();
@@ -112,6 +124,29 @@ void VK_Manager::get_postponed_posts() {
                 + "&filter=postponed";
     get_url(url);
     connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_postponed_posts);
+}
+
+void VK_Manager::start_getting_photos(const QSet<int> &ids) {
+    m_photo_ids = ids;
+    get_photos_by_ids();
+}
+
+void VK_Manager::get_photos_by_ids() {
+    QStringList photo_ids;
+    for (int id : m_photo_ids) {
+        photo_ids << QString("-%1_%2").arg(m_group_id).arg(QString::number(id));
+        m_photo_ids.remove(id);
+        if (photo_ids.size() >= 50)
+            break;
+    }
+
+    QString url = "https://api.vk.com/method/photos.getById?v=5.199"
+                  "&access_token=" + m_access_token
+                + "&photos=" + photo_ids.join(",");
+//    qDebug() << url;
+
+    connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_photos_by_ids);
+    get_url(url);
 }
 
 void VK_Manager::get_albums() {
@@ -350,4 +385,22 @@ void VK_Manager::got_postponed_posts(QNetworkReply *response) {
         }
     }
     get_posts();
+}
+
+void VK_Manager::got_photos_by_ids(QNetworkReply *response) {
+    disconnect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_photos_by_ids);
+    auto reply = reply_json(response);
+    response->deleteLater();
+    auto array = reply["response"].toArray();
+    qDebug() << "array().size()" << array.size();
+    for (const QJsonValueRef item : array) {
+        auto current_item = item.toObject();
+        auto id = current_item["id"].toInt();
+//        qDebug() << id << thumbnail_link(current_item);
+        m_thumbnails[QString::number(id)] = thumbnail_link(current_item);
+    }
+    qDebug() << "m_thumbnails.size()" << m_thumbnails.size();
+    if (m_photo_ids.size())
+        QTimer::singleShot(5000, this, &VK_Manager::get_photos_by_ids);
+    else emit posts_ready(m_thumbnails);
 }
