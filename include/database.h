@@ -27,7 +27,7 @@ public slots:
     void add_file_data(QSqlQuery& query, int record_id, const QJsonArray& filenames, const QJsonArray& links, const QJsonArray& photo_ids);
     QList<int> get_tag_ids(QSqlQuery& query, const QList<QPair<QString, int>>& tags);
     int add_series(QSqlQuery& query, const QString& series_name);
-    int add_title(QSqlQuery& query, int, int, const QString&, const QString&);
+    int add_title(QSqlQuery& query, int, int, int, const QString&, const QString&, const QString&);
     QPair<QString, QList<QPair<QString, int>>> process_caption(const QString& caption);
     void add_record(QSqlQuery& query, const QJsonObject& record, int title_id);
     void add_journal_data(QSqlQuery& query, const QJsonObject& object);

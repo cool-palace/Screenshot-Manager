@@ -71,20 +71,22 @@ int Database::add_series(QSqlQuery &query, const QString &series_name) {
     return query.lastInsertId().toInt();
 }
 
-int Database::add_title(QSqlQuery &query, int series_id, int album_id, const QString& title_name, const QString& full_title) {
+int Database::add_title(QSqlQuery &query, int series_id, int album_id, int year, const QString& album_name, const QString& title, const QString& title_rus) {
     query.prepare("SELECT id FROM titles WHERE name = :name AND series_id = :series_id");
-    query.bindValue(":name", title_name);
+    query.bindValue(":name", title);
     query.bindValue(":series_id", series_id);
     query.exec();
     if (query.next()) {
         return query.value(0).toInt();
     }
     // Inserting new title into database
-    query.prepare("INSERT INTO titles (series_id, album_id, name, full_title) VALUES (:series_id, :album_id, :name, :full_title)");
+    query.prepare("INSERT INTO titles (series_id, album_id, year, album_name, name, name_rus) VALUES (:series_id, :album_id, :year, :album_name, :name, :name_rus)");
     query.bindValue(":series_id", series_id);
     query.bindValue(":album_id", album_id);
-    query.bindValue(":name", title_name);
-    query.bindValue(":full_title", full_title);
+    query.bindValue(":year", year);
+    query.bindValue(":album_name", album_name);
+    query.bindValue(":name", title);
+    query.bindValue(":name_rus", title_rus);
     query.exec();
     return query.lastInsertId().toInt();
 }
@@ -144,18 +146,57 @@ void Database::add_record(QSqlQuery &query, const QJsonObject &record, int title
 }
 
 void Database::add_journal_data(QSqlQuery &query, const QJsonObject &object) {
-    auto title = object["title"].toString();
-    auto series = object["series"].toString();
+    QString album_name = object["album_name"].toString();
+    QString series = object["series"].toString();
     int album_id = object["album_id"].toInt();
-    auto full_title = object["title_caption"].toString();
+    QString title = object["title"].toString();
+    QString title_rus = object["title_rus"].toString();
+    int year = object["year"].toInt();
+
+    QMap<QString, int> title_ids;
+    QMap<QString, QString> patterns_to_titles;
 
     // Adding series and title to database
     int series_id = add_series(query, series);
-    int title_id = add_title(query, series_id, album_id, title, full_title);
 
-    auto array = object["screens"].toArray();
+    // Если это не сборник: первым идёт основное название
+    if (!title_rus.isEmpty() && year > 0) {
+        int title_id = add_title(query, series_id, album_id, year, album_name, title, title_rus);
+        title_ids[title] = title_id;
+    }
+    // Потом проходим исключения
+    QJsonArray overrides;
+    if (object.contains("overrides")) {
+        overrides = object["overrides"].toArray();
+    }
+    for (const auto& o : overrides) {
+        const QJsonObject& override = o.toObject();
+        QString pattern = override["pattern"].toString();
+        QString title_o = override["title"].toString();
+        patterns_to_titles[pattern] = title_o;
+        QString title_rus_o = override["title_rus"].toString();
+        int year_o = override["year"].toInt();
+        int title_id_o = add_title(query, series_id, album_id, year_o, album_name, title_o, title_rus_o);
+        title_ids[title_o] = title_id_o;
+    }
+
+    // Проходим записи
+    const QJsonArray& array = object["screens"].toArray();
     for (const auto& item : array) {
-        add_record(query, item.toObject(), title_id);
+        const QJsonObject& record = item.toObject();
+        const QString& filename = record["filenames"].toArray().first().toString();
+        bool override_found = false;
+        for (const QString& pattern : patterns_to_titles.keys()) {
+            if (filename.contains(pattern)) {
+                int title_id = title_ids[patterns_to_titles[pattern]];
+                override_found = true;
+                add_record(query, record, title_id);
+                break;
+            }
+        }
+        if (!override_found) {
+            add_record(query, record, title_ids[title]);
+        }
     }
 }
 
@@ -217,8 +258,10 @@ void Database::create_main_tables(QSqlQuery &query) {
                       "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                       "series_id INTEGER,"
                       "album_id INTEGER,"
+                      "year INTEGER,"
+                      "album_name VARCHAR(127),"
                       "name VARCHAR(127),"
-                      "full_title VARCHAR(127),"
+                      "name_rus VARCHAR(127),"
                       "FOREIGN KEY (series_id) REFERENCES series(id))");
     if (!query.exec()) {
         qDebug() << "Не удалось создать таблицу 'titles'" << query.lastError().text();
@@ -364,7 +407,7 @@ void Database::select_records(QSqlQuery &query, const QueryFilters &filters, boo
                                 "       links.links,"
                                 "       links.photo_ids,"
                                 "       fr.date,"
-                                "       t.name AS title_name"
+                                "       fr.emoji || ' ' || t.name_rus || ' / ' || t.name AS title_name"
                                 "   FROM filtered_records fr"
                                 "   LEFT JOIN tags ON tags.record_id = fr.id"
                                 "   LEFT JOIN links ON links.record_id = fr.id"
@@ -526,7 +569,7 @@ void Database::select_excluded_series_ids(QSqlQuery &query, const QDate &date) {
 
 void Database::select_series_info(QSqlQuery &query) {
     query.prepare("SELECT s.id AS id, s.name AS series_name, COALESCE(record_counts.record_count, 0) AS record_count, "
-                  "t.name || '\\' || fd.filename AS filepath "
+                  "t.album_name || '\\' || fd.filename AS filepath "
                   "FROM series s "
                   "LEFT JOIN ( "
                   "    SELECT t.series_id, COUNT(r.id) AS record_count "
@@ -742,7 +785,7 @@ int Database::update_hashtag_descriptions(const QMap<int, QString> &tags) {
 }
 
 QString Database::select_query(const QueryFilters &filters) {
-    static const QString base = "SELECT r.id, r.caption, rl.date, t.id AS title_id "
+    static const QString base = "SELECT r.id, r.caption, rl.date, t.id AS title_id, s.emoji "
                                 "FROM records r "
                                 "LEFT JOIN titles t ON r.title_id = t.id "
                                 "LEFT JOIN series s ON t.series_id = s.id "

@@ -36,7 +36,7 @@ public:
 
 public slots:
     void post() const {
-        VK_Manager::instance().post(m_info.id, m_info.attachments(), m_time.toSecsSinceEpoch());
+        VK_Manager::instance().post(m_info.id, m_info.attachments(), m_time.toSecsSinceEpoch(), m_info.title);
     }
     QMap<int, QDateTime> logs_data() const {
         QMap<int, QDateTime> result;
