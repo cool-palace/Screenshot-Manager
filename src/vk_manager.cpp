@@ -157,13 +157,15 @@ void VK_Manager::get_albums() {
     connect(this, &QNetworkAccessManager::finished, this, &VK_Manager::got_albums);
 }
 
-void VK_Manager::post(int index, const QString& attachments, int date) {
+void VK_Manager::post(int index, const QString& attachments, int date, const QString& message) {
     QString url = "https://api.vk.com/method/wall.post?v=5.131&from_group=1&signed=0"
                   "&primary_attachments_mode=carousel"
                   "&access_token=" + m_access_token
                 + "&owner_id=-" + m_public_id
                 + "&attachments=" + attachments
                 + "&publish_date=" + QString().setNum(date);
+    if (!message.isEmpty())
+        url += "&message=" + message;
     auto response = get_url(url);
     connect(response, &QNetworkReply::finished, [this, response, index, date](){
         auto reply = reply_json(response);

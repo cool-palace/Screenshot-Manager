@@ -44,7 +44,7 @@ public slots:
     void get_albums();
     void get_photo_ids(int album_id, const QString& photo_ids = "");
     void get_image(const QString& url);
-    void post(int, const QString&, int);
+    void post(int, const QString&, int, const QString& message = "");
     void post(const QString&, int, int);
     void get_poll(const QString&, int);
     void edit_photo_caption(int, const QString&, const QString& captcha_sid = "", const QString& captcha_key = "");
