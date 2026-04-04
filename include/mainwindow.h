@@ -94,6 +94,8 @@ private:
     QJsonObject reverse_index(const QJsonArray&);
     void refactor_journals();
     void compile_series();
+    void compile_titles();
+    void add_title_names();
     void get_posts();
     void fix_logs();
     void collect_photo_ids();

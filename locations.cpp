@@ -16,6 +16,7 @@ void Locations::init(const QJsonObject &json_file) {
     m_locations[LABELS] = json_file.value("labels").toString();
     m_locations[DATABASE] = json_file.value("database").toString();
     m_locations[POSTS] = json_file.value("posts").toString();
+    m_locations[TITLE_NAMES] = json_file.value("titles").toString();
 }
 
 const QString Locations::operator[](Directories key) const {

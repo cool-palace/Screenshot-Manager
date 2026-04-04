@@ -39,6 +39,8 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(ui->export_text, &QAction::triggered, this, &MainWindow::export_text);
     connect(ui->compile_series, &QAction::triggered, this, &MainWindow::compile_series);
+//    connect(ui->compile_titles, &QAction::triggered, this, &MainWindow::compile_titles);
+    connect(ui->compile_titles, &QAction::triggered, this, &MainWindow::add_title_names);
     connect(ui->get_posts, &QAction::triggered, this, &MainWindow::get_posts);
 //    connect(ui->get_photo_ids, &QAction::triggered, this, &MainWindow::collect_photo_ids);
     connect(ui->action_2, &QAction::triggered, this, &MainWindow::fix_logs);
@@ -373,6 +375,117 @@ void MainWindow::compile_series() {
         qDebug() << (QString("✅ Данные о сериалах собраны."));
     else
         qDebug() << (QString("❌ Не удалось собрать данные о сериалах"));
+}
+
+void MainWindow::compile_titles() {
+    QDir dir = QDir(Locations::instance()[JOURNALS]);
+    dir.setNameFilters(QStringList("*.json"));
+    QDir dir_new = QDir(Locations::instance()[JOURNALS] + "new");
+    dir_new.setNameFilters(QStringList("*.json"));
+    auto journals = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+    auto journals_new = dir_new.entryList(QDir::Files | QDir::NoDotAndDotDot);
+
+    for (const auto& journal : journals_new)
+        journals += "\\new\\" + journal;
+
+    QJsonObject series_json = json_object(Locations::instance()[SERIES]);
+
+    QJsonObject titles_json;
+    // Проход по всем json-конфигам
+    for (int i = 0; i < journals.size(); ++i) {
+        const auto& config = journals[i];
+        QJsonObject object = json_object(Locations::instance()[JOURNALS] + config);
+
+        const QJsonArray& records = object["screens"].toArray();
+        QJsonArray overrides;
+        if (object.contains("overrides")) {
+            overrides = object["overrides"].toArray();
+        }
+        int overrides_count = 0;
+        QStringList titles;
+        // Проходим по записям
+        for (int j = 0; j < records.size() && overrides.size(); ++j) {
+            QJsonObject record = records[j].toObject();
+            QString filename = record["filenames"].toArray().first().toString();
+            // Пробегаем по всем исключениям, проверяя имена файлов
+            for (int k = 0; k < overrides.size(); ++k) {
+                const QJsonObject& override = overrides[k].toObject();
+                const QString& pattern = override["pattern"].toString();
+                if (filename.contains(pattern)) {
+                    ++overrides_count;
+                    titles.append(override["title"].toString());
+                }
+            }
+        }
+        if (records.size() > overrides_count) {
+            titles.prepend(object["title_caption"].toString());
+        }
+        for (const QString& title : titles) {
+            QJsonObject title_info;
+            title_info["name_rus"] = series_json[title].toObject()["name_rus"];
+            title_info["year"] = 20;
+            titles_json[title] = title_info;
+        }
+    }
+    qDebug() << titles_json;
+    QString filepath = Locations::instance()[TITLE_NAMES];
+    QFile file(filepath);
+    if (save_json(titles_json, file))
+        qDebug() << (QString("✅ Данные о тайтлах собраны."));
+    else
+        qDebug() << (QString("❌ Не удалось собрать данные о тайтлах"));
+}
+
+void MainWindow::add_title_names() {
+    QJsonObject titles_json = json_object(Locations::instance()[TITLE_NAMES]);
+
+    QDir dir = QDir(Locations::instance()[JOURNALS]); // + "new");
+    dir.setNameFilters(QStringList("*.json"));
+    auto journals = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+
+    // Проход по всем json-конфигам
+    for (int i = 0; i < journals.size(); ++i) {
+        const auto& config = journals[i];
+        QJsonObject object = json_object(Locations::instance()[JOURNALS] /*+ "\\new\\"*/ + config);
+
+        QJsonObject result;
+        result["album_id"] = object["album_id"].toInt();
+        result["screens"] = object["screens"].toArray();
+        result["series"] = object["series"].toString();
+        result["album_name"] = object["album_name"].toString();
+
+        QString name = object["title"].toString();
+        result["title"] = name;
+        if (titles_json.contains(name)) {
+            result["title_rus"] = titles_json[name].toObject()["name_rus"].toString();
+            result["year"] = titles_json[name].toObject()["year"].toInt();
+        } else {
+            qWarning() << "Не обнаружено название " << name;
+        }
+
+        QJsonArray overrides;
+        for (const auto ref : object["override"].toArray()) {
+            QJsonObject override;
+            QString title = ref.toObject()["title"].toString();
+            override["pattern"] = ref.toObject()["pattern"].toString();
+            override["title"] = title;
+            if (titles_json.contains(title)) {
+                override["title_rus"] = titles_json[title].toObject()["name_rus"].toString();
+                override["year"] = titles_json[title].toObject()["year"].toInt();
+            } else {
+                qWarning() << "Не обнаружено название " << title;
+            }
+            overrides.append(override);
+        }
+        if (overrides.size())
+            result["overrides"] = overrides;
+
+        QFile file(Locations::instance()[JOURNALS] /*+ "\\new\\"*/ + config);
+        if (save_json(result, file))
+            qDebug() << (QString("✅ Записан журнал " + config));
+        else
+            qDebug() << (QString("❌ Не удалось обновить журнал " + config));
+    }
 }
 
 void MainWindow::get_posts() {
