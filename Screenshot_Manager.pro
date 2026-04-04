@@ -31,6 +31,7 @@ SOURCES += \
         hashtag_poll_dialog.cpp \
         hashtag_preview_db.cpp \
         locations.cpp \
+        override_dialog.cpp \
         poll_preparation_db.cpp \
         posting_progress_dialog.cpp \
         record_item_db.cpp \
@@ -77,6 +78,7 @@ HEADERS += \
         include\recordpreview.h \
         include\query_filters.h \
         locations.h \
+        override_dialog.h \
         poll_preparation_db.h \
         posting_progress_dialog.h \
         record_item_db.h \
@@ -93,6 +95,7 @@ FORMS += \
         hashtag_dialog.ui \
         hashtag_preview_db.ui \
         mainwindow.ui \
+        override_dialog.ui \
         poll_preparation_db.ui \
         record_poll_preview.ui \
         record_preview_db.ui \

@@ -1,5 +1,7 @@
 #include "include\journal_reading.h"
 
+#include <override_dialog.h>
+
 JournalReading::JournalReading(MainWindow *parent, bool all) : AbstractOperationMode(parent), record_edited(all)
 {
     connect(&VK_Manager::instance(), &VK_Manager::caption_passed, this, &JournalReading::caption_success);
@@ -19,6 +21,7 @@ JournalReading::JournalReading(MainWindow *parent, bool all) : AbstractOperation
     connect(ui->show_public, &QAction::triggered, this, &JournalReading::show_public);
     connect(ui->show_private, &QAction::triggered, this, &JournalReading::show_private);
     connect(ui->private_switch, &QAction::triggered, this, &JournalReading::set_edited);
+    connect(ui->add_override, &QAction::triggered, this, &JournalReading::add_override);
     connect(parent, &MainWindow::key_press, this, &JournalReading::keyPressEvent);
     connect(parent, &MainWindow::key_release, this, &JournalReading::keyReleaseEvent);
     connect(parent, &MainWindow::close_event, this, &JournalReading::closeEvent);
@@ -193,6 +196,7 @@ void JournalReading::set_enabled(bool enable) {
     ui->add_caption->setEnabled(enable);
     ui->export_captions_by_ids->setEnabled(enable);
     ui->export_info_by_ids->setEnabled(enable);
+    ui->add_override->setEnabled(enable);
 }
 
 void JournalReading::set_view(View view) {
@@ -318,6 +322,10 @@ void JournalReading::read_title_journal(const QJsonObject& json_file) {
     album_ids[title] = album_id;
     auto title_caption = json_file.value("title_caption").toString();
     title_captions[title] = title_caption;
+    if (json_file.contains("overrides")) {
+        QJsonArray overrides = json_file.value("overrides").toArray();
+        overrides_map[title] = overrides;
+    }
     auto records_array = json_file.value("screens").toArray();
     for (QJsonValueRef r : records_array) {
         Record record;
@@ -348,6 +356,9 @@ void JournalReading::read_title_journal(const QJsonObject& json_file) {
             set_view(MAIN);
         });
     }
+//    pic_index = title_start_index;
+//    set_edited();
+//    pic_index = 0;
 }
 
 void JournalReading::save_title_journal(int start, int end) {
@@ -363,6 +374,8 @@ void JournalReading::save_title_journal(int start, int end) {
     object["series"] = series_name(start);
     object["album_id"] = album_ids[title];
     object["screens"] = record_array;
+    if (overrides_map.contains(title))
+        object["overrides"] = overrides_map[title];
     auto message = save_json(object, file)
             ? "Журнал скриншотов сохранён."
             : QString("Не удалось сохранить файл: %1").arg(file.fileName());
@@ -449,6 +462,21 @@ void JournalReading::show_private(bool checked) {
         ui->show_public->setChecked(false);
     }
     filter_event(false);
+}
+
+void JournalReading::add_override() {
+    QString title = title_name(pic_index);
+    QString filename = records[pic_index].pics.first();
+    OverrideDialog dlg(title, filename);
+    dlg.show();
+    if (dlg.exec() == QDialog::Accepted) {
+        QJsonObject object;
+        object["pattern"] = dlg.pattern();
+        object["title"] = dlg.title();
+        overrides_map[title].append(object);
+        set_edited();
+        ui->save->setEnabled(true);
+    }
 }
 
 void JournalReading::add_caption(const QString& captcha_sid, const QString& captcha_key) {
