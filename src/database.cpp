@@ -465,12 +465,13 @@ void Database::select_records_by_ids(QSqlQuery &query, const QList<int> &ids) {
                                 "       links.links,"
                                 "       links.photo_ids,"
                                 "       latest_date.date,"
-                                "       t.name AS title_name"
+                                "       s.emoji || ' ' || t.name_rus || ' / ' || t.name AS title_name"
                                 "   FROM records r"
                                 "   LEFT JOIN latest_date ON latest_date.record_id = r.id"
                                 "   LEFT JOIN tags ON tags.record_id = r.id"
                                 "   LEFT JOIN links ON links.record_id = r.id"
                                 "   LEFT JOIN titles t ON r.title_id = t.id "
+                                "   LEFT JOIN series s ON t.series_id = s.id "
                                 "   WHERE r.id IN (%1) "
                                 "   ORDER BY CASE r.id %2 ELSE 999 END; ").arg(ids_str.join(", "), case_statements.join(' '));
     query.prepare(query_str);
@@ -508,12 +509,13 @@ void Database::select_record_by_id(QSqlQuery &query, int id) {
                   "     links.links,"
                   "     links.photo_ids,"
                   "     latest_date.date,"
-                  "     t.name AS title_name"
+                  "     s.emoji || ' ' || t.name_rus || ' / ' || t.name AS title_name"
                   " FROM records r"
                   " LEFT JOIN latest_date ON latest_date.record_id = r.id"
                   " LEFT JOIN tags ON tags.record_id = r.id"
                   " LEFT JOIN links ON links.record_id = r.id"
                   " LEFT JOIN titles t ON r.title_id = t.id"
+                  " LEFT JOIN series s ON t.series_id = s.id"
                   " WHERE r.id = :id");
     query.bindValue(":id", id);
     if (!query.exec()) {
