@@ -10,12 +10,23 @@ public:
     explicit JournalReading(MainWindow *parent, bool all = false);
     virtual ~JournalReading();
 
+    struct JournalInfo {
+        QString album_name;
+        QString title;
+        QString title_rus;
+        QString series;
+        int album_id;
+        int year;
+        QJsonArray overrides;
+    };
+
 private:
     bool record_edited = false;
     QStringList current_hashtags;
     QSet<QPair<int, int>> edited_ranges;
     QMap<int, QString> captions_for_ids;
     QMap<QString, QJsonArray> overrides_map;
+    QMap<int, JournalInfo> info_map;
     CaptchaDialog* dialog;
 
 public slots:
@@ -62,6 +73,7 @@ private:
     void recalculate_hashtags(bool);
     void export_captions_by_ids();
     void export_info_by_ids();
+    QMap<int, JournalInfo>::Iterator info_by_pic_index(int);
 };
 
 #endif // JOURNAL_READING_H

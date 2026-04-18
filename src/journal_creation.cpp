@@ -247,8 +247,10 @@ void JournalCreation::save_title_journal(const QString& title) {
     }
     QFile file(Locations::instance()[JOURNALS] + title + ".json");
     QJsonObject object;
+    object["album_name"] = title;
     object["title"] = title;
-    object["title_caption"] = title;
+    object["title_rus"] = title;
+    object["year"] = 2000;
     object["series"] = series_name(title);
     object["album_id"] = album_ids[title];
     object["screens"] = record_array;

@@ -312,20 +312,30 @@ bool JournalReading::open_title_journal(bool all) {
 }
 
 void JournalReading::read_title_journal(const QJsonObject& json_file) {
-    auto title = json_file.value("title").toString();
+    JournalInfo info;
+    auto title = json_file.value("album_name").toString();
     title_map[records.size()] = title;
+    info.album_name = title;
     auto series = json_file.value("series").toString();
     if (series_map.empty() || series_map.last() != series) {
         series_map[records.size()] = series;
     }
+    info.series = series;
     int album_id = json_file.value("album_id").toInt();
     album_ids[title] = album_id;
-    auto title_caption = json_file.value("title_caption").toString();
-    title_captions[title] = title_caption;
+    info.album_id = album_id;
+    auto title_jp = json_file.value("title").toString();
+    info.title = title_jp;
+    auto title_rus = json_file.value("title_rus").toString();
+    info.title_rus = title_rus;
+    int year = json_file.value("year").toInt();
+    info.year = year;
     if (json_file.contains("overrides")) {
         QJsonArray overrides = json_file.value("overrides").toArray();
         overrides_map[title] = overrides;
+        info.overrides = overrides;
     }
+    info_map[records.size()] = info;
     auto records_array = json_file.value("screens").toArray();
     for (QJsonValueRef r : records_array) {
         Record record;
@@ -366,16 +376,19 @@ void JournalReading::save_title_journal(int start, int end) {
     for (int i = start; i <= end; ++i) {
         record_array.push_back(records[i].to_json());
     }
-    auto title = title_map.value(start);
+    JournalInfo info = info_map.value(start);
+    auto title = info.album_name;
     QFile file(Locations::instance()[JOURNALS] + title + ".json");
     QJsonObject object;
-    object["title"] = title;
-    object["title_caption"] = title_captions[title];
-    object["series"] = series_name(start);
-    object["album_id"] = album_ids[title];
+    object["album_name"] = title;
+    object["title"] = info.title;
+    object["title_rus"] = info.title_rus;
+    object["year"] = info.year;
+    object["series"] = info.series;
+    object["album_id"] = info.album_id;
     object["screens"] = record_array;
-    if (overrides_map.contains(title))
-        object["overrides"] = overrides_map[title];
+    if (info.overrides.size())
+        object["overrides"] = info.overrides;
     auto message = save_json(object, file)
             ? "Журнал скриншотов сохранён."
             : QString("Не удалось сохранить файл: %1").arg(file.fileName());
@@ -465,15 +478,15 @@ void JournalReading::show_private(bool checked) {
 }
 
 void JournalReading::add_override() {
-    QString title = title_name(pic_index);
+    auto it = info_by_pic_index(pic_index);
     QString filename = records[pic_index].pics.first();
-    OverrideDialog dlg(title, filename);
+    OverrideDialog dlg(it.value().album_name, filename);
     dlg.show();
     if (dlg.exec() == QDialog::Accepted) {
         QJsonObject object;
         object["pattern"] = dlg.pattern();
         object["title"] = dlg.title();
-        overrides_map[title].append(object);
+        it.value().overrides.append(object);
         set_edited();
         ui->save->setEnabled(true);
     }
@@ -650,4 +663,14 @@ void JournalReading::export_info_by_ids() {
             ? "Информация по кадрам сохранена."
             : "Не удалось сохранить файл.";
     ui->statusBar->showMessage(message);
+}
+
+QMap<int, JournalReading::JournalInfo>::Iterator JournalReading::info_by_pic_index(int index) {
+    if (info_map.empty()) return QMap<int, JournalInfo>::Iterator();
+    if (info_map.contains(index)) return info_map.find(index);
+    info_map[index] = JournalInfo();
+    auto it = info_map.find(index);
+    --it;
+    info_map.remove(index);
+    return it;
 }
