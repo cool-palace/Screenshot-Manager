@@ -25,6 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        creation_info_dialog.cpp \
         hashtag_button_db.cpp \
         hashtag_dialog.cpp \
         hashtag_poll_button.cpp \
@@ -57,6 +58,7 @@ SOURCES += \
         title_group.cpp
 
 HEADERS += \
+        creation_info_dialog.h \
         hashtag_button_db.h \
         hashtag_dialog.h \
         hashtag_poll_button.h \
@@ -92,6 +94,7 @@ HEADERS += \
         title_group.h
 
 FORMS += \
+        creation_info_dialog.ui \
         hashtag_dialog.ui \
         hashtag_preview_db.ui \
         mainwindow.ui \

@@ -1,5 +1,7 @@
 #include "include\journal_creation.h"
 
+#include <creation_info_dialog.h>
+
 JournalCreation::JournalCreation(MainWindow* parent) : AbstractPreparationMode(parent)
 {
     connect(&VK_Manager::instance(), &VK_Manager::albums_ready, this, &JournalCreation::set_albums);
@@ -240,24 +242,28 @@ void JournalCreation::register_record() {
     records.push_back(record);
 }
 
-void JournalCreation::save_title_journal(const QString& title) {
-    QJsonArray record_array;
-    for (const auto& record : records) {
-        record_array.push_back(record.to_json());
+void JournalCreation::save_title_journal(const QString& album_name) {
+    CreationInfoDialog dlg(album_name);
+    dlg.show();
+    if (dlg.exec() == QDialog::Accepted) {
+        QJsonArray record_array;
+        for (const auto& record : records) {
+            record_array.push_back(record.to_json());
+        }
+        QFile file(Locations::instance()[JOURNALS] + "\\new\\" + album_name + ".json");
+        QJsonObject object;
+        object["album_name"] = album_name;
+        object["title"] = dlg.title();
+        object["title_rus"] = dlg.titleRus();
+        object["year"] = dlg.year();
+        object["series"] = dlg.series();
+        object["album_id"] = album_ids[album_name];
+        object["screens"] = record_array;
+        auto message = save_json(object, file)
+                ? "Журнал скриншотов сохранён."
+                : QString("Не удалось сохранить файл: %1").arg(file.fileName());
+        ui->statusBar->showMessage(message);
     }
-    QFile file(Locations::instance()[JOURNALS] + title + ".json");
-    QJsonObject object;
-    object["album_name"] = title;
-    object["title"] = title;
-    object["title_rus"] = title;
-    object["year"] = 2000;
-    object["series"] = series_name(title);
-    object["album_id"] = album_ids[title];
-    object["screens"] = record_array;
-    auto message = save_json(object, file)
-            ? "Журнал скриншотов сохранён."
-            : QString("Не удалось сохранить файл: %1").arg(file.fileName());
-    ui->statusBar->showMessage(message);
 }
 
 QString JournalCreation::series_name(const QString& title) const {
