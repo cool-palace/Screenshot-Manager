@@ -48,6 +48,7 @@ public slots:
     int count_records();
     void count_series(QSqlQuery &query);
     void select_excluded_series_ids(QSqlQuery &query, const QDate& date);
+    void select_preselected_series_ids(QSqlQuery &query, bool selected);
     void select_series_info(QSqlQuery &query);
     void select_hashtag_info(QSqlQuery &query);
     void select_hashtag_info(QSqlQuery &query, const QueryFilters& filters, bool random = false, int limit = 0);

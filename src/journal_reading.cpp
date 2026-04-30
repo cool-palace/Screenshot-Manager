@@ -379,6 +379,7 @@ void JournalReading::save_title_journal(int start, int end) {
     JournalInfo info = info_map.value(start);
     auto title = info.album_name;
     QFile file(Locations::instance()[JOURNALS] + title + ".json");
+//    QFile file(Locations::instance()[JOURNALS] + "\\new\\" + title + ".json");
     QJsonObject object;
     object["album_name"] = title;
     object["title"] = info.title;

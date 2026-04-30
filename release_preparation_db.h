@@ -33,6 +33,7 @@ private slots:
     void get_series_info();
     void series_dialog();
     void hashtag_dialog();
+    void hashtags_reset();
     void update_hashtag_count();
 
     void generate_button();

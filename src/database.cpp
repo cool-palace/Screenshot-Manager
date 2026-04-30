@@ -249,7 +249,8 @@ void Database::create_main_tables(QSqlQuery &query) {
                       "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                       "name VARCHAR(127),"
                       "name_rus VARCHAR(127),"
-                      "emoji VARCHAR(1))");
+                      "emoji VARCHAR(1),"
+                      "selected INTEGER NOT NULL DEFAULT 0)");
     if (!query.exec()) {
         qDebug() << "Не удалось создать таблицу 'series'" << query.lastError().text();
     }
@@ -519,14 +520,14 @@ void Database::select_record_by_id(QSqlQuery &query, int id) {
                   " WHERE r.id = :id");
     query.bindValue(":id", id);
     if (!query.exec()) {
-        qDebug() << "Не выполнить получить запись" << id << query.lastError().text();
+        qDebug() << "Не удалось выполнить получить запись" << id << query.lastError().text();
     }
 }
 
 void Database::select_postponed_posts(QSqlQuery &query) {
     query.prepare("SELECT photo_id, post_id FROM record_logs WHERE post_id < 0");
     if (!query.exec()) {
-        qDebug() << "Не выполнить получить отложенные посты";
+        qDebug() << "Не удалось выполнить получить отложенные посты";
     }
 }
 
@@ -535,7 +536,7 @@ int Database::count_records(const QueryFilters &filters) {
     QString query_str = QString("SELECT COUNT(*) as count FROM ( %1 )").arg(select_query(filters));
     query.prepare(query_str);
     if (!query.exec()) {
-        qDebug() << "Не удалось выполнить получить количество результатов по фильтрам" << query.lastError().text();
+        qDebug() << "Не удалось получить количество результатов по фильтрам" << query.lastError().text();
         return 0;
     }
     if (query.next())
@@ -547,7 +548,7 @@ int Database::count_records() {
     QSqlQuery query;
     query.prepare("SELECT COUNT(*) AS count FROM records r");
     if (!query.exec()) {
-        qDebug() << "Не выполнить получить общее количество записей" << query.lastError().text();
+        qDebug() << "Не удалось выполнить получить общее количество записей" << query.lastError().text();
         return 0;
     }
     if (query.next())
@@ -558,14 +559,22 @@ int Database::count_records() {
 void Database::count_series(QSqlQuery &query) {
     query.prepare("SELECT COUNT(*) AS count FROM series s");
     if (!query.exec()) {
-        qDebug() << "Не выполнить получить количество сериалов" << query.lastError().text();
+        qDebug() << "Не удалось выполнить получить количество сериалов" << query.lastError().text();
     }
 }
 
 void Database::select_excluded_series_ids(QSqlQuery &query, const QDate &date) {
     query.prepare(select_series_query(date));
     if (!query.exec()) {
-        qDebug() << "Не выполнить получить список сериалов по дате" << query.lastError().text();
+        qDebug() << "Не удалось выполнить получить список сериалов по дате" << query.lastError().text();
+    }
+}
+
+void Database::select_preselected_series_ids(QSqlQuery &query, bool selected) {
+    QString query_str = QString("SELECT id FROM series WHERE selected = %1").arg(selected ? 1 : 0);
+    query.prepare(query_str);
+    if (!query.exec()) {
+        qDebug() << "Не удалось выполнить получить информацию по выбранным сериалам" << query.lastError().text();
     }
 }
 
@@ -590,14 +599,14 @@ void Database::select_series_info(QSqlQuery &query) {
                   "    WHERE t_inner.series_id = s.id "
                   ")");
     if (!query.exec()) {
-        qDebug() << "Не выполнить получить информацию по сериалам" << query.lastError().text();
+        qDebug() << "Не удалось выполнить получить информацию по сериалам" << query.lastError().text();
     }
 }
 
 void Database::select_hashtag_info(QSqlQuery &query) {
     query.prepare("SELECT h.id, h.tag AS name, h.rank, h.emoji, h.description FROM hashtags h");
     if (!query.exec()) {
-        qDebug() << "Не выполнить получить информацию по хэштегам" << query.lastError().text();
+        qDebug() << "Не удалось выполнить получить информацию по хэштегам" << query.lastError().text();
     }
 }
 
@@ -621,7 +630,7 @@ void Database::select_hashtag_info(QSqlQuery &query, const QueryFilters &filters
         query_str += QString("LIMIT %1 ").arg(limit);
     query.prepare(query_str);
     if (!query.exec()) {
-        qDebug() << "Не выполнить получить информацию по хэштегам" << query.lastError().text();
+        qDebug() << "Не удалось выполнить получить информацию по хэштегам" << query.lastError().text();
     }
 }
 
@@ -635,14 +644,14 @@ void Database::count_hashtags(QSqlQuery &query, const QueryFilters &filters) {
                                 "ORDER BY h.id; ").arg(select_query(filters));
     query.prepare(query_str);
     if (!query.exec()) {
-        qDebug() << "Не выполнить получить количество хэштегов" << query.lastError().text();
+        qDebug() << "Не удалось выполнить получить количество хэштегов" << query.lastError().text();
     }
 }
 
 void Database::select_hashtag_ranks(QSqlQuery &query) {
     query.prepare("SELECT MIN(h.rank) AS min_rank, MAX(h.rank) AS max_rank FROM hashtags h");
     if (!query.exec()) {
-        qDebug() << "Не выполнить получить уровни хэштегов" << query.lastError().text();
+        qDebug() << "Не удалось выполнить получить уровни хэштегов" << query.lastError().text();
     }
 }
 
@@ -678,7 +687,7 @@ void Database::select_hashtag_pairs_count(QSqlQuery &query, const QList<int>& ta
                                 "ORDER BY tp.tag1, tp.tag2;").arg(select_query(filters)).arg(values.join("), ("));
     query.prepare(query_str);
     if (!query.exec()) {
-        qDebug() << "Не выполнить получить информацию по парам тегов" << query.lastError().text();
+        qDebug() << "Не удалось выполнить получить информацию по парам тегов" << query.lastError().text();
     }
 }
 

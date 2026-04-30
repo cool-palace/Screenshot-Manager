@@ -60,6 +60,7 @@ struct LastUsedFilter {
 struct SeriesFilter {
     bool enabled = false;
     bool last_used = false;
+    bool selected = false;
     QDate date;
     std::set<int> included;
     std::set<int> excluded;
@@ -74,6 +75,10 @@ struct HashtagsFilter {
     bool enabled = true;
     QMap<int, HashtagFilter> included;
     QMap<int, HashtagFilter> excluded;
+    void clear() {
+        included.clear();
+        excluded.clear();
+    }
 };
 
 struct PollFilters {

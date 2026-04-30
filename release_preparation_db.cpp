@@ -17,13 +17,16 @@ ReleasePreparationDB::ReleasePreparationDB(QWidget *parent) : QWidget(parent) {
     connect(pbTextReset, &QPushButton::clicked, this, &ReleasePreparationDB::text_filter_reset);
     connect(pbSeriesDialog, &QPushButton::clicked, this, &ReleasePreparationDB::series_dialog);
     connect(pbHashtagsDialog, &QPushButton::clicked, this, &ReleasePreparationDB::hashtag_dialog);
+    connect(pbHashtagsReset, &QPushButton::clicked, this, &ReleasePreparationDB::hashtags_reset);
 
     connect(grpPublicity, &QGroupBox::clicked, this, &ReleasePreparationDB::publicity_filter_changed);
     connect(grpQuantity,  &QGroupBox::clicked, this, &ReleasePreparationDB::quantity_filter_changed);
     connect(grpLastUsed,  &QGroupBox::clicked, this, &ReleasePreparationDB::last_used_filter_changed);
     connect(grpSeries,    &QGroupBox::clicked, this, &ReleasePreparationDB::series_filter_changed);
 
-    connect(rbSeriesLastUsed, &QRadioButton::toggled, this, &ReleasePreparationDB::series_filter_changed);
+    connect(rbSeriesLastUsed, &QRadioButton::clicked, this, &ReleasePreparationDB::series_filter_changed);
+    connect(rbSeriesManual,   &QRadioButton::clicked, this, &ReleasePreparationDB::series_filter_changed);
+    connect(rbSeriesSelected, &QRadioButton::clicked, this, &ReleasePreparationDB::series_filter_changed);
 
     connect(cbPublicity,    QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ReleasePreparationDB::publicity_filter_changed);
     connect(cbQuantity,     QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ReleasePreparationDB::quantity_filter_changed);
@@ -99,6 +102,7 @@ void ReleasePreparationDB::series_filter_changed() {
     const bool enabled = grpSeries->isChecked();
     QueryFilters::instance().series.enabled = enabled;
     QueryFilters::instance().series.last_used = rbSeriesLastUsed->isChecked();
+    QueryFilters::instance().series.selected = rbSeriesSelected->isChecked();
     QueryFilters::instance().series.date = date;
 
     // Если задано исключение по дате
@@ -115,10 +119,25 @@ void ReleasePreparationDB::series_filter_changed() {
         for (int id  = 1; id <= m_series_size; ++id)
             if (!QueryFilters::instance().series.excluded.count(id))
                 QueryFilters::instance().series.included.insert(id);
+    } else if (QueryFilters::instance().series.selected) { // Если задан выбор по данным БД
+        // Обновляем списки
+        QueryFilters::instance().series.excluded.clear();
+        QueryFilters::instance().series.included.clear();
+        QSqlQuery query;
+        Database::instance().select_preselected_series_ids(query, true);
+        while (query.next()) {
+            int id = query.value("id").toInt();
+            QueryFilters::instance().series.included.insert(id);
+        }
+        Database::instance().select_preselected_series_ids(query, false);
+        while (query.next()) {
+            int id = query.value("id").toInt();
+            QueryFilters::instance().series.excluded.insert(id);
+        }
     }
     // Обновляем состояние виджетов
     sbSeriesLastUsed->setEnabled(enabled && QueryFilters::instance().series.last_used);
-    pbSeriesDialog->setEnabled(enabled && !QueryFilters::instance().series.last_used);
+    pbSeriesDialog->setEnabled(enabled && rbSeriesManual->isChecked());
     const int days = sbSeriesLastUsed->value();
     sbSeriesLastUsed->setSuffix(" " + inflect(days, "дней"));
     lblSeriesCount->setText(QString("%1 из %2").arg(QueryFilters::instance().series.included.size()).arg(m_series_size));
@@ -180,6 +199,11 @@ void ReleasePreparationDB::hashtag_dialog() {
     if (dialog.exec() == QDialog::Rejected) {
         QueryFilters::instance().hashtags = dialog.old_results();
     }
+    hashtags_filter_changed();
+}
+
+void ReleasePreparationDB::hashtags_reset() {
+    QueryFilters::instance().hashtags.clear();
     hashtags_filter_changed();
 }
 
